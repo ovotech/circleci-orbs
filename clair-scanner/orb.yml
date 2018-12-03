@@ -1,0 +1,33 @@
+version: 2.1
+description: "Clair scanner orb"
+
+executors:
+  default:
+    description: "Clair executor"
+    docker:
+      - image: ovotech/clair-scanner:latest
+
+commands:
+  scan:
+    description: "Scan an image for vulnerabilities"
+    parameters:
+      image:
+        type: "string"
+        description: "Name of the image to scan"
+        default: ""
+      image_file:
+        type: "string"
+        description: "Path to a file of images to scan"
+        default: ""
+      whitelist:
+        type: "string"
+        description: "Path to a CVE whitelist"
+        default: ""
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 17.11.0-ce
+      - run:
+          name: "vulnerability scan"
+          command: |
+            include scan.sh

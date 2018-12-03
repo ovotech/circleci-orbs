@@ -1,0 +1,252 @@
+version: 2.1
+description: "Terraform orb"
+
+executors:
+  default:
+    description: "Terraform executor"
+    docker:
+    - image: ovotech/terraform:latest
+
+commands:
+  plan:
+    description: "Create a Terraform plan"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - run:
+          name: "terraform plan << parameters.path >> << parameters.workspace >>"
+          command: |
+            include plan.sh
+
+  apply:
+    description: "Apply a Terraform plan"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      auto_approve:
+        type: "boolean"
+        description: "Automatically approve and apply plan"
+        default: false
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - run:
+          name: "terraform apply << parameters.path >> << parameters.workspace >>"
+          command: |
+            include apply.sh
+
+  check:
+    description: "Check that terraform state hasn't drifted"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - run:
+          name: "terraform check << parameters.path >> << parameters.workspace >>"
+          command: |
+            include check.sh
+
+jobs:
+  plan:
+    executor: default
+    description: "Create a Terraform plan"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - checkout
+      - plan:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
+  apply:
+    executor: default
+    description: "Apply a terraform plan"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      auto_approve:
+        type: "boolean"
+        description: "Automatically approve and apply plan"
+        default: false
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - checkout
+      - apply:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          auto_approve: << parameters.auto_approve >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
+
+  check:
+    executor: default
+    description: "Check that terraform state hasn't drifted"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - checkout
+      - check:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
