@@ -63,13 +63,12 @@ jobs:
             fi
           fi
 
-  green_check:
-    docker:
-    - image: debian
-    steps:
-    - checkout
-
 workflows:
   commit:
     jobs:
-    - green_check
+    - publish_orb:
+        name: clair-scanner
+        path: clair-scanner
+    - publish_orb:
+        name: terraform
+        path: terraform
