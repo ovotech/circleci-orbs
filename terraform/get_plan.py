@@ -39,7 +39,7 @@ def find_pr(owner, repo, commit):
     raise Exception(f'No PR found in {owner}/{repo} for commit {commit}')
 
 
-def find_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, env: str) -> str:
+def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
     response = session.get(f'{HOST}/repos/{owner}/{repo}/pulls/{pr}')
     response.raise_for_status()
 
@@ -52,24 +52,21 @@ def find_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, 
     for comment in response.json():
         if comment['user']['login'] == github_username:
 
-            label = 'Terraform plan for (.*?) in the (.*?) workspace'
-            if env:
-                label = f'Terraform plan for __{env}__'
-
             match = re.match(rf'{label}\n```(.*)```', comment['body'], re.DOTALL)
 
             if match:
-                comment_module = match.group(1)
-                comment_workspace = match.group(2)
                 plan = match.group(3)
-
-                if comment_module == module_path and comment_workspace == workspace:
-                    return plan.strip()
+                return plan.strip()
 
 
 def get(owner: str, repo: str, commit: str, module_path: str, workspace: str, env: str) -> str:
     pr = find_pr(owner, repo, commit)
-    return find_plan(owner, repo, pr, module_path, workspace, env)
+
+    label = f'Terraform plan for {module_path} in the {workspace} workspace'
+    if env:
+        label = f'Terraform plan for __{env}__'
+
+    return find_plan(owner, repo, pr, label)
 
 
 if __name__ == '__main__':

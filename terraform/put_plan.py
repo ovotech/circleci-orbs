@@ -15,7 +15,7 @@ session = requests.Session()
 session.auth = (github_username, github_token)
 
 
-def delete_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, env: str) -> None:
+def delete_plan(owner: str, repo: str, pr: int, label: str) -> None:
     response = session.get(f'{HOST}/repos/{owner}/{repo}/pulls/{pr}')
     response.raise_for_status()
 
@@ -25,25 +25,14 @@ def delete_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str
 
     for comment in response.json():
         if comment['user']['login'] == github_username:
-            label = 'Terraform plan for (.*?) in the (.*?) workspace'
-            if env:
-                label = f'Terraform plan for __{env}__'
             match = re.match(rf'{label}\n```.*```', comment['body'], re.DOTALL)
 
             if match:
-                comment_module = match.group(1)
-                comment_workspace = match.group(2)
-
-                if comment_module == module_path and comment_workspace == workspace:
-                    session.delete(comment['url'])
-                    return
+                session.delete(comment['url'])
+                return
 
 
-def add_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, env: str, plan: str) -> None:
-
-    label = f'Terraform plan for {module_path} in the {workspace} workspace'
-    if env:
-        label = f'Terraform plan for __{env}__'
+def add_plan(owner: str, repo: str, pr: int, label: str, plan: str) -> None:
 
     comment = f'{label}\n```\n{plan}\n```'
 
@@ -57,8 +46,13 @@ def add_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, e
 
 
 def put(owner: str, repo: str, pr: int, module_path: str, workspace: str, env: str) -> None:
-    delete_plan(owner, repo, pr, module_path, workspace, env)
-    add_plan(owner, repo, pr, module_path, workspace, env, sys.stdin.read().strip())
+
+    label = f'Terraform plan for {module_path} in the {workspace} workspace'
+    if env:
+        label = f'Terraform plan for __{env}__'
+
+    delete_plan(owner, repo, pr, label)
+    add_plan(owner, repo, pr, label, sys.stdin.read().strip())
 
 
 if __name__ == '__main__':
