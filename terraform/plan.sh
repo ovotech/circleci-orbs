@@ -84,6 +84,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if [ -n "$GITHUB_TOKEN" ]; then
         export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
+        export TF_ENV_LABEL="<< parameters.env >>"
         python3 /tmp/put_plan.py "$module_path" "$workspace" <plan.txt
     fi
 

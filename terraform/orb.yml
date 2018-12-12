@@ -18,6 +18,10 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      environment:
+        type: "string"
+        description: "A friendly name for the environment this plan is for"
+        default: ""
       parallelism:
         type: "string"
         description: "Limit the number of concurrent operations"
@@ -54,6 +58,10 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      environment:
+        type: "string"
+        description: "A friendly name for the environment this apply is for"
+        default: ""
       auto_approve:
         type: "boolean"
         description: "Automatically approve and apply plan"
@@ -157,6 +165,7 @@ jobs:
       - plan:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
+          environment: << parameters.environment >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
           backend_config: << parameters.backend_config >>
@@ -202,6 +211,7 @@ jobs:
       - apply:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
+          environment: << parameters.environment >>
           auto_approve: << parameters.auto_approve >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>

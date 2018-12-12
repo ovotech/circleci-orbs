@@ -46,6 +46,7 @@ Parameters:
 
 - path: Path the the terraform module to run the plan in
 - workspace: Terraform workspace to run the command in (default: 'default')
+- environment: A friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
@@ -59,6 +60,7 @@ Parameters:
 
 - path: Path the the terraform module to run the plan in
 - workspace: Terraform workspace to run the command in (default: 'default')
+- environment: A friendly name for the environment this apply is for. This must be the same as the environment of the corresponding plan command.
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
