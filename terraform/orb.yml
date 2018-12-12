@@ -140,6 +140,10 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      environment:
+        type: "string"
+        description: "A friendly name for the environment this plan is for"
+        default: ""
       parallelism:
         type: "string"
         description: "Limit the number of concurrent operations"
@@ -182,6 +186,10 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      environment:
+        type: "string"
+        description: "A friendly name for the environment this plan is for"
+        default: ""
       auto_approve:
         type: "boolean"
         description: "Automatically approve and apply plan"
