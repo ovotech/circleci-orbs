@@ -25,7 +25,7 @@ def delete_plan(owner: str, repo: str, pr: int, label: str) -> None:
 
     for comment in response.json():
         if comment['user']['login'] == github_username:
-            match = re.match(rf'{label}\n```.*```', comment['body'], re.DOTALL)
+            match = re.match(rf'{ re.escape(label) }\n```.*```', comment['body'], re.DOTALL)
 
             if match:
                 session.delete(comment['url'])

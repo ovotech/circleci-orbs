@@ -52,7 +52,7 @@ def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
     for comment in response.json():
         if comment['user']['login'] == github_username:
 
-            match = re.match(rf'{label}\n```(.*)```', comment['body'], re.DOTALL)
+            match = re.match(rf'{ re.escape(label) }\n```(.*)```', comment['body'], re.DOTALL)
 
             if match:
                 plan = match.group(1)
