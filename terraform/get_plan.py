@@ -55,7 +55,7 @@ def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
             match = re.match(rf'{label}\n```(.*)```', comment['body'], re.DOTALL)
 
             if match:
-                plan = match.group(3)
+                plan = match.group(1)
                 return plan.strip()
 
 
