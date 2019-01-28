@@ -8,7 +8,7 @@ if [ -z "<< parameters.image_file >><< parameters.image >>" ]; then
 fi
 
 DB=$(docker run -p 5432:5432 -d arminc/clair-db:latest)
-CLAIR=$(docker run -p 6060:6060 --link $DB:postgres -d arminc/clair-local-scan:v2.0.1)
+CLAIR=$(docker run -p 6060:6060 --link $DB:postgres -d arminc/clair-local-scan:latest)
 CLAIR_SCANNER=$(docker run -v /var/run/docker.sock:/var/run/docker.sock -d ovotech/clair-scanner:latest tail -f /dev/null)
 
 clair_ip=$(docker exec -it $CLAIR hostname -i | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
