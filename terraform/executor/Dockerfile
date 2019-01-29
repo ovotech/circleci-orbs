@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     unzip \
+    python2 \
     python3 \
     python3-requests \
     python3-pip \
