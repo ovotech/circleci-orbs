@@ -86,7 +86,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if [ "<< parameters.auto_approve >>" = "true" ]; then
         echo "Automatically approving plan"
-        exec terraform apply -input=false -no-color -auto-approve plan.out $PLAN_ARGS
+        exec terraform apply -input=false -no-color -auto-approve $PLAN_ARGS plan.out
     fi
 
     export TF_ENV_LABEL="<< parameters.label >>"
@@ -98,7 +98,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
         echo "Applying approved plan"
-        exec terraform apply -input=false -no-color -auto-approve plan.out $PLAN_ARGS
+        exec terraform apply -input=false -no-color -auto-approve $PLAN_ARGS plan.out
     else
         echo "Plan has changed - approval needed"
         cat plan.txt
