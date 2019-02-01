@@ -86,7 +86,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if [ "<< parameters.auto_approve >>" = "true" ]; then
         echo "Automatically approving plan"
-        exec terraform apply -input=false -no-color -auto-approve $PLAN_ARGS plan.out
+        exec terraform apply -input=false -no-color -auto-approve plan.out
     fi
 
     export TF_ENV_LABEL="<< parameters.label >>"
