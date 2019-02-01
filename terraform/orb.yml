@@ -20,7 +20,7 @@ commands:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the environment this plan is for"
+        description: "A friendly name for the environment this step is for"
         default: ""
       parallelism:
         type: "string"
@@ -60,7 +60,7 @@ commands:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the environment this apply is for"
+        description: "A friendly name for the environment this step is for"
         default: ""
       auto_approve:
         type: "boolean"
@@ -102,6 +102,10 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
       parallelism:
         type: "string"
         description: "Limit the number of concurrent operations"
@@ -128,6 +132,46 @@ commands:
           command: |
             include check.sh
 
+  destroy:
+    description: "Destroy terraform resources"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - run:
+          name: "terraform destroy << parameters.path >> << parameters.workspace >>"
+          command: |
+            include destroy.sh
+
 jobs:
   plan:
     executor: default
@@ -142,7 +186,7 @@ jobs:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the environment this plan is for"
+        description: "A friendly name for the environment this job is for"
         default: ""
       parallelism:
         type: "string"
@@ -175,6 +219,7 @@ jobs:
           backend_config: << parameters.backend_config >>
           var: << parameters.var >>
           var_file: << parameters.var_file >>
+
   apply:
     executor: default
     description: "Apply a terraform plan"
@@ -188,7 +233,7 @@ jobs:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the label this plan is for"
+        description: "A friendly name for the environment this job is for"
         default: ""
       auto_approve:
         type: "boolean"
@@ -238,6 +283,10 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this job is for"
+        default: ""
       parallelism:
         type: "string"
         description: "Limit the number of concurrent operations"
@@ -263,6 +312,54 @@ jobs:
       - check:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
+          label: << parameters.label >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
+
+  destroy:
+    executor: default
+    description: "Destroy terraform resources"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this job is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - checkout
+      - destroy:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          label: << parameters.label >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
           backend_config: << parameters.backend_config >>
