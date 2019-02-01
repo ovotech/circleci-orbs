@@ -20,7 +20,7 @@ commands:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the environment this plan is for"
+        description: "A friendly name for the environment this step is for"
         default: ""
       parallelism:
         type: "string"
@@ -60,7 +60,7 @@ commands:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the environment this apply is for"
+        description: "A friendly name for the environment this step is for"
         default: ""
       auto_approve:
         type: "boolean"
@@ -102,6 +102,10 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
       parallelism:
         type: "string"
         description: "Limit the number of concurrent operations"
@@ -138,9 +142,9 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
-      environment:
+      label:
         type: "string"
-        description: "A friendly name for the environment this apply is for"
+        description: "A friendly name for the environment this step is for"
         default: ""
       parallelism:
         type: "string"
@@ -182,7 +186,7 @@ jobs:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the environment this plan is for"
+        description: "A friendly name for the environment this job is for"
         default: ""
       parallelism:
         type: "string"
@@ -229,7 +233,7 @@ jobs:
         default: "default"
       label:
         type: "string"
-        description: "A friendly name for the label this plan is for"
+        description: "A friendly name for the environment this job is for"
         default: ""
       auto_approve:
         type: "boolean"
@@ -279,6 +283,10 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this job is for"
+        default: ""
       parallelism:
         type: "string"
         description: "Limit the number of concurrent operations"
@@ -304,6 +312,7 @@ jobs:
       - check:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
+          label: << parameters.label >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
           backend_config: << parameters.backend_config >>
@@ -321,9 +330,9 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
-      environment:
+      label:
         type: "string"
-        description: "A friendly name for the environment this plan is for"
+        description: "A friendly name for the environment this job is for"
         default: ""
       parallelism:
         type: "string"
@@ -350,7 +359,7 @@ jobs:
       - destroy:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
-          environment: << parameters.environment >>
+          label: << parameters.label >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
           backend_config: << parameters.backend_config >>
