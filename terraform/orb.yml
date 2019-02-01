@@ -18,7 +18,7 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
-      environment:
+      label:
         type: "string"
         description: "A friendly name for the environment this plan is for"
         default: ""
@@ -58,7 +58,7 @@ commands:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
-      environment:
+      label:
         type: "string"
         description: "A friendly name for the environment this apply is for"
         default: ""
@@ -140,7 +140,7 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
-      environment:
+      label:
         type: "string"
         description: "A friendly name for the environment this plan is for"
         default: ""
@@ -169,7 +169,7 @@ jobs:
       - plan:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
-          environment: << parameters.environment >>
+          label: << parameters.label >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
           backend_config: << parameters.backend_config >>
@@ -186,9 +186,9 @@ jobs:
         type: "string"
         description: "Name of the terraform workspace"
         default: "default"
-      environment:
+      label:
         type: "string"
-        description: "A friendly name for the environment this plan is for"
+        description: "A friendly name for the label this plan is for"
         default: ""
       auto_approve:
         type: "boolean"
@@ -219,7 +219,7 @@ jobs:
       - apply:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
-          environment: << parameters.environment >>
+          label: << parameters.label >>
           auto_approve: << parameters.auto_approve >>
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
