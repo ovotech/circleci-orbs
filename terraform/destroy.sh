@@ -53,10 +53,7 @@ if [ -n "<< parameters.var_file >>" ]; then
 fi
 
 rm -rf .terraform
-echo terraform init -input=false -no-color $INIT_ARGS "$module_path"
 terraform init -input=false -no-color $INIT_ARGS "$module_path"
-echo terraform workspace select "$workspace" "$module_path"
 terraform workspace select "$workspace" "$module_path"
 
-echo terraform destroy -input=false -no-color -auto-approve $PLAN_ARGS "$module_path"
 exec terraform destroy -input=false -no-color -auto-approve $PLAN_ARGS "$module_path"
