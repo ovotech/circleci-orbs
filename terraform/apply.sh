@@ -98,7 +98,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
         echo "Applying approved plan"
-        exec terraform apply -input=false -no-color -auto-approve $PLAN_ARGS plan.out
+        exec terraform apply -input=false -no-color -auto-approve plan.out
     else
         echo "Plan has changed - approval needed"
         cat plan.txt
