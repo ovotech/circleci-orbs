@@ -245,6 +245,11 @@ workflows:
 
 ## GitHub
 
+To attach the plan to PR create the GITHUB_USERNAME and GITHUB_TOKEN
+environment variables in the CircleCI project. This should be a
+Personal Access Token of a github user that has access to the repo.
+The token requires the `repo, write:discussion` scopes.
+
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by
 going to the branch settings for the repo and enable protection for
