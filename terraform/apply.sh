@@ -89,6 +89,8 @@ elif [[ $TF_EXIT -eq 2 ]]; then
         exec terraform apply -input=false -no-color -auto-approve plan.out $PLAN_ARGS
     fi
 
+    export TF_ENV_LABEL="<< parameters.label >>"
+
     if ! python3 /tmp/get_plan.py "$module_path" "$workspace" >approved-plan.txt; then
         echo "Approved plan not found"
         exit 1

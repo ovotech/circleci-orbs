@@ -15,7 +15,7 @@ session = requests.Session()
 session.auth = (github_username, github_token)
 
 
-def delete_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str) -> None:
+def delete_plan(owner: str, repo: str, pr: int, label: str) -> None:
     response = session.get(f'{HOST}/repos/{owner}/{repo}/pulls/{pr}')
     response.raise_for_status()
 
@@ -25,19 +25,16 @@ def delete_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str
 
     for comment in response.json():
         if comment['user']['login'] == github_username:
-            match = re.match(r'Terraform plan for (.*?) in the (.*?) workspace\n```.*```', comment['body'], re.DOTALL)
+            match = re.match(rf'{ re.escape(label) }\n```.*```', comment['body'], re.DOTALL)
 
             if match:
-                comment_module = match.group(1)
-                comment_workspace = match.group(2)
-
-                if comment_module == module_path and comment_workspace == workspace:
-                    session.delete(comment['url'])
-                    return
+                session.delete(comment['url'])
+                return
 
 
-def add_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, plan: str) -> None:
-    comment = f'Terraform plan for {module_path} in the {workspace} workspace\n```\n{plan}\n```'
+def add_plan(owner: str, repo: str, pr: int, label: str, plan: str) -> None:
+
+    comment = f'{label}\n```\n{plan}\n```'
 
     response = session.get(f'{HOST}/repos/{owner}/{repo}/pulls/{pr}')
     response.raise_for_status()
@@ -48,9 +45,14 @@ def add_plan(owner: str, repo: str, pr: int, module_path: str, workspace: str, p
     response.raise_for_status()
 
 
-def put(owner: str, repo: str, pr: int, module_path: str, workspace: str) -> None:
-    delete_plan(owner, repo, pr, module_path, workspace)
-    add_plan(owner, repo, pr, module_path, workspace, sys.stdin.read().strip())
+def put(owner: str, repo: str, pr: int, module_path: str, workspace: str, env: str) -> None:
+
+    label = f'Terraform plan for {module_path} in the {workspace} workspace'
+    if env:
+        label = f'Terraform plan for __{env}__'
+
+    delete_plan(owner, repo, pr, label)
+    add_plan(owner, repo, pr, label, sys.stdin.read().strip())
 
 
 if __name__ == '__main__':
@@ -65,5 +67,6 @@ if __name__ == '__main__':
     owner = os.environ['CIRCLE_PROJECT_USERNAME']
     repo = os.environ['CIRCLE_PROJECT_REPONAME']
     pr = os.environ['CIRCLE_PR_NUMBER']
+    env = os.environ.get('TF_ENV_LABEL', '')
 
-    put(owner, repo, int(pr), module_path, workspace)
+    put(owner, repo, int(pr), module_path, workspace, env)
