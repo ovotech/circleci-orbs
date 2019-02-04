@@ -109,8 +109,6 @@ Parameters:
 - workspace: Terraform workspace to create
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
-- var_file: Comma separater list of terraform var files
-- var: Comma separated list of vars to set, e.g. foo=bar
 
 ### destroy-workspace
 
