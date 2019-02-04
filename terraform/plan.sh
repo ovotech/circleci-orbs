@@ -26,7 +26,12 @@ if [ -n "$GOOGLE_COMPUTE_ZONE" ]; then
 fi
 
 readonly module_path="<< parameters.path >>"
-readonly workspace="<< parameters.workspace >>"
+if [[ -z "$TF_WORKSPACE" ]]; then
+    readonly workspace="$TF_WORKSPACE"
+    echo "Using overriden workspace environment variable: $workspace "
+else
+    readonly workspace="<< parameters.workspace >>"
+fi
 
 if [ -n "<< parameters.parallelism >>" ]; then
     PLAN_ARGS="$PLAN_ARGS -parallelism=<< parameters.parallelism >>"
