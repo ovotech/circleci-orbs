@@ -458,6 +458,7 @@ jobs:
           var_file: << parameters.var_file >>
 
   new-workspace:
+    executor: default
     description: "Create a terraform workspace"
     parameters:
       path:
