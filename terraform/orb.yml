@@ -44,7 +44,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform plan << parameters.path >> << parameters.workspace >>"
+          name: "terraform plan << parameters.path >> << parameters.label >>"
           command: |
             include plan.sh
 
@@ -88,7 +88,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform apply << parameters.path >> << parameters.workspace >>"
+          name: "terraform apply << parameters.path >> << parameters.label >>"
           command: |
             include apply.sh
 
@@ -128,7 +128,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform check << parameters.path >> << parameters.workspace >>"
+          name: "terraform check << parameters.path >> << parameters.label >>"
           command: |
             include check.sh
 
@@ -168,9 +168,100 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform destroy << parameters.path >> << parameters.workspace >>"
+          name: "terraform destroy << parameters.path >> << parameters.label >>"
           command: |
             include destroy.sh
+
+  new-workspace:
+    description: "Create a terraform workspace"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace to create"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - run:
+          name: "terraform workspace new"
+          command: |
+            include init.sh
+            exec terraform workspace new "$workspace" "$module_path"
+
+  destroy-workspace:
+    description: "Destroy a terraform workspace"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace to destroy"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - destroy:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          label: << parameters.label >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
+      - run:
+          name: "terraform workspace delete"
+          command: |
+            include init.sh
+            terraform workspace delete "$workspace" "$module_path"
 
 jobs:
   plan:
@@ -357,6 +448,100 @@ jobs:
     steps:
       - checkout
       - destroy:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          label: << parameters.label >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
+
+  new-workspace:
+    executor: default
+    description: "Create a terraform workspace"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace to create"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - checkout
+      - new-workspace:
+          path: << parameters.path >>
+          workspace: << parameters.workspace >>
+          label: << parameters.label >>
+          parallelism: << parameters.parallelism >>
+          backend_config_file: << parameters.backend_config_file >>
+          backend_config: << parameters.backend_config >>
+          var: << parameters.var >>
+          var_file: << parameters.var_file >>
+
+  destroy-workspace:
+    executor: default
+    description: "Destroy and delete a terraform workspace"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace to destroy"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - checkout
+      - destroy-workspace:
           path: << parameters.path >>
           workspace: << parameters.workspace >>
           label: << parameters.label >>

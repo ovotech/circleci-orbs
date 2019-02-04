@@ -46,11 +46,12 @@ Parameters:
 
 - path: Path the the terraform module to run the plan in
 - workspace: Terraform workspace to run the command in (default: 'default')
-- label: A friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
+- label: An optional friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
+- parallelism: Limit the number of concurrent operations
 
 ### apply
 
@@ -60,12 +61,13 @@ Parameters:
 
 - path: Path the the terraform module to run the plan in
 - workspace: Terraform workspace to run the command in (default: 'default')
-- label: A friendly name for the environment this apply is for. This must be the same as the label of the corresponding plan command.
+- label: An optional friendly name for the environment this apply is for. This must be the same as the label of the corresponding plan command.
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
 - auto_approve: Apply the plan, even if it has not been approved through a PR.
+- parallelism: Limit the number of concurrent operations
 
 ### check
 
@@ -81,11 +83,53 @@ Parameters:
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
+- parallelism: Limit the number of concurrent operations
+
+### destroy
+
+This runs the terraform destroy command, destroying all resources.
+
+Parameters:
+
+- path: Path the the terraform module to destroy the resource in
+- workspace: Terraform workspace to run the command in (default: 'default')
+- backend_config_file: Comma separated list of terraform backend config files
+- backend_config: Comma separated list of backend configs, e.g. foo=bar
+- var_file: Comma separater list of terraform var files
+- var: Comma separated list of vars to set, e.g. foo=bar
+- parallelism: Limit the number of concurrent operations
+
+### new-workspace
+
+This creates a new terraform workspace
+
+Parameters:
+
+- path: Path the the terraform module to create a workspace in
+- workspace: Terraform workspace to create
+- backend_config_file: Comma separated list of terraform backend config files
+- backend_config: Comma separated list of backend configs, e.g. foo=bar
+- var_file: Comma separater list of terraform var files
+- var: Comma separated list of vars to set, e.g. foo=bar
+
+### destroy-workspace
+
+This destroys all resource in a workspace and deletes the workspace
+
+Parameters:
+
+- path: Path the the terraform module to create a workspace in
+- workspace: Terraform workspace to destroy
+- backend_config_file: Comma separated list of terraform backend config files
+- backend_config: Comma separated list of backend configs, e.g. foo=bar
+- var_file: Comma separater list of terraform var files
+- var: Comma separated list of vars to set, e.g. foo=bar
+- parallelism: Limit the number of concurrent operations
 
 ## Jobs
 
-This orb contains plan, apply and check jobs which run their respective
-command in the default executor.
+This orb contains plan, apply, check, destroy, destroy-workspace and
+new-workspace jobs which run their respective command in the default executor.
 
 The jobs have the same parameters as the commands.
 
