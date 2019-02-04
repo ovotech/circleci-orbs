@@ -44,7 +44,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform plan << parameters.path >> << parameters.workspace >>"
+          name: "terraform plan << parameters.path >> << parameters.label >>"
           command: |
             include plan.sh
 
@@ -88,7 +88,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform apply << parameters.path >> << parameters.workspace >>"
+          name: "terraform apply << parameters.path >> << parameters.label >>"
           command: |
             include apply.sh
 
@@ -128,7 +128,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform check << parameters.path >> << parameters.workspace >>"
+          name: "terraform check << parameters.path >> << parameters.label >>"
           command: |
             include check.sh
 
@@ -168,7 +168,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: "terraform destroy << parameters.path >> << parameters.workspace >>"
+          name: "terraform destroy << parameters.path >> << parameters.label >>"
           command: |
             include destroy.sh
 
