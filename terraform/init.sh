@@ -23,6 +23,7 @@ fi
 
 readonly module_path="<< parameters.path >>"
 readonly workspace="${TF_WORKSPACE:-<< parameters.workspace >>}"
+unset TF_WORKSPACE
 
 if [ -n "<< parameters.parallelism >>" ]; then
     PLAN_ARGS="$PLAN_ARGS -parallelism=<< parameters.parallelism >>"
