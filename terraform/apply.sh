@@ -38,7 +38,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     export TF_ENV_LABEL="<< parameters.label >>"
 
-    if ! python3 /tmp/get_plan.py "$module_path" "$workspace" >approved-plan.txt; then
+    if ! python3 /tmp/get_plan.py "$module_path" "$workspace" "$INIT_ARGS" "$PLAN_ARGS" >approved-plan.txt; then
         echo "Approved plan not found"
         exit 1
     fi
