@@ -34,19 +34,14 @@ def prs(owner, repo):
 def find_pr(owner, repo, commit):
     for pr in prs(owner, repo):
         if pr['merge_commit_sha'] == commit:
-            return pr['number']
+            return pr
 
     raise Exception(f'No PR found in {owner}/{repo} for commit {commit}')
 
 
-def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
-    response = session.get(f'{HOST}/repos/{owner}/{repo}/pulls/{pr}')
-    response.raise_for_status()
+def find_plan(owner: str, repo: str, pr: dict, label: str) -> str:
 
-    pr = response.json()
-    issue_url = pr['_links']['issue']['href'] + '/comments'
-
-    response = session.get(issue_url)
+    response = session.get(pr['comments_url'])
     response.raise_for_status()
 
     for comment in response.json():
@@ -57,6 +52,8 @@ def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
             if match:
                 plan = match.group(1)
                 return plan.strip()
+
+    raise Exception(f'No plan found in {owner}/{repo}#{pr["number"]} with label {label!r}')
 
 
 def create_label(module_path, workspace, env, init_args, plan_args):
@@ -81,7 +78,7 @@ def get(owner: str, repo: str, commit: str, label: str) -> str:
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print(f'Usage:\n\t{sys.argv[0]} <module_path> [<workspace>] [<init-args>]  [<plan-args] < plan.txt')
+        print(f'Usage:\n\t{sys.argv[0]} <module_path> [<workspace>] [<init-args>]  [<plan-args]')
         exit(-1)
 
     module_path = sys.argv[1]
