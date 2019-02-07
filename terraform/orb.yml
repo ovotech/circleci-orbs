@@ -261,7 +261,7 @@ commands:
           name: "terraform workspace delete"
           command: |
             include init.sh
-            terraform workspace delete "$workspace" "$module_path"
+            exec terraform workspace delete "$workspace" "$module_path"
 
 jobs:
   plan:
