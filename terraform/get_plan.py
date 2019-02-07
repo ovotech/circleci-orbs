@@ -34,19 +34,14 @@ def prs(owner, repo):
 def find_pr(owner, repo, commit):
     for pr in prs(owner, repo):
         if pr['merge_commit_sha'] == commit:
-            return pr['number']
+            return pr
 
     raise Exception(f'No PR found in {owner}/{repo} for commit {commit}')
 
 
-def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
-    response = session.get(f'{HOST}/repos/{owner}/{repo}/pulls/{pr}')
-    response.raise_for_status()
+def find_plan(owner: str, repo: str, pr: dict, label: str) -> str:
 
-    pr = response.json()
-    issue_url = pr['_links']['issue']['href'] + '/comments'
-
-    response = session.get(issue_url)
+    response = session.get(pr['comments_url'])
     response.raise_for_status()
 
     for comment in response.json():
@@ -58,29 +53,44 @@ def find_plan(owner: str, repo: str, pr: int, label: str) -> str:
                 plan = match.group(1)
                 return plan.strip()
 
+    raise Exception(f'No plan found in {owner}/{repo}#{pr["number"]} with label {label!r}')
 
-def get(owner: str, repo: str, commit: str, module_path: str, workspace: str, env: str) -> str:
-    pr = find_pr(owner, repo, commit)
+
+def create_label(module_path, workspace, env, init_args, plan_args):
+    if env:
+        return f'Terraform plan for __{env}__'
 
     label = f'Terraform plan for {module_path} in the {workspace} workspace'
-    if env:
-        label = f'Terraform plan for __{env}__'
 
+    if init_args:
+        label += f'\nUsing init args: `{init_args}`'
+    if plan_args:
+        label += f'\nUsing plan args: `{plan_args}`'
+
+    return label
+
+
+def get(owner: str, repo: str, commit: str, label: str) -> str:
+    pr = find_pr(owner, repo, commit)
     return find_plan(owner, repo, pr, label)
 
 
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print(f'Usage:\n\t{sys.argv[0]} <module_path> [<workspace>] < plan.txt')
+        print(f'Usage:\n\t{sys.argv[0]} <module_path> [<workspace>] [<init-args>]  [<plan-args]')
         exit(-1)
 
     module_path = sys.argv[1]
     workspace = sys.argv[2] if len(sys.argv) >= 3 else 'default'
+    init_args = sys.argv[3] if len(sys.argv) >= 4 else ''
+    plan_args = sys.argv[4] if len(sys.argv) >= 5 else ''
 
     owner = os.environ['CIRCLE_PROJECT_USERNAME']
     repo = os.environ['CIRCLE_PROJECT_REPONAME']
     commit = os.environ['CIRCLE_SHA1']
     env = os.environ.get('TF_ENV_LABEL', '')
 
-    print(get(owner, repo, commit, module_path, workspace, env))
+    label = create_label(module_path, workspace, env, init_args, plan_args)
+
+    print(get(owner, repo, commit, label))

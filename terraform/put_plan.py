@@ -45,28 +45,41 @@ def add_plan(owner: str, repo: str, pr: int, label: str, plan: str) -> None:
     response.raise_for_status()
 
 
-def put(owner: str, repo: str, pr: int, module_path: str, workspace: str, env: str) -> None:
-
-    label = f'Terraform plan for {module_path} in the {workspace} workspace'
-    if env:
-        label = f'Terraform plan for __{env}__'
+def put(owner: str, repo: str, pr: int, label: str) -> None:
 
     delete_plan(owner, repo, pr, label)
     add_plan(owner, repo, pr, label, sys.stdin.read().strip())
 
 
+def create_label(module_path, workspace, env, init_args, plan_args):
+    if env:
+        return f'Terraform plan for __{env}__'
+
+    label = f'Terraform plan for {module_path} in the {workspace} workspace'
+
+    if init_args:
+        label += f'\nUsing init args: `{init_args}`'
+    if plan_args:
+        label += f'\nUsing plan args: `{plan_args}`'
+
+    return label
+
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print(f'Usage:\n\t{sys.argv[0]} <module_path> [<workspace>] < plan.txt')
+        print(f'Usage:\n\t{sys.argv[0]} <module_path> [<workspace>] [<init-args>]  [<plan-args] < plan.txt')
         exit(-1)
 
     module_path = sys.argv[1]
     workspace = sys.argv[2] if len(sys.argv) >= 3 else 'default'
+    init_args = sys.argv[3] if len(sys.argv) >= 4 else ''
+    plan_args = sys.argv[4] if len(sys.argv) >= 5 else ''
 
     owner = os.environ['CIRCLE_PROJECT_USERNAME']
     repo = os.environ['CIRCLE_PROJECT_REPONAME']
     pr = os.environ['CIRCLE_PR_NUMBER']
     env = os.environ.get('TF_ENV_LABEL', '')
 
-    put(owner, repo, int(pr), module_path, workspace, env)
+    label = create_label(module_path, workspace, env, init_args, plan_args)
+    put(owner, repo, int(pr), label)
