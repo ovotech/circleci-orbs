@@ -211,10 +211,10 @@ commands:
           name: "terraform workspace new"
           command: |
             include init.sh
-            exec if [[ -z "$(terraform workspace list $module_path | grep $workspace)" ]]; then \
-              terraform workspace new "$workspace" "$module_path"; \
-            else \
-              echo "$workspace already exists"; \
+            if [[ -z "$(terraform workspace list $module_path | grep $workspace)" ]]; then
+              exec terraform workspace new "$workspace" "$module_path"
+            else
+              echo "$workspace already exists"
             fi 
 
   destroy-workspace:
