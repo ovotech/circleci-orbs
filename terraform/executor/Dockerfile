@@ -2,7 +2,7 @@ FROM debian:buster-slim
 
 # This is the default executor image in the terraform orb
 
-ARG TF_VERSION=0.11.11
+ARG TF_VERSION=0.11.13
 ARG GCLOUD_VERSION=222.0.0
 ARG HELM_VERSION=2.11.0
 ARG TF_HELM_VERSIONS="0.6.0 0.5.1 0.5.0 0.4.0 0.3.2 0.3.1 0.3.0 0.2.0 0.1.0"
