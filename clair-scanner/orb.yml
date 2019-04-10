@@ -23,6 +23,10 @@ commands:
         type: "string"
         description: "Path to a CVE whitelist"
         default: ""
+      severity_threshold:
+        type: "string"
+        description: "The threshold above which discovered vulnerabilities will fail the build. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'"
+        default: "High"
     steps:
       - checkout
       - setup_remote_docker:

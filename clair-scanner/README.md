@@ -68,6 +68,7 @@ Parameters:
 - image: Name of the image to scan.
 - image_file: Path to a file containing images to scan.
 - whitelist: Path to a CVE whitelist
+- severity_threshold: The threshold above which discovered vulnerabilities will fail the build. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'. The Default is 'High'.
 
 ## Examples
 
