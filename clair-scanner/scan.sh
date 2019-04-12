@@ -7,6 +7,9 @@ if [ -z "<< parameters.image_file >><< parameters.image >>" ]; then
     exit -1
 fi
 
+REPORT_DIR=/clair-reports
+mkdir $REPORT_DIR
+
 DB=$(docker run -p 5432:5432 -d arminc/clair-db:latest)
 CLAIR=$(docker run -p 6060:6060 --link $DB:postgres -d arminc/clair-local-scan:latest)
 CLAIR_SCANNER=$(docker run -v /var/run/docker.sock:/var/run/docker.sock -d ovotech/clair-scanner:latest tail -f /dev/null)
@@ -21,13 +24,27 @@ if [ -n "<< parameters.whitelist >>" ]; then
     WHITELIST="-w /whitelist.yml"
 fi
 
+EXIT_STATUS=0
+
+function scan() {
+    local image=$1
+
+    docker pull "$image"
+
+    if ! docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" --report "/${image}.json" $WHITELIST "$image"; then
+        EXIT_STATUS=1
+    fi
+
+    docker cp "$CLAIR_SCANNER:/${image}.json" "$REPORT_DIR/${image}.json"
+}
+
 if [ -n "<< parameters.image_file >>" ]; then
     images=$(cat "<< parameters.image_file >>")
     for image in $images; do
-        docker pull "$image"
-        docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" $WHITELIST "$image"
+        scan $image
     done
 else
-    docker pull "<< parameters.image >>"
-    docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" $WHITELIST "<< parameters.image >>"
+    scan "<< parameters.image >>"
 fi
+
+exit $EXIT_STATUS

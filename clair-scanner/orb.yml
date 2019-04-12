@@ -35,3 +35,5 @@ commands:
           name: "vulnerability scan"
           command: |
             include scan.sh
+      - store_artifacts:
+          path: /clair-reports
