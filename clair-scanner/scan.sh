@@ -28,14 +28,15 @@ EXIT_STATUS=0
 
 function scan() {
     local image=$1
+    mkdir -p "$REPORT_DIR/$(dirname $image)"
 
     docker pull "$image"
 
-    if ! docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" --report "/${image}.json" $WHITELIST "$image"; then
+    if ! docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" --report "/report.json" $WHITELIST "$image"; then
         EXIT_STATUS=1
     fi
 
-    docker cp "$CLAIR_SCANNER:/${image}.json" "$REPORT_DIR/${image}.json"
+    docker cp "$CLAIR_SCANNER:/report.json" "$REPORT_DIR/${image}.json"
 }
 
 if [ -n "<< parameters.image_file >>" ]; then
