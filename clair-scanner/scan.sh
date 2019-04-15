@@ -27,7 +27,7 @@ fi
 EXIT_STATUS=0
 
 function scan() {
-    local image=$1
+    local image=$(echo $1 | tr '/' '_')
 
     docker pull "$image"
 
