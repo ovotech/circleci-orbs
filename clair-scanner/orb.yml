@@ -30,7 +30,7 @@ commands:
       fail_on_discovered_vulnerabilities:
         type: "boolean"
         description: "Fail command when vulnerabilities at severity equal to or above the threshold are discovered"
-        default: "true"
+        default: true
     steps:
       - checkout
       - setup_remote_docker:
