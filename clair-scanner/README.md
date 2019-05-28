@@ -68,7 +68,8 @@ Parameters:
 - image: Name of the image to scan.
 - image_file: Path to a file containing images to scan.
 - whitelist: Path to a CVE whitelist
-- severity_threshold: The threshold above which discovered vulnerabilities will fail the build. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'. The Default is 'High'.
+- severity_threshold: The threshold (equal and above) at which discovered vulnerabilities are reported. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'. The Default is 'High'.
+- fail_on_discovered_vulnerabilities: Fail command when vulnerabilities at severity equal to or above the threshold are discovered. Default is true.
 
 ## Examples
 

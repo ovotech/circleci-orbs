@@ -48,4 +48,8 @@ else
     scan "<< parameters.image >>"
 fi
 
-exit $EXIT_STATUS
+if [ "<< fail_on_discovered_vulnerabilities >>" = "false"]
+    exit 0
+else
+    exit $EXIT_STATUS
+fi
