@@ -25,8 +25,12 @@ commands:
         default: ""
       severity_threshold:
         type: "string"
-        description: "The threshold above which discovered vulnerabilities will fail the build. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'"
+        description: "The threshold (equal and above) at which discovered vulnerabilities are reported. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'"
         default: "High"
+      fail_on_discovered_vulnerabilities:
+        type: "boolean"
+        description: "Fail command when vulnerabilities at severity equal to or above the threshold are discovered"
+        default: true
     steps:
       - checkout
       - setup_remote_docker:
