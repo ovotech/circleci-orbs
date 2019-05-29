@@ -48,6 +48,8 @@ else
     scan "<< parameters.image >>"
 fi
 
+mv $REPORT_DIR .
+
 if [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "false" ]; then
     exit 0
 else

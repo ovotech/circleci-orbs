@@ -40,4 +40,4 @@ commands:
           command: |
             include scan.sh
       - store_artifacts:
-          path: /clair-reports
+          path: clair-reports
