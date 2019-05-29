@@ -66,7 +66,7 @@ Parameters:
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
-- auto_approve: Apply the plan, even if it has not been approved through a PR.
+- auto_approve: true, to apply the plan, even if it has not been approved through a PR.
 - parallelism: Limit the number of concurrent operations
 
 ### check
