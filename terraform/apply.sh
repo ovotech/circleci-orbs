@@ -13,6 +13,12 @@ EOF
 
 set +e
 
+if [ "<< parameters.auto_approve >>" = "true" && -n "<< parameters.target >>" ]; then
+    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -target $target"
+    done
+fi
+
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
     | sed '1,/---/d' \
         >plan.txt
@@ -34,12 +40,6 @@ elif [[ $TF_EXIT -eq 2 ]]; then
     if [ "<< parameters.auto_approve >>" = "true" ]; then
         echo "Automatically approving plan"
         exec terraform apply -input=false -no-color -auto-approve plan.out
-    fi
-
-    if [ -n "<< parameters.target >>" ]; then
-        for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
-            PLAN_ARGS="$PLAN_ARGS -target $target"
-        done
     fi
 
     export TF_ENV_LABEL="<< parameters.label >>"
