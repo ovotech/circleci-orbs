@@ -64,6 +64,7 @@ Parameters:
 - label: An optional friendly name for the environment this apply is for. This must be the same as the label of the corresponding plan command.
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
+- target: Comma separated list of targets to apply against, e.g. kubernetes_secret.tls_cert_public,kubernetes_secret.tls_cert_private
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
 - auto_approve: true, to apply the plan, even if it has not been approved through a PR.

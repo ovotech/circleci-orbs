@@ -41,12 +41,6 @@ if [ -n "<< parameters.backend_config >>" ]; then
     done
 fi
 
-if [ -n "<< parameters.target >>" ]; then
-    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
-        PLAN_ARGS="$PLAN_ARGS -target $target"
-    done
-fi
-
 if [ -n "<< parameters.var >>" ]; then
     for var in $(echo "<< parameters.var >>" | tr ',' '\n'); do
         PLAN_ARGS="$PLAN_ARGS -var $var"
