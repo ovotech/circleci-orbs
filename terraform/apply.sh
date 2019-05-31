@@ -13,6 +13,12 @@ EOF
 
 set +e
 
+if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
+    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -target $target"
+    done
+fi
+
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
     | sed '1,/---/d' \
         >plan.txt

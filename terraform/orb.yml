@@ -78,6 +78,10 @@ commands:
         type: "string"
         description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
         default: ""
+      target:
+        type: "string"
+        description: "Comma separated list of targets to apply against, e.g. 'kubernetes_secret.tls_cert_public,kubernetes_secret.tls_cert_private' NOTE: this argument only takes effect if auto_approve is also set."
+        default: ""
       var:
         type: "string"
         description: "Comma separated list of vars to set, e.g. 'foo=bar'"
@@ -215,7 +219,7 @@ commands:
               exec terraform workspace new "$workspace" "$module_path"
             else
               echo "$workspace already exists"
-            fi 
+            fi
 
   destroy-workspace:
     description: "Destroy a terraform workspace"
@@ -346,6 +350,10 @@ jobs:
         type: "string"
         description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
         default: ""
+      target:
+        type: "string"
+        description: "Comma separated list of targets to apply against, e.g. 'kubernetes_secret.tls_cert_public,kubernetes_secret.tls_cert_private' NOTE: this argument only takes effect if auto_approve is also set."
+        default: ""
       var:
         type: "string"
         description: "Comma separated list of vars to set, e.g. 'foo=bar'"
@@ -364,6 +372,7 @@ jobs:
           parallelism: << parameters.parallelism >>
           backend_config_file: << parameters.backend_config_file >>
           backend_config: << parameters.backend_config >>
+          target: << parameters.target >>
           var: << parameters.var >>
           var_file: << parameters.var_file >>
 
