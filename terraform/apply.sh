@@ -13,7 +13,7 @@ EOF
 
 set +e
 
-if [ "<< parameters.auto_approve >>" = "true" && -n "<< parameters.target >>" ]; then
+if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
     for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
         PLAN_ARGS="$PLAN_ARGS -target $target"
     done
