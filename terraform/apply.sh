@@ -36,6 +36,12 @@ elif [[ $TF_EXIT -eq 2 ]]; then
         exec terraform apply -input=false -no-color -auto-approve plan.out
     fi
 
+    if [ -n "<< parameters.target >>" ]; then
+        for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+            PLAN_ARGS="$PLAN_ARGS -target $target"
+        done
+    fi
+
     export TF_ENV_LABEL="<< parameters.label >>"
 
     if ! python3 /tmp/get_plan.py "$module_path" "$workspace" "$INIT_ARGS" "$PLAN_ARGS" >approved-plan.txt; then
