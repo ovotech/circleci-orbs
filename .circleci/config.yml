@@ -15,7 +15,6 @@ jobs:
           path: .
 
 workflows:
-  version: 2
    full:
      jobs:
        - tf_validate_plan
