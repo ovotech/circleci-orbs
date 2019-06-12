@@ -6,10 +6,7 @@ jobs:
   tf_validate_plan:
     executor: terraform/default
     steps:
-      - run:
-          name: stuff
-          command: |
-            touch test.tf
+      - checkout
       - terraform/plan:
           path: .
 
