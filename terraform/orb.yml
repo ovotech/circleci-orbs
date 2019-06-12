@@ -45,6 +45,7 @@ commands:
     steps:
       - run:
           name: "terraform plan << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
           command: |
             include plan.sh
 
@@ -93,6 +94,7 @@ commands:
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
           command: |
             include apply.sh
 
@@ -133,6 +135,7 @@ commands:
     steps:
       - run:
           name: "terraform check << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
           command: |
             include check.sh
 
@@ -173,6 +176,7 @@ commands:
     steps:
       - run:
           name: "terraform destroy << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
           command: |
             include destroy.sh
 
@@ -213,6 +217,7 @@ commands:
     steps:
       - run:
           name: "terraform workspace new"
+          shell: /bin/bash -eo pipefail
           command: |
             include init.sh
             if [[ -z "$(terraform workspace list $module_path | grep $workspace)" ]]; then
@@ -267,6 +272,7 @@ commands:
           var_file: << parameters.var_file >>
       - run:
           name: "terraform workspace delete"
+          shell: /bin/bash -eo pipefail
           command: |
             include init.sh
             exec terraform workspace delete "$workspace" "$module_path"
