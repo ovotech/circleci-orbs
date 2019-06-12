@@ -82,7 +82,9 @@ if __name__ == '__main__':
     env = os.environ.get('TF_ENV_LABEL', '')
 
     if not pr:
-        print(f'This build is not for a Pull Request - not adding a comment')
+        print(
+            f'This build is not for a Pull Request - A comment will NOT be added if a PR is later opened for this branch.'
+        )
         exit()
 
     label = create_label(module_path, workspace, env, init_args, plan_args)
