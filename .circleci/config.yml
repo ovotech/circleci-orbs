@@ -4,8 +4,7 @@ orbs:
 
 jobs:
   tf_validate_plan:
-    docker:
-      - image: eversc/terraform
+    executor: terraform/default
     steps:
       - run:
           name: stuff
