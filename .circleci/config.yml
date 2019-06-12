@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  terraform: ovotech/terraform@1
+  terraform: ovotech/terraform@dev:better-errors
 
 jobs:
   tf_validate_plan:
