@@ -81,5 +81,9 @@ if __name__ == '__main__':
     pr = os.environ['CIRCLE_PR_NUMBER']
     env = os.environ.get('TF_ENV_LABEL', '')
 
+    if not pr:
+        print(f'This build is not for a Pull Request - not adding a comment')
+        exit()
+
     label = create_label(module_path, workspace, env, init_args, plan_args)
     put(owner, repo, int(pr), label)
