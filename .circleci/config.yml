@@ -1,74 +1,21 @@
 version: 2.1
-
-# Reuse a common job for publishing each orb
-
-# Orbs follow the conventions:
-#   Directory named the same as the orb
-#   A single docker image in the executor directory
-#   The orb yaml is in a file name orb.yml
-#   Published in the ovotech namespace
+orbs:
+  terraform: ovotech/terraform@1
 
 jobs:
-  publish_orb:
-    description: Publish an orb
-    parameters:
-      path:
-        type: string
-        description: The path to the orb
+  tf_validate_plan:
     docker:
-    - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
+      - image: eversc/terraform
     steps:
-    - checkout
-    - setup_remote_docker:
-        version: 17.11.0-ce
-    - run:
-        name: docker build << parameters.path >>
-        command: |
-          docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
-
-          NAME="<< parameters.path >>"
-          TAG=$(date "+%d-%m-%Y")
-
-          docker build --tag "ovotech/${NAME}:${TAG}" \
-            --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
-            --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
-            --label org.label-schema.schema-version="1.0" \
-            "${NAME}/executor"
-
-          docker push "ovotech/${NAME}:${TAG}"
-
-          IMAGE=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${NAME}:${TAG}")
-          echo $IMAGE > "/${NAME}_digest.txt"
-
-          docker tag "ovotech/${NAME}:${TAG}" "ovotech/${NAME}:latest"
-          docker push "ovotech/${NAME}:latest"
-
-    - run:
-        name: Publish << parameters.path >> orb
-        command: |
-
-          NAME="<< parameters.path >>"
-          IMAGE=$(<"/${NAME}_digest.txt")
-
-          tools/include.py "${NAME}/orb.yml" > "/tmp/${NAME}_orb.yml"
-          sed -i -e "s|ovotech/${NAME}:latest|$IMAGE|" "/tmp/${NAME}_orb.yml"
-
-          circleci orb publish "/tmp/${NAME}_orb.yml" "ovotech/${NAME}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
-
-          if [ "$CIRCLE_BRANCH" = "master" ]; then
-            circleci orb source "ovotech/${NAME}" > "/tmp/${NAME}_current.yml"
-
-            if ! cmp -s "/tmp/${NAME}_orb.yml" "/tmp/${NAME}_current.yml"; then
-              circleci orb publish increment "/tmp/${NAME}_orb.yml" "ovotech/${NAME}" patch --token "$CIRCLECI_PROD_TOKEN"
-            fi
-          fi
+      - run:
+          name: stuff
+          command: |
+            touch test.tf
+      - terraform/plan:
+          path: .
 
 workflows:
-  commit:
-    jobs:
-    - publish_orb:
-        name: clair-scanner
-        path: clair-scanner
-    - publish_orb:
-        name: terraform
-        path: terraform
+  version: 2
+   full:
+     jobs:
+       - tf_validate_plan
