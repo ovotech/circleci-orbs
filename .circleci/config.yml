@@ -9,6 +9,18 @@ version: 2.1
 #   Published in the ovotech namespace
 
 jobs:
+  validate_orbs:
+    description: Validate orbs
+  docker:
+    - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
+  steps:
+    - checkout
+    - run:
+        name: Validate orbs
+        command: |
+          set -e
+          for file in **/orb.yml; do circleci orb validate $file; done
+
   publish_orb:
     description: Publish an orb
     parameters:
@@ -16,59 +28,65 @@ jobs:
         type: string
         description: The path to the orb
     docker:
-    - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
+      - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
     steps:
-    - checkout
-    - setup_remote_docker:
-        version: 17.11.0-ce
-    - run:
-        name: docker build << parameters.path >>
-        command: |
-          docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+      - checkout
+      - setup_remote_docker:
+          version: 17.11.0-ce
+      - run:
+          name: docker build << parameters.path >>
+          command: |
+            docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
 
-          NAME="<< parameters.path >>"
-          TAG=$(date "+%d-%m-%Y")
+            NAME="<< parameters.path >>"
+            TAG=$(date "+%d-%m-%Y")
 
-          docker build --tag "ovotech/${NAME}:${TAG}" \
-            --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
-            --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
-            --label org.label-schema.schema-version="1.0" \
-            "${NAME}/executor"
+            docker build --tag "ovotech/${NAME}:${TAG}" \
+              --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
+              --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
+              --label org.label-schema.schema-version="1.0" \
+              "${NAME}/executor"
 
-          docker push "ovotech/${NAME}:${TAG}"
+            docker push "ovotech/${NAME}:${TAG}"
 
-          IMAGE=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${NAME}:${TAG}")
-          echo $IMAGE > "/${NAME}_digest.txt"
+            IMAGE=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${NAME}:${TAG}")
+            echo $IMAGE > "/${NAME}_digest.txt"
 
-          docker tag "ovotech/${NAME}:${TAG}" "ovotech/${NAME}:latest"
-          docker push "ovotech/${NAME}:latest"
+            docker tag "ovotech/${NAME}:${TAG}" "ovotech/${NAME}:latest"
+            docker push "ovotech/${NAME}:latest"
 
-    - run:
-        name: Publish << parameters.path >> orb
-        command: |
+      - run:
+          name: Publish << parameters.path >> orb
+          command: |
+            NAME="<< parameters.path >>"
+            IMAGE=$(<"/${NAME}_digest.txt")
 
-          NAME="<< parameters.path >>"
-          IMAGE=$(<"/${NAME}_digest.txt")
+            tools/include.py "${NAME}/orb.yml" > "/tmp/${NAME}_orb.yml"
+            sed -i -e "s|ovotech/${NAME}:latest|$IMAGE|" "/tmp/${NAME}_orb.yml"
 
-          tools/include.py "${NAME}/orb.yml" > "/tmp/${NAME}_orb.yml"
-          sed -i -e "s|ovotech/${NAME}:latest|$IMAGE|" "/tmp/${NAME}_orb.yml"
+            circleci orb publish "/tmp/${NAME}_orb.yml" "ovotech/${NAME}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
 
-          circleci orb publish "/tmp/${NAME}_orb.yml" "ovotech/${NAME}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              circleci orb source "ovotech/${NAME}" > "/tmp/${NAME}_current.yml"
 
-          if [ "$CIRCLE_BRANCH" = "master" ]; then
-            circleci orb source "ovotech/${NAME}" > "/tmp/${NAME}_current.yml"
-
-            if ! cmp -s "/tmp/${NAME}_orb.yml" "/tmp/${NAME}_current.yml"; then
-              circleci orb publish increment "/tmp/${NAME}_orb.yml" "ovotech/${NAME}" patch --token "$CIRCLECI_PROD_TOKEN"
+              if ! cmp -s "/tmp/${NAME}_orb.yml" "/tmp/${NAME}_current.yml"; then
+                circleci orb publish increment "/tmp/${NAME}_orb.yml" "ovotech/${NAME}" patch --token "$CIRCLECI_PROD_TOKEN"
+              fi
             fi
-          fi
 
 workflows:
+  validate:
+    jobs:
+      - validate_orbs:
+          filters: { branches: { ignore: master } }
   commit:
     jobs:
-    - publish_orb:
-        name: clair-scanner
-        path: clair-scanner
-    - publish_orb:
-        name: terraform
-        path: terraform
+      - publish_orb:
+          name: aws-rotate-keys
+          path: aws-rotate-keys
+      - publish_orb:
+          name: clair-scanner
+          path: clair-scanner
+      - publish_orb:
+          name: terraform
+          path: terraform
