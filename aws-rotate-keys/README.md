@@ -1,20 +1,16 @@
 # AWS CircleCI key rotate orb
 
-This orb can be used to rotate AWS access keys and update corresponding CircleCI environment variables.
-A common use case would be to set up a scheduled CircleCI job which rotates access keys for the used account.
+This orb can be used to rotate AWS access keys and update corresponding CircleCI environment variables. A common use case would be to set up a scheduled CircleCI job which rotates access keys for the used user.
 
 ## Executors
-This orb defines a small 'default' executor for running the aws commands.
-Any container that has aws cli and curl can run the this orb.
+This orb defines a small 'default' executor for running the aws commands. Any container that has `aws` cli, `curl` and `jq` can be used to run this orb.
 
 ## Commands
 ### rotate
-This is the only command available in this orb. It rotates the AWS access keys for the account specified as the `aws-username` parameter. In addition of rotating the keys, this command also updates the corresponding environment variables. In order to run this command, you need to make sure that the aws cli client is already authenticated.
+This is the only command available in this orb. It rotates the AWS access keys for the user specified as the `aws-username` parameter. In addition of rotating the keys, this command also updates the corresponding environment variables. In order to run this command, you need to make sure that the aws cli client is already authenticated.
 
 **Parameters**
 - `aws-username` - user name of the AWS account you want to rotate keys for
-- `github-org` - name of the Github organisation the repository belongs to
-- `github-repo` - name of the Github repository
 - `circleci-token` - CircleCI API token used to update environment variables
 - `aws-access-key-id-var` - name of the CircleCI environment variable which holds a value of the aws access key id, e.g. `AWS_ACCESS_KEY_ID`
 - `aws-secret-access-key-var` - name of the CircleCI environment variable which holds a value of the aws secret access key, e.g. `AWS_SECRET_ACCESS_KEY`. 
@@ -34,11 +30,10 @@ orbs:
 
 jobs:
   rotate-aws-keys:
+    executor: rotate-aws-keys/default
     steps:
       - rotate-aws-keys/rotate:
           aws-username: circleci-user
-          github-org: github-org
-          github-repo: github-repo-name
           circleci-token: $CIRCLECI_TOKEN
           aws-access-key-id-var: AWS_ACCESS_KEY_ID
           aws-secret-access-key-var: AWS_SECRET_ACCESS_KEY
@@ -64,6 +59,7 @@ orbs:
 
 jobs:
   rotate-aws-keys:
+    executor: rotate-aws-keys/default
     steps:
       - run:
           command: |
@@ -72,8 +68,6 @@ jobs:
             export AWS_DEFAULT_REGION=$PROD_AWS_DEFAULT_REGION
       - rotate-aws-keys/rotate:
           aws-username: circleci-user
-          github-org: github-org
-          github-repo: github-repo-name
           circleci-token: $CIRCLECI_TOKEN
           aws-access-key-id-var: PROD_AWS_ACCESS_KEY_ID
           aws-secret-access-key-var: PROD_AWS_SECRET_ACCESS_KEY
