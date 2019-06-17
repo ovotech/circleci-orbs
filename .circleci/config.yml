@@ -67,9 +67,11 @@ jobs:
             circleci orb publish "/tmp/${NAME}_orb.yml" "ovotech/${NAME}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              circleci orb source "ovotech/${NAME}" > "/tmp/${NAME}_current.yml"
-
-              if ! cmp -s "/tmp/${NAME}_orb.yml" "/tmp/${NAME}_current.yml"; then
+              if ! circleci orb source "ovotech/${NAME}" > "/tmp/${NAME}_current.yml"; then
+                # This is the first version
+                circleci orb publish promote "ovotech/${NAME}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
+              elif ! cmp -s "/tmp/${NAME}_orb.yml" "/tmp/${NAME}_current.yml"; then
+                # This is a new version
                 circleci orb publish increment "/tmp/${NAME}_orb.yml" "ovotech/${NAME}" patch --token "$CIRCLECI_PROD_TOKEN"
               fi
             fi
