@@ -1,0 +1,46 @@
+version: 2.1
+description: An orb to rotate AWS keys
+
+executors:
+  default:
+    description: Default executor
+    docker:
+      - image: ovotech/aws-rotate-keys:latest
+
+commands:
+  rotate:
+    description: Rotate aws keys
+    parameters:
+      aws-username:
+        type: string
+        description: The name of the user whose keys we are updating
+      circleci-token:
+        type: string
+        description: The circleci API token
+      aws-access-key-id-var:
+        type: string
+        description: |
+          Set this to the name of the CircleCI environment variable
+          you will use to hold this value, i.e. AWS_ACCESS_KEY_ID.
+        default: AWS_ACCESS_KEY_ID
+      aws-secret-access-key-var:
+        type: string
+        description: |
+          Set this to the name of the CircleCI environment variable
+          you will use to hold this value, i.e. AWS_SECRET_ACCESS_KEY.
+        default: AWS_SECRET_ACCESS_KEY
+    steps:
+      - run:
+          name: Rotate AWS keys
+          command: |
+            old_access_key_id=`aws iam list-access-keys --user-name << parameters.aws-username >> --query 'AccessKeyMetadata[0].AccessKeyId' --output text` &&
+            create_access_key_output=`aws iam create-access-key --user-name << parameters.aws-username >>` &&
+            new_access_key_id=`echo $create_access_key_output | jq -r -e '.AccessKey.AccessKeyId'` &&
+            new_secret_access_key=`echo $create_access_key_output | jq -r -e '.AccessKey.SecretAccessKey'` &&
+            curl --fail https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/envvar?circle-token=<< parameters.circleci-token >> \
+              -X POST --header "Content-Type: application/json" \
+              -d "{ \"name\":\"<< parameters.aws-access-key-id-var >>\", \"value\":\"${new_access_key_id}\" }" &&
+            curl --fail https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/envvar?circle-token=<< parameters.circleci-token >> \
+              -X POST --header "Content-Type: application/json" \
+              -d "{ \"name\":\"<< parameters.aws-secret-access-key-var >>\", \"value\":\"${new_secret_access_key}\" }" &&
+            aws iam delete-access-key --user-name << parameters.aws-username >> --access-key-id ${old_access_key_id}
