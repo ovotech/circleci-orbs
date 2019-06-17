@@ -75,18 +75,21 @@ jobs:
             fi
 
 workflows:
-  validate:
-    jobs:
-      - validate_orbs:
-          filters: { branches: { ignore: master } }
   commit:
     jobs:
+      - validate_orbs
       - publish_orb:
           name: aws-rotate-keys
           path: aws-rotate-keys
+          requires:
+            - validate_orbs
       - publish_orb:
           name: clair-scanner
           path: clair-scanner
+          requires:
+            - validate_orbs
       - publish_orb:
           name: terraform
           path: terraform
+          requires:
+            - validate_orbs
