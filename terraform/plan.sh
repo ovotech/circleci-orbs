@@ -9,7 +9,10 @@ EOF
 
 set +e
 
+exec 3>&1
+
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
+    | tee /dev/fd/3 \
     | sed '1,/---/d' \
         >plan.txt
 
@@ -26,8 +29,6 @@ elif [[ $TF_EXIT -eq 0 ]]; then
     echo "No changes to apply"
 
 elif [[ $TF_EXIT -eq 2 ]]; then
-
-    cat plan.txt
 
     if [ -n "$GITHUB_TOKEN" ]; then
         export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
