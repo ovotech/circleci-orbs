@@ -11,15 +11,15 @@ version: 2.1
 jobs:
   validate_orbs:
     description: Validate orbs
-  docker:
-    - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
-  steps:
-    - checkout
-    - run:
-        name: Validate orbs
-        command: |
-          set -e
-          for file in **/orb.yml; do circleci orb validate $file; done
+    docker:
+      - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
+    steps:
+      - checkout
+      - run:
+          name: Validate orbs
+          command: |
+            set -e
+            for file in **/orb.yml; do circleci orb validate $file; done
 
   publish_orb:
     description: Publish an orb
