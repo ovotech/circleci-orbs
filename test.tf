@@ -1,7 +1,3 @@
-resource "aws_s3_bucket" "test" {
-  bucket = "test"
-}
-
-provider "aws" {
-  region = "eu-west-1"
+resource "random_id" "test" {
+  byte_length = 32
 }
