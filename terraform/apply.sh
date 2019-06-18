@@ -20,6 +20,7 @@ if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" 
 fi
 
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
+    | $TFMASK \
     | sed '1,/---/d' \
         >plan.txt
 
@@ -39,7 +40,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if [ "<< parameters.auto_approve >>" = "true" ]; then
         echo "Automatically approving plan"
-        exec terraform apply -input=false -no-color -auto-approve plan.out
+        exec terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
     fi
 
     export TF_ENV_LABEL="<< parameters.label >>"
@@ -51,7 +52,7 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
         echo "Applying approved plan"
-        exec terraform apply -input=false -no-color -auto-approve plan.out
+        exec terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
     else
         echo "Plan has changed - approval needed"
         cat plan.txt

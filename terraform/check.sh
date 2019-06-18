@@ -6,6 +6,7 @@ terraform workspace select "$workspace" "$module_path"
 set +e
 
 terraform plan -input=false -no-color -detailed-exitcode $PLAN_ARGS "$module_path" \
+    | $TFMASK \
     | sed '1,/---/d' \
         >plan.txt
 

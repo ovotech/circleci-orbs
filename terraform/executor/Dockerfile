@@ -1,3 +1,8 @@
+FROM golang:1.12.6 AS tfmask
+
+RUN git clone https://github.com/cloudposse/tfmask.git
+RUN cd tfmask && make && make go/build
+
 FROM debian:buster-slim
 
 # This is the default executor image in the terraform orb
@@ -66,5 +71,8 @@ RUN pip3 install awscli
 
 RUN mkdir -p /usr/local/share/terraform/plugin-cache
 ENV TF_PLUGIN_CACHE_DIR=/usr/local/share/terraform/plugin-cache
+
+COPY --from=tfmask /go/tfmask/release/tfmask /usr/local/bin/tfmask
+ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"
 
 ENTRYPOINT ["/usr/local/bin/terraform"]
