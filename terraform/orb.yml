@@ -221,7 +221,7 @@ commands:
           command: |
             include init.sh
             if [[ -z "$(terraform workspace list $module_path | grep $workspace)" ]]; then
-              exec terraform workspace new "$workspace" "$module_path"
+              terraform workspace new "$workspace" "$module_path"
             else
               echo "$workspace already exists"
             fi
@@ -275,7 +275,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include init.sh
-            exec terraform workspace delete "$workspace" "$module_path"
+            terraform workspace delete "$workspace" "$module_path"
 
 jobs:
   plan:

@@ -40,23 +40,25 @@ elif [[ $TF_EXIT -eq 2 ]]; then
 
     if [ "<< parameters.auto_approve >>" = "true" ]; then
         echo "Automatically approving plan"
-        exec terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
-    fi
+        terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
 
-    export TF_ENV_LABEL="<< parameters.label >>"
-
-    if ! python3 /tmp/get_plan.py "$module_path" "$workspace" "$INIT_ARGS" "$PLAN_ARGS" >approved-plan.txt; then
-        echo "Approved plan not found"
-        exit 1
-    fi
-
-    if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
-        echo "Applying approved plan"
-        exec terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
     else
-        echo "Plan has changed - approval needed"
-        cat plan.txt
-        exit 1
+        export TF_ENV_LABEL="<< parameters.label >>"
+
+        if ! python3 /tmp/get_plan.py "$module_path" "$workspace" "$INIT_ARGS" "$PLAN_ARGS" >approved-plan.txt; then
+            echo "Approved plan not found"
+            exit 1
+        fi
+
+        if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
+            echo "Applying approved plan"
+            terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
+        else
+            echo "Plan has changed - approval needed"
+            cat plan.txt
+            exit 1
+        fi
+
     fi
 
 fi
