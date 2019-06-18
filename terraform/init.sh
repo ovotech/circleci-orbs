@@ -2,6 +2,11 @@
 
 set -e
 
+TFMASK=tfmask
+if ! hash $TFMASK 2>/dev/null; then
+    TFMASK=cat
+fi
+
 GCLOUD_SERVICE_KEY="${GCLOUD_SERVICE_KEY:-$GOOGLE_SERVICE_ACCOUNT}"
 
 if [ -n "$GCLOUD_SERVICE_KEY" ]; then

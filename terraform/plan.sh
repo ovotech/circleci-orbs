@@ -12,6 +12,7 @@ set +e
 exec 3>&1
 
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
+    | $TFMASK \
     | tee /dev/fd/3 \
     | sed '1,/---/d' \
         >plan.txt
