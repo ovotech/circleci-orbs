@@ -38,41 +38,68 @@ jobs:
           command: |
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
 
-            NAME="<< parameters.path >>"
-            TAG=$(date "+%d-%m-%Y")
+            readonly ORB="<< parameters.path >>"
 
-            docker build --tag "ovotech/${NAME}:${TAG}" \
+            for path in $ORB/executor/Dockerfile*; do
+
+              filename=$(basename $path)
+
+              if [[ "$filename" == "Dockerfile" ]]; then
+                  TAG="latest"
+                  BUILD_TAG="$(date "+%d-%m-%Y")"
+              else
+                  TAG="${filename#"Dockerfile-"}"
+                  BUILD_TAG="${TAG}_$(date "+%d-%m-%Y")"
+              fi
+
+              docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
               --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
               --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
               --label org.label-schema.schema-version="1.0" \
-              "${NAME}/executor"
+              --file $path \
+              "${ORB}/executor"
 
-            docker push "ovotech/${NAME}:${TAG}"
+              docker push "ovotech/${ORB}:${BUILD_TAG}"
 
-            IMAGE=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${NAME}:${TAG}")
-            echo $IMAGE > "/${NAME}_digest.txt"
+              DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${ORB}:${BUILD_TAG}")
+              echo $DIGEST > "${ORB}_${TAG}_digest.txt"
 
-            docker tag "ovotech/${NAME}:${TAG}" "ovotech/${NAME}:latest"
-            docker push "ovotech/${NAME}:latest"
+              if [ "$CIRCLE_BRANCH" = "master" ]; then
+                  docker tag "ovotech/${ORB}:${BUILD_TAG}" "ovotech/${ORB}:${TAG}"
+                  docker push "ovotech/${ORB}:${TAG}"
+              fi
+            done
 
       - run:
           name: Publish << parameters.path >> orb
           command: |
-            NAME="<< parameters.path >>"
-            IMAGE=$(<"/${NAME}_digest.txt")
+            readonly ORB="<< parameters.path >>"
 
-            tools/include.py "${NAME}/orb.yml" > "/tmp/${NAME}_orb.yml"
-            sed -i -e "s|ovotech/${NAME}:latest|$IMAGE|" "/tmp/${NAME}_orb.yml"
+            tools/include.py "${ORB}/orb.yml" > "/tmp/${ORB}_orb.yml"
 
-            circleci orb publish "/tmp/${NAME}_orb.yml" "ovotech/${NAME}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
+            for path in $ORB/executor/Dockerfile*; do
+
+              filename=$(basename $path)
+
+              if [[ "$filename" == "Dockerfile" ]]; then
+                  TAG="latest"
+              else
+                  TAG="${filename#"Dockerfile-"}"
+              fi
+
+              DIGEST=$(<"${ORB}_${TAG}_digest.txt")
+              sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
+            done
+
+            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              if ! circleci orb source "ovotech/${NAME}" > "/tmp/${NAME}_current.yml"; then
+              if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
-                circleci orb publish promote "ovotech/${NAME}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
-              elif ! cmp -s "/tmp/${NAME}_orb.yml" "/tmp/${NAME}_current.yml"; then
+                circleci orb publish promote "ovotech/${ORB}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
+              elif ! cmp -s "/tmp/${ORB}_orb.yml" "/tmp/${ORB}_current.yml"; then
                 # This is a new version
-                circleci orb publish increment "/tmp/${NAME}_orb.yml" "ovotech/${NAME}" patch --token "$CIRCLECI_PROD_TOKEN"
+                circleci orb publish increment "/tmp/${ORB}_orb.yml" "ovotech/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
               fi
             fi
 

@@ -5,18 +5,31 @@ It is published as ovotech/terraform@1
 
 ## Executors
 
-The orb provides an executor for running terraform commands.
-This defines a docker image to use for jobs.
+The orb provides executors for running terraform commands.
+An executor defines the docker image to use for jobs.
 
 ### default
 
-The executor is named 'default'
+The executor named `default` is the same as `terraform-0_11`
+
+### terraform-0_11
+
+This executor uses terraform 0.11
 
 It also contains:
 - ovo's terraform-provider-aiven
 - helm + terraform-provider-helm
 - terraform-provider-acme
 - google-cloud-sdk
+- aws-cli
+
+### terraform-0_12
+
+This executor uses terraform 0.12
+
+It also contains:
+- google-cloud-sdk
+- helm
 - aws-cli
 
 ## Commands
@@ -128,7 +141,8 @@ Parameters:
 ## Jobs
 
 This orb contains plan, apply, check, destroy, destroy-workspace and
-new-workspace jobs which run their respective command in the default executor.
+new-workspace jobs which run their respective command in the default 
+executor (which uses terraform 0.11).
 
 The jobs have the same parameters as the commands.
 
@@ -165,7 +179,8 @@ workflows:
 ### A real-world example
 
 This configuration defines it's own plan and apply jobs which use the
-orb's plan and apply commands on multiple terraform modules.
+orb's plan and apply commands on multiple terraform modules. It uses 
+terraform 0.12 via `terraform-0_12` executor.
 It also configures a helm repo within the the container for use with the
 terraform helm provider.
 
@@ -178,7 +193,7 @@ orbs:
 
 jobs:
   terraform_plan:
-    executor: terraform/default
+    executor: terraform/terraform-0_12
     steps:
     - checkout
     - run:
@@ -212,7 +227,7 @@ jobs:
         path: terraform/deployments/sqs-test
 
   terraform_apply:
-    executor: terraform/default
+    executor: terraform/terraform-0_12
     steps:
     - checkout
     - run:
