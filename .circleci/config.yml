@@ -95,3 +95,8 @@ workflows:
           path: terraform
           requires:
             - validate_orbs
+      - publish_orb:
+          name: rac-gcp-deploy
+          path: rac-gcp-deploy
+          requires:
+            - validate_orbs
