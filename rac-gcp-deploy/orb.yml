@@ -152,7 +152,7 @@ jobs:
   compile:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to default executor"
+        description: "Name of executor to use for this job. Defaults to docker executor"
         type: executor
         default: docker
       workspace-dir:
@@ -197,7 +197,7 @@ jobs:
   unit_test:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to default executor"
+        description: "Name of executor to use for this job. Defaults to docker executor"
         type: executor
         default: docker
       workspace-dir:
@@ -234,7 +234,7 @@ jobs:
   notify_shipit:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to default executor"
+        description: "Name of executor to use for this job. Defaults to docker executor"
         type: executor
         default: docker
       workspace-dir:
@@ -270,7 +270,7 @@ jobs:
   release:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to default executor"
+        description: "Name of executor to use for this job. Defaults to docker executor"
         type: executor
         default: docker
       workspace-dir:
@@ -376,7 +376,7 @@ jobs:
   uat-deploy:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to default executor"
+        description: "Name of executor to use for this job. Defaults to docker executor"
         type: executor
         default: docker
       workspace-dir:
@@ -425,7 +425,7 @@ jobs:
   prd-deploy:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to default executor"
+        description: "Name of executor to use for this job. Defaults to docker executor"
         type: executor
         default: docker
       workspace-dir:
