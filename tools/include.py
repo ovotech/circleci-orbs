@@ -33,7 +33,7 @@ def escape(line) -> str:
 
         """
 
-        it = iter(re.split(r'((?:<<)\s+parameters\.\S+\s+(?:>>))', line))
+        it = iter(re.split(r'((?:<<)\s*parameters\.\S+\s*(?:>>))', line))
         for s in it:
             try:
                 yield s, next(it)
