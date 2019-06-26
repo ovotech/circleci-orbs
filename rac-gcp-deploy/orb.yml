@@ -1,4 +1,5 @@
 version: 2.1
+description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
 .initialize_gcloud_uat: &initialize_gcloud_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
