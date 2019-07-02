@@ -3,9 +3,17 @@ description: "Terraform orb"
 
 executors:
   default:
-    description: "Terraform executor"
+    description: "Terraform 0.11 executor"
     docker:
-      - image: ovotech/terraform:latest
+      - image: ovotech/terraform:0.11
+  terraform-0_11:
+    description: "Terraform 0.11 executor"
+    docker:
+      - image: ovotech/terraform:0.11
+  terraform-0_12:
+    description: "Terraform 0.12 executor"
+    docker:
+      - image: ovotech/terraform:0.12
 
 commands:
   plan:
