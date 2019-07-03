@@ -17,17 +17,21 @@ The executor named `default` is the same as `terraform-0_11`
 This executor uses terraform 0.11
 
 It also contains:
-- ovo's terraform-provider-aiven
+- ovo's terraform-provider-aiven as version 0.0.1
 - helm + terraform-provider-helm
 - terraform-provider-acme
 - google-cloud-sdk
 - aws-cli
+
+If the AIVEN_PROVIDER environment variable is set, also has:
+- Aiven's terraform-provider-aiven from versions 1.0.0+
 
 ### terraform-0_12
 
 This executor uses terraform 0.12
 
 It also contains:
+- Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - helm
 - aws-cli
@@ -272,6 +276,43 @@ workflows:
             branches:
               only: master
 
+```
+
+### Using the aiven provider
+
+When using the default or terraform-0_11 executors, OVO's 
+`terraform-provider-aiven` is available at version `0.0.1`.
+To use Aiven's `terraform-provider-aiven` set the AIVEN_PROVIDER 
+environment variable and set a version equal or greater than `1.0.0` in 
+the provider configuration.
+
+When using the terraform-0_12 executor Aiven's `terraform-provider-aiven` is
+always available. (And OVO's is not).
+
+```yaml
+
+version: 2.1
+
+orbs:
+  terraform: ovotech/terraform@1
+  
+jobs:
+  terraform_plan:
+    executor: terraform/default
+    environment:
+      AIVEN_PROVIDER: true
+    steps:
+      - checkout
+      - terraform/plan:
+          path: tf
+
+workflows:
+  test:
+    jobs:
+      - terraform_plan:
+          filters:
+            branches:
+              ignore: master
 ```
 
 ### Checking for changes

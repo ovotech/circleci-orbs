@@ -58,5 +58,10 @@ if [ -n "<< parameters.var_file >>" ]; then
     done
 fi
 
+echo "AIVEN_PROVIDER: $AIVEN_PROVIDER"
+if [ -n "$AIVEN_PROVIDER" ]; then
+    ln -fs /root/aiven/* /root/.terraform.d/plugins/
+fi
+
 rm -rf .terraform
 terraform init -input=false -no-color $INIT_ARGS "$module_path"

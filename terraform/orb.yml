@@ -285,6 +285,48 @@ commands:
             include init.sh
             terraform workspace delete "$workspace" "$module_path"
 
+  version:
+    description: "Prints terraform and provider versions"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace to create"
+        default: "default"
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+      parallelism:
+        type: "string"
+        description: "Limit the number of concurrent operations"
+        default: ""
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    steps:
+      - run:
+          name: "terraform version"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include init.sh
+            terraform version
+
 jobs:
   plan:
     executor: default
