@@ -17,17 +17,21 @@ The executor named `default` is the same as `terraform-0_11`
 This executor uses terraform 0.11
 
 It also contains:
-- ovo's terraform-provider-aiven
+- ovo's terraform-provider-aiven as version 0.0.1
 - helm + terraform-provider-helm
 - terraform-provider-acme
 - google-cloud-sdk
 - aws-cli
+
+If the AIVEN_PROVIDER environment variable is set, also has:
+- Aiven's terraform-provider-aiven from versions 1.0.0+
 
 ### terraform-0_12
 
 This executor uses terraform 0.12
 
 It also contains:
+- Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - helm
 - aws-cli

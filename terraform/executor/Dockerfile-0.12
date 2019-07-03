@@ -10,6 +10,7 @@ FROM debian:buster-slim
 ARG TF_VERSION=0.12.2
 ARG GCLOUD_VERSION=247.0.0
 ARG HELM_VERSION=2.14.1
+ARG TF_AIVEN_VERSIONS="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 1.0.7 1.0.8 1.0.9 1.0.10"
 
 ENV TF_IN_AUTOMATION=yep
 
@@ -31,6 +32,12 @@ RUN curl -sL https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${
  && unzip terraform.zip \
  && mv terraform /usr/local/bin \
  && rm -rf terraform*
+
+RUN mkdir -p /root/.terraform.d/plugins \
+ && for TF_AIVEN_VERSION in $TF_AIVEN_VERSIONS; do \
+      curl -L "https://github.com/aiven/terraform-provider-aiven/releases/download/v${TF_AIVEN_VERSION}/terraform-provider-aiven-linux_amd64" \
+        -o /root/.terraform.d/plugins/terraform-provider-aiven_v${TF_AIVEN_VERSION}; \
+    done
 
 RUN curl -sL "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | tar -xzvf- \
  && mv linux-amd64/helm /usr/local/bin/helm \
