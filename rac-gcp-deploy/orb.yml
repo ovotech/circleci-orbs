@@ -1,0 +1,471 @@
+version: 2.1
+description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
+
+.initialize_gcloud_uat: &initialize_gcloud_uat
+  gcloud-service-key: <<parameters.uat-gcloud-service-key>>
+  project-id: <<parameters.uat-project-id>>
+  google-compute-zone: <<parameters.google-compute-zone>>
+  cluster-name: <<parameters.cluster-name>>
+
+
+.initialize_gcloud_prd: &initialize_gcloud_prd
+  gcloud-service-key: <<parameters.prd-gcloud-service-key>>
+  project-id: <<parameters.prd-project-id>>
+  google-compute-zone: <<parameters.google-compute-zone>>
+  cluster-name: <<parameters.cluster-name>>
+
+executors:
+    machine:
+      machine: true
+    docker:
+      docker:
+        - image: ovotech/rac-gcp-deploy:latest
+
+commands:
+  persist_workspace:
+    description: "Persist the workspace"
+    parameters:
+      to:
+        description: "Path to persist the workspace to"
+        type: string
+    steps:
+      - persist_to_workspace:
+          root: <<parameters.to>>
+          paths:
+            - "*"
+
+  restore_workspace:
+    description: "Restore the saved workspace"
+    parameters:
+      to:
+        description: "Path to restore the workspace to"
+        type: string
+    steps:
+      - attach_workspace:
+          at: <<parameters.to>>
+
+  load_cache:
+    description: "Restore cached dependencies"
+    steps:
+      - restore_cache:
+          keys:
+          - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+
+  bintray_credentials:
+    description: "Create Bintray credentials file"
+    parameters:
+      username:
+        description: "Name of the environment variable storing the bintray username"
+        type: env_var_name
+      api-key:
+        description: "Name of the environment variable storing the bintray api key"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Create Bintray credentials file"
+          command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
+
+  initialize_gcloud:
+    description: "Initialize the `gcloud` CLI"
+    parameters:
+      gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the Google project"
+        type: env_var_name
+      project-id:
+        description: "Name of environment variable storing the Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+      google-compute-zone:
+        description: "The Google compute zone to connect with via the gcloud CLI"
+        type: string
+      cluster-name:
+        description: "Name of environment variable storing the Kubernetes cluster name"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Initilize the gcloud CLI"
+          command: |
+            echo $<<parameters.gcloud-service-key>> | base64 --decode -i > account-auth.json
+            gcloud auth activate-service-account --key-file account-auth.json
+            gcloud config set project $<<parameters.project-id>>
+            gcloud config set compute/zone <<parameters.google-compute-zone>>
+
+            gcloud --quiet config set container/cluster $<<parameters.cluster-name>>
+            gcloud --quiet container clusters get-credentials $<<parameters.cluster-name>>
+            sudo chown -R circleci /home/circleci/.kube
+
+  shipit_notification:
+    description: "Send a notification to ShipIt"
+    parameters:
+      api-key:
+        description: "Name of the environment variable storing the api key to access ShipIt"
+        type: env_var_name
+      team-name:
+        description: "Name of the environment variable storing the team name"
+        type: env_var_name
+      git-username:
+        description: "Name of the environment variable storing the git username"
+        type: env_var_name
+      shipit-url:
+        description: "Name of the environment variable storing the url for shipit"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Send a notification to ShipIt"
+          command: |
+            COMMIT_MESSAGE=$(git log --author=$<<parameters.git-username>> --invert-grep -1)
+            curl https://${<<parameters.shipit-url>>}/deployments?apikey=${<<parameters.api-key>>} \
+              -d "team=${<<parameters.team-name>>}" \
+              -d "service=${CIRCLE_PROJECT_REPONAME}" \
+              -d "buildId=${CIRCLE_BUILD_NUM}" \
+              -d "links[0].title=CircleCI build" \
+              -d "links[0].url=${CIRCLE_BUILD_URL}" \
+              -d "links[1].title=Github" \
+              -d "links[1].url=https://github.com/ovotech/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}" \
+              -d "note=${COMMIT_MESSAGE}"
+
+  install_gcp_tooling:
+    description: "Install google cloud sdk, kubectl and helm"
+    parameters:
+      google-cloud-sdk-version:
+        description: "The version of google cloud sdk to install"
+        type: string
+    steps:
+      - run:
+          name: "Install gcloud cli"
+          command: |
+            # Add the Cloud SDK distribution URI as a package source
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+
+            # Import the Google Cloud Platform public key
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+
+            # Update the package list and install the Cloud SDK
+            sudo apt-get update && sudo apt-get install google-cloud-sdk=<<parameters.google-cloud-sdk-version>>
+      - run:
+          name: "Install kubectl"
+          command: sudo apt-get install kubectl -y
+      - run:
+          name: "Install Helm"
+          command: curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
+
+jobs:
+  compile:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to persist the workspace"
+        type: string
+        default: ~/project
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      bintray-username:
+        description: "Name of the environment variable storing the bintray username"
+        default: BINTRAY_USERNAME
+        type: env_var_name
+      bintray-api-key:
+        description: "Name of the environment variable storing the bintray api key"
+        default: BINTRAY_API_KEY
+        type: env_var_name
+    executor: <<parameters.executor>>
+    steps:
+      - add_ssh_keys:
+            fingerprints:
+              - <<parameters.ssh-key-fingerprint>>
+      - checkout
+      - load_cache
+      - bintray_credentials:
+          username: <<parameters.bintray-username>>
+          api-key: <<parameters.bintray-api-key>>
+      - run:
+          name: "Compile"
+          command: sbt update compile test:compile
+      - save_cache:
+          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+          paths:
+          - ~/.m2
+          - ~/.ivy2
+          - ~/.sbt
+          - target/resolution-cache
+          - project/target/resolution-cache
+      - persist_workspace:
+          to: <<parameters.workspace-dir>>
+
+  unit_test:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache
+      - run: sbt test:test
+
+  service-tests-with-docker:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to machine executor"
+        type: executor
+        default: machine
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+    executor: <<parameters.executor>>
+    steps:
+      - attach_workspace:
+          at: <<parameters.workspace-dir>>
+      - load_cache
+      - run:
+          name: Service Tests
+          command: sbt service-test:test
+          no_output_timeout: 20m
+
+  notify_shipit:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+      shipit-api-key:
+        description: "Name of the environment variable storing the api key to access ShipIt"
+        type: env_var_name
+        default: SHIPIT_API_KEY
+      team-name:
+        description: "Name of the environment variable storing the team name"
+        type: env_var_name
+        default: TEAM_NAME
+      git-username:
+        description: "Name of the environment variable storing the git username"
+        type: env_var_name
+        default: GIT_USERNAME
+      shipit-url:
+        description: "Name of the environment variable storing the url for shipit"
+        type: env_var_name
+        default: SHIPIT_URL
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - shipit_notification:
+          api-key: <<parameters.shipit-api-key>>
+          team-name: <<parameters.team-name>>
+          git-username: <<parameters.git-username>>
+          shipit-url: <<parameters.shipit-url>>
+
+  release:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git_user_email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      google-cloud-sdk-version:
+        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
+        type: string
+        default: "246.0.0-0"
+      google-compute-zone:
+        description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
+        type: string
+        default: europe-west1-b
+      cluster-name:
+        description: "Name of the environment variable storing the Kubernetes cluster name"
+        type: env_var_name
+        default: K8S_CLUSTER_NAME
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to grc.io"
+        default: gcr.io
+        type: string
+      uat-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
+        type: env_var_name
+        default: NONPROD_GCLOUD_ACCOUNT_AUTH
+      uat-project-id:
+        description: "The UAT Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: NONPROD_PROJECT_ID
+      prd-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the PRD Google project"
+        type: env_var_name
+        default: PRD_GCLOUD_ACCOUNT_AUTH
+      prd-project-id:
+        description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: PRD_PROJECT_ID
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git_user_email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - run:
+          name: "Release"
+          command: sbt "release with-defaults"
+      - install_gcp_tooling:
+          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
+      - initialize_gcloud:
+          *initialize_gcloud_uat
+      - run:
+          name: "Configure Docker to use gcloud as a credential helper"
+          command: |
+            mkdir -p "$HOME/.docker"
+            gcloud auth configure-docker --quiet --project $<<parameters.uat-project-id>>
+      - run:
+          name: "Tag and push container to GCR UAT"
+          command: |
+            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest" "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:$(cat version.txt)"
+            docker push "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>"
+      - initialize_gcloud:
+          *initialize_gcloud_prd
+      - run:
+          name: "Configure Docker to use gcloud as a credential helper"
+          command: |
+            mkdir -p "$HOME/.docker"
+            gcloud auth configure-docker --quiet --project $<<parameters.prd-project-id>>
+      - run:
+          name: "Tag and push container to GCR PRD"
+          command: |
+            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest" "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>:latest"
+            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:$(cat version.txt)" "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>:$(cat version.txt)"
+            docker push "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>"
+      - persist_workspace:
+          to: <<parameters.workspace-dir>>
+
+  uat-deploy:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+      google-cloud-sdk-version:
+        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
+        type: string
+        default: "246.0.0-0"
+      google-compute-zone:
+        description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
+        type: string
+        default: europe-west1-b
+      cluster-name:
+        description: "Name of the environment variable storing the Kubernetes cluster name"
+        type: env_var_name
+        default: K8S_CLUSTER_NAME
+      helm-release-name:
+        description: "Name of environment variable storing the helm release name"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      uat-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
+        type: env_var_name
+        default: NONPROD_GCLOUD_ACCOUNT_AUTH
+      uat-project-id:
+        description: "The UAT Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: NONPROD_PROJECT_ID
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache
+      - install_gcp_tooling:
+          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
+      - initialize_gcloud:
+          *initialize_gcloud_uat
+      - run:
+          name: "UAT Helm deploy"
+          command: |
+            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait --set "image.tag=$(cat version.txt)"
+            sudo rm -rf /home/circleci/.kube
+
+  prd-deploy:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+      google-cloud-sdk-version:
+        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
+        type: string
+        default: "246.0.0-0"
+      google-compute-zone:
+        description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
+        type: string
+        default: europe-west1-b
+      cluster-name:
+        description: "Name of the environment variable storing the Kubernetes cluster name"
+        type: env_var_name
+        default: K8S_CLUSTER_NAME
+      helm-release-name:
+        description: "Name of environment variable storing the helm release name"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      prd-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the PRD Google project"
+        type: env_var_name
+        default: PRD_GCLOUD_ACCOUNT_AUTH
+      prd-project-id:
+        description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: PRD_PROJECT_ID
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache
+      - install_gcp_tooling:
+          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
+      - initialize_gcloud:
+          *initialize_gcloud_prd
+      - run:
+          name: "PRD helm deploy"
+          command: |
+            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/prd.yaml --install --wait --set "image.tag=$(cat version.txt)"
