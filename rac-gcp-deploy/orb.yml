@@ -355,8 +355,9 @@ jobs:
       - run:
           name: "Tag and push container to GCR UAT"
           command: |
-            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest" "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:$(cat version.txt)"
-            docker push "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>"
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${NONPROD_IMAGE_ROOT}"
       - initialize_gcloud:
           *initialize_gcloud_prd
       - run:
@@ -367,9 +368,11 @@ jobs:
       - run:
           name: "Tag and push container to GCR PRD"
           command: |
-            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest" "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>:latest"
-            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:$(cat version.txt)" "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>:$(cat version.txt)"
-            docker push "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>"
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
+            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${PRD_IMAGE_ROOT}"
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
