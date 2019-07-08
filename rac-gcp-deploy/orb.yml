@@ -305,8 +305,8 @@ jobs:
         type: env_var_name
         default: CIRCLE_PROJECT_REPONAME
       registry-url:
-        description: "The GCR registry URL. Defaults to grc.io"
-        default: gcr.io
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
         type: string
       uat-gcloud-service-key:
         description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
