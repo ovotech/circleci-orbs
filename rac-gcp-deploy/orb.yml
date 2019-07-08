@@ -289,9 +289,9 @@ jobs:
         description: "The fingerprint of the ssh key with permissions to checkout"
         type: string
       google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
+        description: "The version of google cloud sdk to install. Defaults to 253.0.0-0"
         type: string
-        default: "246.0.0-0"
+        default: "253.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -384,9 +384,9 @@ jobs:
         type: string
         default: ~/project
       google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
+        description: "The version of google cloud sdk to install. Defaults to 253.0.0-0"
         type: string
-        default: "246.0.0-0"
+        default: "253.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -433,9 +433,9 @@ jobs:
         type: string
         default: ~/project
       google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
+        description: "The version of google cloud sdk to install. Defaults to 253.0.0-0"
         type: string
-        default: "246.0.0-0"
+        default: "253.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
