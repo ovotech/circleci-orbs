@@ -15,11 +15,11 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
   cluster-name: <<parameters.cluster-name>>
 
 executors:
-    machine:
-      machine: true
+  machine:
+    machine: true
+  docker:
     docker:
-      docker:
-        - image: ovotech/rac-gcp-deploy:latest
+      - image: ovotech/rac-gcp-deploy:latest
 
 commands:
   persist_workspace:
@@ -49,7 +49,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-          - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
   bintray_credentials:
     description: "Create Bintray credentials file"
@@ -173,8 +173,8 @@ jobs:
     executor: <<parameters.executor>>
     steps:
       - add_ssh_keys:
-            fingerprints:
-              - <<parameters.ssh-key-fingerprint>>
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
       - checkout
       - load_cache
       - bintray_credentials:
@@ -186,11 +186,11 @@ jobs:
       - save_cache:
           key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
           paths:
-          - ~/.m2
-          - ~/.ivy2
-          - ~/.sbt
-          - target/resolution-cache
-          - project/target/resolution-cache
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.sbt
+            - target/resolution-cache
+            - project/target/resolution-cache
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
