@@ -410,6 +410,14 @@ jobs:
         description: "The UAT Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: NONPROD_PROJECT_ID
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
@@ -422,7 +430,9 @@ jobs:
       - run:
           name: "UAT Helm deploy"
           command: |
-            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait --set "image.tag=$(cat version.txt)"
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
+              --set "image.repository=${NONPROD_IMAGE_ROOT}, image.tag=$(cat version.txt)"
             sudo rm -rf /home/circleci/.kube
 
   prd-deploy:
@@ -459,6 +469,14 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
@@ -471,4 +489,6 @@ jobs:
       - run:
           name: "PRD helm deploy"
           command: |
-            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/prd.yaml --install --wait --set "image.tag=$(cat version.txt)"
+            PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
+            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/prd.yaml --install --wait \
+              --set "image.repository=${PRD_IMAGE_ROOT}, image.tag=$(cat version.txt)"
