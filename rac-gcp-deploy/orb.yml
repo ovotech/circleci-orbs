@@ -19,7 +19,7 @@ executors:
     machine: true
   docker:
     docker:
-      - image: ovotech/rac-circle-base:latest
+      - image: ovotech/rac-gcp-deploy:latest
 
 commands:
   persist_workspace:
