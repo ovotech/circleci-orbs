@@ -84,7 +84,7 @@ commands:
       - run:
           name: "Initilize the gcloud CLI"
           command: |
-            echo $<<parameters.gcloud-service-key>> | base64 --decode -i > account-auth.json
+            echo $<<parameters.gcloud-service-key>> | base64 -d > account-auth.json
             gcloud auth activate-service-account --key-file account-auth.json
             gcloud config set project $<<parameters.project-id>>
             gcloud config set compute/zone <<parameters.google-compute-zone>>
