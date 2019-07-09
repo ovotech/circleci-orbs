@@ -123,31 +123,6 @@ commands:
               -d "links[1].url=https://github.com/ovotech/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}" \
               -d "note=${COMMIT_MESSAGE}"
 
-  install_gcp_tooling:
-    description: "Install google cloud sdk, kubectl and helm"
-    parameters:
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install"
-        type: string
-    steps:
-      - run:
-          name: "Install gcloud cli"
-          command: |
-            # Add the Cloud SDK distribution URI as a package source
-            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-
-            # Import the Google Cloud Platform public key
-            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-
-            # Update the package list and install the Cloud SDK
-            sudo apt-get update && sudo apt-get install google-cloud-sdk=<<parameters.google-cloud-sdk-version>>
-      - run:
-          name: "Install kubectl"
-          command: sudo apt-get install kubectl -y
-      - run:
-          name: "Install Helm"
-          command: curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
-
 jobs:
   compile:
     parameters:
@@ -288,10 +263,6 @@ jobs:
       ssh-key-fingerprint:
         description: "The fingerprint of the ssh key with permissions to checkout"
         type: string
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 253.0.0-0"
-        type: string
-        default: "253.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -343,8 +314,6 @@ jobs:
       - run:
           name: "Release"
           command: sbt "release with-defaults"
-      - install_gcp_tooling:
-          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
       - initialize_gcloud:
           *initialize_gcloud_uat
       - run:
@@ -386,10 +355,6 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 253.0.0-0"
-        type: string
-        default: "253.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -423,8 +388,6 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache
-      - install_gcp_tooling:
-          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
       - initialize_gcloud:
           *initialize_gcloud_uat
       - run:
@@ -445,10 +408,6 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 253.0.0-0"
-        type: string
-        default: "253.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -482,8 +441,6 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache
-      - install_gcp_tooling:
-          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
       - initialize_gcloud:
           *initialize_gcloud_prd
       - run:
