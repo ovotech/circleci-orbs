@@ -91,7 +91,6 @@ commands:
 
             gcloud --quiet config set container/cluster $<<parameters.cluster-name>>
             gcloud --quiet container clusters get-credentials $<<parameters.cluster-name>>
-            sudo chown -R circleci /home/circleci/.kube
 
   shipit_notification:
     description: "Send a notification to ShipIt"
@@ -396,7 +395,7 @@ jobs:
             NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
               --set "image.repository=${NONPROD_IMAGE_ROOT}, image.tag=$(cat version.txt)"
-            sudo rm -rf /home/circleci/.kube
+            rm -rf /home/circleci/.kube
 
   prd-deploy:
     parameters:
