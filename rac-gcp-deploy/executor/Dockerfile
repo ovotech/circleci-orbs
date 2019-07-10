@@ -17,8 +17,8 @@ RUN apk add --update --no-cache curl ca-certificates \
 	&& curl -L ${HELM_BASE_URL}/${HELM_TAR_FILE} |tar xvz \
 	&& mv linux-amd64/helm /usr/bin/helm \
 	&& chmod +x /usr/bin/helm \
-	&& rm -rf linux-amd64 && \
-	rm -f /var/cache/apk/*
+	&& rm -rf linux-amd64 \
+	&& rm -f /var/cache/apk/*
 
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
