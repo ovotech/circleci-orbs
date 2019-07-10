@@ -15,11 +15,11 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
   cluster-name: <<parameters.cluster-name>>
 
 executors:
-    machine:
-      machine: true
+  machine:
+    machine: true
+  docker:
     docker:
-      docker:
-        - image: ovotech/rac-gcp-deploy:latest
+      - image: ovotech/rac-gcp-deploy:latest
 
 commands:
   persist_workspace:
@@ -49,7 +49,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-          - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
   bintray_credentials:
     description: "Create Bintray credentials file"
@@ -84,14 +84,13 @@ commands:
       - run:
           name: "Initilize the gcloud CLI"
           command: |
-            echo $<<parameters.gcloud-service-key>> | base64 --decode -i > account-auth.json
+            echo $<<parameters.gcloud-service-key>> | base64 -d > account-auth.json
             gcloud auth activate-service-account --key-file account-auth.json
             gcloud config set project $<<parameters.project-id>>
             gcloud config set compute/zone <<parameters.google-compute-zone>>
 
             gcloud --quiet config set container/cluster $<<parameters.cluster-name>>
             gcloud --quiet container clusters get-credentials $<<parameters.cluster-name>>
-            sudo chown -R circleci /home/circleci/.kube
 
   shipit_notification:
     description: "Send a notification to ShipIt"
@@ -123,31 +122,6 @@ commands:
               -d "links[1].url=https://github.com/ovotech/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}" \
               -d "note=${COMMIT_MESSAGE}"
 
-  install_gcp_tooling:
-    description: "Install google cloud sdk, kubectl and helm"
-    parameters:
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install"
-        type: string
-    steps:
-      - run:
-          name: "Install gcloud cli"
-          command: |
-            # Add the Cloud SDK distribution URI as a package source
-            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-
-            # Import the Google Cloud Platform public key
-            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-
-            # Update the package list and install the Cloud SDK
-            sudo apt-get update && sudo apt-get install google-cloud-sdk=<<parameters.google-cloud-sdk-version>>
-      - run:
-          name: "Install kubectl"
-          command: sudo apt-get install kubectl -y
-      - run:
-          name: "Install Helm"
-          command: curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
-
 jobs:
   compile:
     parameters:
@@ -173,8 +147,8 @@ jobs:
     executor: <<parameters.executor>>
     steps:
       - add_ssh_keys:
-            fingerprints:
-              - <<parameters.ssh-key-fingerprint>>
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
       - checkout
       - load_cache
       - bintray_credentials:
@@ -186,11 +160,11 @@ jobs:
       - save_cache:
           key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
           paths:
-          - ~/.m2
-          - ~/.ivy2
-          - ~/.sbt
-          - target/resolution-cache
-          - project/target/resolution-cache
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.sbt
+            - target/resolution-cache
+            - project/target/resolution-cache
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -288,10 +262,6 @@ jobs:
       ssh-key-fingerprint:
         description: "The fingerprint of the ssh key with permissions to checkout"
         type: string
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
-        type: string
-        default: "246.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -305,8 +275,8 @@ jobs:
         type: env_var_name
         default: CIRCLE_PROJECT_REPONAME
       registry-url:
-        description: "The GCR registry URL. Defaults to grc.io"
-        default: gcr.io
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
         type: string
       uat-gcloud-service-key:
         description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
@@ -343,8 +313,6 @@ jobs:
       - run:
           name: "Release"
           command: sbt "release with-defaults"
-      - install_gcp_tooling:
-          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
       - initialize_gcloud:
           *initialize_gcloud_uat
       - run:
@@ -355,8 +323,9 @@ jobs:
       - run:
           name: "Tag and push container to GCR UAT"
           command: |
-            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest" "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:$(cat version.txt)"
-            docker push "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>"
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${NONPROD_IMAGE_ROOT}"
       - initialize_gcloud:
           *initialize_gcloud_prd
       - run:
@@ -367,9 +336,11 @@ jobs:
       - run:
           name: "Tag and push container to GCR PRD"
           command: |
-            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest" "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>:latest"
-            docker tag "<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:$(cat version.txt)" "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>:$(cat version.txt)"
-            docker push "<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>"
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
+            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${PRD_IMAGE_ROOT}"
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -383,10 +354,6 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
-        type: string
-        default: "246.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -407,20 +374,28 @@ jobs:
         description: "The UAT Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: NONPROD_PROJECT_ID
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache
-      - install_gcp_tooling:
-          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
       - initialize_gcloud:
           *initialize_gcloud_uat
       - run:
           name: "UAT Helm deploy"
           command: |
-            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait --set "image.tag=$(cat version.txt)"
-            sudo rm -rf /home/circleci/.kube
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
+              --set "image.repository=${NONPROD_IMAGE_ROOT}, image.tag=$(cat version.txt)"
+            rm -rf /home/circleci/.kube
 
   prd-deploy:
     parameters:
@@ -432,10 +407,6 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
-      google-cloud-sdk-version:
-        description: "The version of google cloud sdk to install. Defaults to 246.0.0-0"
-        type: string
-        default: "246.0.0-0"
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
@@ -456,16 +427,24 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache
-      - install_gcp_tooling:
-          google-cloud-sdk-version: <<parameters.google-cloud-sdk-version>>
       - initialize_gcloud:
           *initialize_gcloud_prd
       - run:
           name: "PRD helm deploy"
           command: |
-            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/prd.yaml --install --wait --set "image.tag=$(cat version.txt)"
+            PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
+            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/prd.yaml --install --wait \
+              --set "image.repository=${PRD_IMAGE_ROOT}, image.tag=$(cat version.txt)"
