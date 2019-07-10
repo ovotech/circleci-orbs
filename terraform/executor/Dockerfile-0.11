@@ -40,7 +40,7 @@ RUN mkdir -p /root/.terraform.d/plugins \
  && curl -sL https://s3-eu-west-1.amazonaws.com/terraform-provider-aiven/master/terraform-provider-aiven_linux_amd64.zip \
       -o terraform-provider-aiven_linux_amd64.zip \
  && unzip terraform-provider-aiven_linux_amd64.zip \
- && mv terraform-provider-aiven /root/.terraform.d/plugins/terraform-provider-aiven_v0.0.1 \
+ && mv terraform-provider-aiven_v0.0.1 /root/.terraform.d/plugins/terraform-provider-aiven_v0.0.1 \
  && rm -rf terraform*
 
 RUN mkdir -p /root/aiven \
