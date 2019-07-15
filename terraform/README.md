@@ -360,3 +360,10 @@ the master branch:
 1. Select the 'ci/circleci: terraform_plan' check.
 1. Enable 'Require branches to be up to date before merging'
 1. In the CircleCI project advanced settings, enable 'Only build pull requests'.
+
+## Private Terraform Module Registries
+
+You can use this orb with private Terraform Module registries.
+
+To specify the registry api token, set TF_REGISTRY_HOST and 
+TF_REGISTRY_TOKEN environment variables in the CircleCI settings.

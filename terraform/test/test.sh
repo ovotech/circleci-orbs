@@ -15,3 +15,4 @@ docker push ovotech/terraform:test_0.12
 circleci orb publish /tmp/terraform_orb.yml "ovotech/terraform@dev:${USER}_test" --token "$CIRCLECI_TOKEN"
 
 cd tfswitch && bash test.sh && cd ..
+cd registry && bash test.sh && cd ..

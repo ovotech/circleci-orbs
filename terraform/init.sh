@@ -26,18 +26,22 @@ if [ -n "$GOOGLE_COMPUTE_ZONE" ]; then
     gcloud --quiet config set compute/zone "$GOOGLE_COMPUTE_ZONE"
 fi
 
+if [ -n "$TF_REGISTRY_TOKEN" ]; then
+    echo "credentials \"$TF_REGISTRY_HOST\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
+fi
+
 readonly module_path="<< parameters.path >>"
 readonly workspace="${TF_WORKSPACE:-<< parameters.workspace >>}"
 unset TF_WORKSPACE
 
 if [[ -f "$module_path/.tfswitchrc" ]]; then
-    if type tfswitch; then
+    if hash tfswitch 2>/dev/null; then
         tfswitch $(<"$module_path/.tfswitchrc")
     fi
 fi
 
 if [[ -f "$module_path/.terraform-version" ]]; then
-    if type tfswitch; then
+    if hash tfswitch 2>/dev/null; then
         tfswitch $(<"$module_path/.terraform-version")
     fi
 fi
@@ -70,7 +74,6 @@ if [ -n "<< parameters.var_file >>" ]; then
     done
 fi
 
-echo "AIVEN_PROVIDER: $AIVEN_PROVIDER"
 if [ -n "$AIVEN_PROVIDER" ]; then
     ln -fs /root/aiven/* /root/.terraform.d/plugins/
 fi
