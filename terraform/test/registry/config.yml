@@ -1,0 +1,41 @@
+version: 2.1
+
+orbs:
+  terraform: ovotech/terraform@1
+
+jobs:
+  no_creds_no_module:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/version:
+          path: no_module
+
+  required_creds_module:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/version:
+          path: required_creds
+
+  guest_module:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/version:
+          path: guest_module
+
+  wrong_creds_module:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/version:
+          path: required_creds
+
+workflows:
+  test:
+    jobs:
+      - no_creds_no_module
+      - required_creds_module
+      - guest_module
+      - wrong_creds_module

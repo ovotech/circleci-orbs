@@ -20,6 +20,10 @@ if [[ -f "$module_path/.terraform-version" ]]; then
     fi
 fi
 
+if [ -n "$TF_REGISTRY_TOKEN" ]; then
+    echo "credentials \"$TF_REGISTRY_HOST\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
+fi
+
 # Set TF environment variables
 # These are already set in the dockerfile, but set again just in case the orb is used with a different executor
 export TF_INPUT=false
