@@ -16,3 +16,4 @@ circleci orb publish /tmp/terraform_orb.yml "ovotech/terraform@dev:${USER}_test"
 
 cd tfswitch && bash test.sh && cd ..
 cd registry && bash test.sh && cd ..
+cd publish-module && bash test.sh && cd ..

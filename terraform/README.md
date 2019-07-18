@@ -123,7 +123,7 @@ This creates a new terraform workspace
 
 Parameters:
 
-- path: Path the the terraform module to create a workspace in
+- path: Path to the terraform module to create a workspace in
 - workspace: Terraform workspace to create
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
@@ -134,13 +134,27 @@ This destroys all resource in a workspace and deletes the workspace
 
 Parameters:
 
-- path: Path the the terraform module to create a workspace in
+- path: Path to the terraform module to destroy a workspace in
 - workspace: Terraform workspace to destroy
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
+
+### publish-module
+
+This publishes a terraform module to a terraform module registry.
+
+These environment variables should be set:
+- TF_REGISTRY_HOST: The hostname of the registry to publish to.
+- TF_REGISTRY_TOKEN: The registry api token to use.
+
+Parameters:
+
+- path: Path to the terraform module to publish
+- module_name: The full module name, of the form "$NAMESPACE/$NAME/$PROVIDER"
+- version_file_path: Path to a file containing the semantic version to publish.
 
 ## Jobs
 

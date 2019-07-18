@@ -3,7 +3,12 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
-## [Unreleased]
+## Unreleased
+### Added
+- Support for terraform module registry authorization using the TF_REGISTRY_HOST and TF_REGISTRY_TOKEN environment variables.
+- The `publish-module` orb command, for publishing a module to a terraform registry.
+
+## ovotech/terraform@1.4.46
 ### Added
 - Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/) 
 `.terraformrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in the module path.
@@ -13,8 +18,5 @@ not listed.
 ### Changed
 - `terraform-0_12` executor updated to use terraform `0.12.4` as the default.
 
-## [1.4.43]
+## ovotech/terraform@1.4.43
 Start of the changelog
-
-[Unreleased]: https://github.com/ovotech/circleci-orbs/tree/master/terraform
-[1.4.43]: https://github.com/ovotech/circleci-orbs/tree/22eedc932d5d893f7c81b199a05defd10dc0c280/terraform
