@@ -30,6 +30,18 @@ readonly module_path="<< parameters.path >>"
 readonly workspace="${TF_WORKSPACE:-<< parameters.workspace >>}"
 unset TF_WORKSPACE
 
+if [[ -f "$module_path/.tfswitchrc" ]]; then
+    if type tfswitch; then
+        tfswitch $(<"$module_path/.tfswitchrc")
+    fi
+fi
+
+if [[ -f "$module_path/.terraform-version" ]]; then
+    if type tfswitch; then
+        tfswitch $(<"$module_path/.terraform-version")
+    fi
+fi
+
 if [ -n "<< parameters.parallelism >>" ]; then
     PLAN_ARGS="$PLAN_ARGS -parallelism=<< parameters.parallelism >>"
 fi
