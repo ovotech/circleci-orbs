@@ -97,6 +97,20 @@ jobs:
               if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
                 circleci orb publish promote "ovotech/${ORB}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
+                exit 0
+              fi
+
+              if [[ -f "${ORB}/version.txt" ]]; then
+                # This is a specific version
+                VERSION=$(<"${ORB}/version.txt")
+                CURRENT_VERSION=$(circleci orb info ovotech/${ORB} | grep "Latest" | cut -d' ' -f2)
+
+                if [[ "$VERSION" != "$CURRENT_VERSION" ]]; then
+                    circleci orb publish "/tmp/${ORB}_orb.yml" "$VERSION" --token "$CIRCLECI_PROD_TOKEN"
+                else
+                  echo "$VERSION is already published"
+                fi
+
               elif ! cmp -s "/tmp/${ORB}_orb.yml" "/tmp/${ORB}_current.yml"; then
                 # This is a new version
                 circleci orb publish increment "/tmp/${ORB}_orb.yml" "ovotech/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
