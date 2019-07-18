@@ -31,12 +31,16 @@ commands:
         type: "boolean"
         description: "Fail command when vulnerabilities at severity equal to or above the threshold are discovered"
         default: true
+      fail_on_unsupported_images:
+        type: "boolean"
+        description: "Fail command when image cannot be scanned for vulnerabilities"
+        default: true
     steps:
       - checkout
       - setup_remote_docker:
           version: 17.11.0-ce
       - run:
-          name: "vulnerability scan"
+          name: "Vulnerability scan"
           command: |
             include scan.sh
       - store_artifacts:
