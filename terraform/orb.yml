@@ -275,6 +275,25 @@ commands:
             include setup.sh
             include fmt-check.sh
 
+  publish-module:
+    description: "Publish a terraform module to a module registry"
+    parameters:
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+      module_name:
+        type: "string"
+        description: "The full module name, of the form <namespace>/<name>/<provider>"
+      version_file_path:
+        type: "string"
+        description: "Path to a file containing the semantic version of the module to publish"
+    steps:
+      - run:
+          name: "terraform version"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include publish.sh
+
 jobs:
   plan:
     executor: default
