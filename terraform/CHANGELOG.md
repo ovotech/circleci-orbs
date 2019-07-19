@@ -3,7 +3,7 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
-## Unreleased
+## ovotech/terraform@1.5.0
 ### Added
 - Support for terraform module registry authorization using the TF_REGISTRY_HOST and TF_REGISTRY_TOKEN environment variables.
 - The `publish-module` orb command, for publishing a module to a terraform registry.
