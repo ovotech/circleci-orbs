@@ -82,7 +82,7 @@ class TerraformComment:
         if self.label:
             return f'Terraform plan for __{self.label}__'
 
-        label = f'Terraform plan for __{self.path}__'
+        label = f'Terraform plan in __{self.path}__'
 
         if self.workspace != 'default':
             label += f' in the __{self.workspace}__ workspace'
@@ -116,7 +116,7 @@ class TerraformComment:
 
     @property
     def plan(self) -> Optional[str]:
-        return self._plan.strip()
+        return self._plan
 
     @plan.setter
     def plan(self, plan: str) -> None:
@@ -125,7 +125,7 @@ class TerraformComment:
 
     @property
     def status(self) -> Optional[str]:
-        return self._status.strip()
+        return self._status
 
     @status.setter
     def status(self, status: str) -> None:

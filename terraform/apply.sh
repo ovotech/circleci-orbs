@@ -29,6 +29,8 @@ if [[ $TF_EXIT -eq 1 ]]; then
     exit 1
 fi
 
+export label="<< parameters.label >>"
+
 function update_status() {
     local status="$1"
 
@@ -67,7 +69,7 @@ else
     if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
         apply
     else
-        update_status "Plan has changed [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
+        update_status "Plan not applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}) (Plan has changed)"
         exit 1
     fi
 fi
