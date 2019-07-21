@@ -15,9 +15,9 @@ function expect_fail() {
     echo "Running $JOB"
 
     set -o pipefail
-    circleci local execute --env TF_REGISTRY_HOST=$HOST --env TF_REGISTRY_TOKEN=$TOKEN --job $JOB | tee /tmp/job_output
+    circleci local execute --env TF_REGISTRY_HOST=$HOST --env TF_REGISTRY_TOKEN=$TOKEN --job $JOB >/dev/null # | tee /tmp/job_output
 
-    if ! grep "^$ERROR" < /tmp/job_output; then
+    if ! grep "^$ERROR" < /tmp/job_output >/dev/null; then
         echo "Didn't find error message $ERROR in output"
         exit 2
     fi
@@ -38,9 +38,9 @@ function expect_pass() {
 
     echo "Running $JOB"
 
-    circleci local execute --env TF_REGISTRY_HOST=$HOST --env TF_REGISTRY_TOKEN=$TOKEN --job $JOB | tee /tmp/job_output
+    circleci local execute --env TF_REGISTRY_HOST=$HOST --env TF_REGISTRY_TOKEN=$TOKEN --job $JOB >/dev/null #| tee /tmp/job_output
 
-    if ! grep "^$MESSAGE" < /tmp/job_output; then
+    if ! grep "^$MESSAGE" < /tmp/job_output >/dev/null; then
         echo "Didn't find message $MESSAGE in output"
         exit 2
     fi

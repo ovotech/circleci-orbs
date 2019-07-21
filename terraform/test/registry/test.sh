@@ -13,7 +13,7 @@ function test_case() {
 
     echo "Running $JOB"
 
-    if ! circleci local execute --env TF_REGISTRY_HOST=terraform.ovotech.org.uk --env TF_REGISTRY_TOKEN=$TOKEN --job $JOB | tee /dev/stderr | grep "^$MESSAGE"; then
+    if ! circleci local execute --env TF_REGISTRY_HOST=terraform.ovotech.org.uk --env TF_REGISTRY_TOKEN=$TOKEN --job $JOB | tee /dev/stderr | grep "^$MESSAGE" >/dev/null; then
         echo "Failed test $JOB"
         exit 2
     fi
