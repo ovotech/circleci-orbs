@@ -47,7 +47,7 @@ def find_pr() -> str:
         if pr['merge_commit_sha'] == commit:
             return pr['url']
 
-    raise Exception(f'No PR found in {owner}/{repo} for commit {commit} (was it pushed directly to master?)')
+    raise Exception(f'No PR found in {owner}/{repo} for commit {commit} (was it pushed directly to the target branch?)')
 
 
 class TerraformComment:
