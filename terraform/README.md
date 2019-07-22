@@ -44,9 +44,8 @@ circleci.
 For the AWS provider, set the AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY
 environment variables.
 
-For the gcloud provider, set GCLOUD_SERVICE_KEY to be a base64-encoded
-GCP service account key. You can also set GOOGLE_PROJECT_ID and
-GOOGLE_COMPUTE_ZONE.
+For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service 
+account key. You can also set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
 
 If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set, a comment
 is made on an open PR with the plan. Merging the PR approves the plan.
@@ -66,6 +65,7 @@ Available commands:
 - validate
 - version
 - in-workspace
+- publish-module
 
 ### plan
 
@@ -81,7 +81,7 @@ Parameters:
 - var_file (string): Comma separater list of terraform var files
 - var (string): Comma separated list of vars to set, e.g. foo=bar
 - parallelism (int): Limit the number of concurrent operations
-- github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
+- add_github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
 
 ### apply
 
