@@ -35,7 +35,7 @@ GCLOUD_SERVICE_KEY="${GCLOUD_SERVICE_KEY:-$GOOGLE_SERVICE_ACCOUNT}"
 
 if [[ -n "$GCLOUD_SERVICE_KEY" ]]; then
 
-    if echo "$GCLOUD_SERVICE_KEY" | grep "{"; then
+    if echo "$GCLOUD_SERVICE_KEY" | grep "{" >/dev/null; then
         echo "$GCLOUD_SERVICE_KEY" >/tmp/google_creds
     else
         echo "$GCLOUD_SERVICE_KEY" \
