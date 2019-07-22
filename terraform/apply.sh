@@ -6,29 +6,6 @@ cat >/tmp/cmp.py <<"EOF"
 include cmp.py
 EOF
 
-if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
-    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
-        PLAN_ARGS="$PLAN_ARGS -target $target"
-    done
-fi
-
-exec 3>&1
-
-set +e
-terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
-    | $TFMASK \
-    | tee /dev/fd/3 \
-    | sed '1,/---/d' \
-        >plan.txt
-
-TF_EXIT=${PIPESTATUS[0]}
-set -e
-
-if [[ $TF_EXIT -eq 1 ]]; then
-    update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
-    exit 1
-fi
-
 export label="<< parameters.label >>"
 
 function update_status() {
@@ -55,6 +32,29 @@ function apply() {
         exit 1
     fi
 }
+
+if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
+    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -target $target"
+    done
+fi
+
+exec 3>&1
+
+set +e
+terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
+    | $TFMASK \
+    | tee /dev/fd/3 \
+    | sed '1,/---/d' \
+        >plan.txt
+
+TF_EXIT=${PIPESTATUS[0]}
+set -e
+
+if [[ $TF_EXIT -eq 1 ]]; then
+    update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
+    exit 1
+fi
 
 if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
     echo "Automatically approving plan"
