@@ -22,7 +22,7 @@ function expect_fail() {
         exit 2
     fi
 
-    if ! grep "^Error: runner failed" < /tmp/job_output; then
+    if ! grep "^Error: runner failed" < /tmp/job_output >/dev/null; then
         echo "Job didn't fail"
         exit 2
     fi

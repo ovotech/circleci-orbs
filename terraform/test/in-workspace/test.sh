@@ -19,7 +19,7 @@ function test_case() {
         exit 1
     fi
 
-    if ! grep "Terraform v$VERSION" /tmp/output; then
+    if ! grep "Terraform v$VERSION" /tmp/output >/dev/null; then
         echo "Failed test $JOB"
         exit 2
     fi
