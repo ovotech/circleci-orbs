@@ -6,6 +6,7 @@ cat >/tmp/cmp.py <<"EOF"
 include cmp.py
 EOF
 
+export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
 export label="<< parameters.label >>"
 
 function update_status() {
