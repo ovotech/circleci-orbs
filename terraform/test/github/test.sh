@@ -6,7 +6,7 @@ mkdir -p .circleci
 
 sed -e "s|ovotech/terraform@1|ovotech/terraform@dev:${USER}_test|" config.yml | circleci config process - >.circleci/config.yml
 
-export GITHUB_USERNAME=danielflookovo
+export GITHUB_USERNAME=$GITHUB_USERNAME
 export GITHUB_TOKEN=$GITHUB_TOKEN
 export CIRCLE_PROJECT_USERNAME=ovotech
 export CIRCLE_PROJECT_REPONAME=pe-terraform-orb-test

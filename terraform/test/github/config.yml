@@ -92,6 +92,12 @@ jobs:
       - terraform/plan:
           path: no_changes
 
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          label: no comment
+          path: tf
+          add_github_comment: false
+
       ### Apply
       - run: rm -f *.tfstate
       - terraform/apply:
