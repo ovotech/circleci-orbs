@@ -19,26 +19,14 @@ function test_case() {
         exit 1
     fi
 
-    if ! grep "Terraform v$VERSION" /tmp/output > /dev/null; then
+    if ! grep "Terraform v$VERSION" /tmp/output >/dev/null; then
         echo "Failed test $JOB"
         exit 2
     fi
 }
 
-test_case default_default "0.11.14"
-test_case default_tfswitch "0.11.13"
-test_case default_tfenv "0.11.12"
-
-test_case terraform_11_default "0.11.14"
-test_case terraform_11_tfswitch "0.11.13"
-test_case terraform_11_tfenv "0.11.12"
-
-test_case terraform_12_default "0.12.5"
-test_case terraform_12_tfswitch "0.11.13"
-test_case terraform_12_tfenv "0.11.12"
-
-test_case ext_11_default "0.11.14"
-test_case ext_11_tfswitch "0.11.14"
-test_case ext_11_tfenv "0.11.14"
+test_case default "0.11.14"
+test_case terraform_11 "0.11.14"
+test_case terraform_12 "0.12.5"
 
 echo "All tests passed"

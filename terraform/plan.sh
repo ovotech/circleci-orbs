@@ -1,16 +1,10 @@
-#!/usr/bin/env bash
-
-include init.sh
-terraform workspace select "$workspace" "$module_path"
-
-cat >/tmp/put_plan.py <<"EOF"
-include put_plan.py
+cat >/tmp/github.py <<"EOF"
+include github.py
 EOF
-
-set +e
 
 exec 3>&1
 
+set +e
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
     | $TFMASK \
     | tee /dev/fd/3 \
@@ -18,23 +12,18 @@ terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARG
         >plan.txt
 
 readonly TF_EXIT=${PIPESTATUS[0]}
-
 set -e
 
 if [[ $TF_EXIT -eq 1 ]]; then
     echo "Error running terraform"
     exit 1
+fi
 
-elif [[ $TF_EXIT -eq 0 ]]; then
-    # No changes to apply
-    echo "No changes to apply"
+if [[ -n "$GITHUB_TOKEN" && "<< parameters.add_github_comment >>" == "true" ]]; then
+    export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
+    export label="<< parameters.label >>"
 
-elif [[ $TF_EXIT -eq 2 ]]; then
-
-    if [ -n "$GITHUB_TOKEN" ]; then
-        export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
-        export TF_ENV_LABEL="<< parameters.label >>"
-        python3 /tmp/put_plan.py "$module_path" "$workspace" "$INIT_ARGS" "$PLAN_ARGS" <plan.txt
+    if ! python3 /tmp/github.py plan <plan.txt; then
+        echo "Error adding comment to PR"
     fi
-
 fi

@@ -1,0 +1,36 @@
+version: 2.1
+
+orbs:
+  terraform: ovotech/terraform@1
+
+jobs:
+
+  terraform_11_aiven:
+    executor: terraform/default
+    environment:
+      AIVEN_PROVIDER: please
+    steps:
+      - checkout
+      - terraform/version:
+          path: tf
+
+  terraform_11:
+    executor: terraform/terraform-0_11
+    steps:
+      - checkout
+      - terraform/version:
+          path: tf
+
+  terraform_12:
+    executor: terraform/terraform-0_12
+    steps:
+      - checkout
+      - terraform/version:
+          path: tf
+
+workflows:
+  test:
+    jobs:
+      - terraform_11_aiven
+      - terraform_11
+      - terraform_12

@@ -5,15 +5,18 @@ RUN cd tfmask && make && make go/build
 
 FROM debian:buster-slim
 
-# This is the default executor image in the terraform orb
-
-ARG TF_VERSIONS="0.12.0 0.12.1 0.12.2 0.12.3 0.12.4"
-ARG GCLOUD_VERSION=247.0.0
-ARG HELM_VERSION=2.14.1
+ARG TF_VERSIONS="0.12.0 0.12.1 0.12.2 0.12.3 0.12.4 0.12.5"
+ARG GCLOUD_VERSION=254.0.0
+ARG AWSCLI_VERSION=1.16.201
+ARG HELM_VERSION=2.14.2
 ARG TFSWITCH_VERSION=0.7.737
 ARG TF_AIVEN_VERSIONS="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 1.0.7 1.0.8 1.0.9 1.0.10"
 
+# Terraform environment variables
+ENV CHECKPOINT_DISABLE=true
 ENV TF_IN_AUTOMATION=yep
+ENV TF_INPUT=false
+ENV TF_PLUGIN_CACHE_DIR=/usr/local/share/terraform/plugin-cache
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -37,6 +40,7 @@ RUN curl -sL https://github.com/warrensbox/terraform-switcher/releases/download/
  && for TF_VERSION in $TF_VERSIONS; do \
       tfswitch $TF_VERSION; \
     done
+RUN mkdir -p $TF_PLUGIN_CACHE_DIR
 
 RUN mkdir -p /root/.terraform.d/plugins \
  && for TF_AIVEN_VERSION in $TF_AIVEN_VERSIONS; do \
@@ -56,10 +60,7 @@ RUN curl -sL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-c
  && rm google-cloud-sdk.tar.gz
 ENV PATH "/opt/google-cloud-sdk/bin:$PATH"
 
-RUN pip3 install awscli
-
-RUN mkdir -p /usr/local/share/terraform/plugin-cache
-ENV TF_PLUGIN_CACHE_DIR=/usr/local/share/terraform/plugin-cache
+RUN pip3 install awscli==$AWSCLI_VERSION
 
 COPY --from=tfmask /go/tfmask/release/tfmask /usr/local/bin/tfmask
 ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"

@@ -1,17 +1,13 @@
-#!/usr/bin/env bash
-
-include init.sh
-terraform workspace select "$workspace" "$module_path"
+exec 3>&1
 
 set +e
-
 terraform plan -input=false -no-color -detailed-exitcode $PLAN_ARGS "$module_path" \
     | $TFMASK \
+    | tee /dev/fd/3 \
     | sed '1,/---/d' \
         >plan.txt
 
 readonly TF_EXIT=${PIPESTATUS[0]}
-
 set -e
 
 if [[ $TF_EXIT -eq 1 ]]; then
@@ -24,8 +20,6 @@ elif [[ $TF_EXIT -eq 0 ]]; then
 elif [[ $TF_EXIT -eq 2 ]]; then
 
     echo "Changes detected!"
-    cat plan.txt
-
     exit 1
 
 fi

@@ -4,9 +4,11 @@ version: 2.1
 
 # Orbs follow the conventions:
 #   Directory named the same as the orb
-#   A single docker image in the executor directory
+#   A single Dockerfile in the executor directory
 #   The orb yaml is in a file name orb.yml
 #   Published in the ovotech namespace
+#   An orb_version.txt file may exists in an orb directory containing the version of the orb.
+#     (A new version is only published when the version changes)
 
 jobs:
   validate_orbs:
@@ -100,9 +102,9 @@ jobs:
                 exit 0
               fi
 
-              if [[ -f "${ORB}/version.txt" ]]; then
+              if [[ -f "${ORB}/orb_version.txt" ]]; then
                 # This is a specific version
-                VERSION=$(<"${ORB}/version.txt")
+                VERSION=$(<"${ORB}/orb_version.txt")
                 CURRENT_VERSION=$(circleci orb info ovotech/${ORB} | grep "Latest" | cut -d' ' -f2)
 
                 if [[ "$VERSION" != "$CURRENT_VERSION" ]]; then

@@ -1,0 +1,57 @@
+version: 2.1
+
+orbs:
+  terraform: ovotech/terraform@1
+
+jobs:
+  default_canonical:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/fmt-check:
+          path: canonical
+
+  terraform_11_canonical:
+    executor: terraform/terraform-0_11
+    steps:
+      - checkout
+      - terraform/fmt-check:
+          path: canonical
+
+  terraform_12_canonical:
+    executor: terraform/terraform-0_12
+    steps:
+      - checkout
+      - terraform/fmt-check:
+          path: canonical
+
+  default_non_canonical:
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/fmt-check:
+          path: non-canonical
+
+  terraform_11_non_canonical:
+    executor: terraform/terraform-0_11
+    steps:
+      - checkout
+      - terraform/fmt-check:
+          path: non-canonical
+
+  terraform_12_non_canonical:
+    executor: terraform/terraform-0_12
+    steps:
+      - checkout
+      - terraform/fmt-check:
+          path: non-canonical
+
+workflows:
+  test:
+    jobs:
+      - default_canonical
+      - terraform_11_canonical
+      - terraform_12_canonical
+      - default_non_canonical
+      - terraform_11_non_canonical
+      - terraform_12_non_canonical

@@ -44,9 +44,8 @@ circleci.
 For the AWS provider, set the AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY
 environment variables.
 
-For the gcloud provider, set GCLOUD_SERVICE_KEY to be a base64-encoded
-GCP service account key. You can also set GOOGLE_PROJECT_ID and
-GOOGLE_COMPUTE_ZONE.
+For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service 
+account key. You can also set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
 
 If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set, a comment
 is made on an open PR with the plan. Merging the PR approves the plan.
@@ -55,20 +54,34 @@ If github credentials are not set the apply step will fail, as it can't
 find the approved plan. You can instead set auto_approve to true to
 apply the current plan anyway.
 
+Available commands:
+- plan
+- apply
+- check
+- destroy
+- new-workspace
+- destroy-workspace
+- fmt-check
+- validate
+- version
+- in-workspace
+- publish-module
+
 ### plan
 
 This command runs the terraform plan command.
 
 Parameters:
 
-- path: Path the the terraform module to run the plan in
-- workspace: Terraform workspace to run the command in (default: 'default')
-- label: An optional friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
-- backend_config_file: Comma separated list of terraform backend config files
-- backend_config: Comma separated list of backend configs, e.g. foo=bar
-- var_file: Comma separater list of terraform var files
-- var: Comma separated list of vars to set, e.g. foo=bar
-- parallelism: Limit the number of concurrent operations
+- path (string): Path the the terraform module to run the plan in
+- workspace (string): Terraform workspace to run the command in (default: 'default')
+- label (string): An optional friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
+- backend_config_file (string): Comma separated list of terraform backend config files
+- backend_config (string): Comma separated list of backend configs, e.g. foo=bar
+- var_file (string): Comma separater list of terraform var files
+- var (string): Comma separated list of vars to set, e.g. foo=bar
+- parallelism (int): Limit the number of concurrent operations
+- add_github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
 
 ### apply
 
@@ -123,7 +136,7 @@ This creates a new terraform workspace
 
 Parameters:
 
-- path: Path the the terraform module to create a workspace in
+- path: Path to the terraform module to create a workspace in
 - workspace: Terraform workspace to create
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
@@ -134,7 +147,7 @@ This destroys all resource in a workspace and deletes the workspace
 
 Parameters:
 
-- path: Path the the terraform module to create a workspace in
+- path: Path to the terraform module to destroy a workspace in
 - workspace: Terraform workspace to destroy
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
@@ -142,13 +155,71 @@ Parameters:
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
 
+### fmt-check
+
+Check that the terraform files in a directory are in canonical format,
+as output by `terraform fmt`. This command will fail if any file is
+in non-canonical format.
+
+Parameters:
+
+- path: Path to the directory to check
+
+### validate
+
+Statically validates the terraform configuration in a directory.
+
+Parameters:
+
+- path: Path to the terraform configuration to validate
+
+### in-workspace
+
+Initialize a terraform working directory and execute steps in it.
+The steps parameter is a nested list of steps to execute.
+
+Parameters:
+
+- path: Path the the terraform module to create a workspace in
+- workspace: Terraform workspace to destroy
+- backend_config_file: Comma separated list of terraform backend config files
+- backend_config: Comma separated list of backend configs, e.g. foo=bar
+- steps: The steps to execute in the initialized working directory
+
+### version
+
+Prints terraform and provider versions.
+
+Parameters:
+
+- path: Path to the terraform configuration to print versions for
+
+### publish-module
+
+This publishes a terraform module to a terraform module registry.
+
+These environment variables should be set:
+- TF_REGISTRY_HOST: The hostname of the registry to publish to.
+- TF_REGISTRY_TOKEN: The registry api token to use.
+
+Parameters:
+
+- path: Path to the terraform module to publish
+- module_name: The full module name, of the form "$NAMESPACE/$NAME/$PROVIDER"
+- version_file_path: Path to a file containing the semantic version to publish.
+
 ## Jobs
 
-This orb contains plan, apply, check, destroy, destroy-workspace and
-new-workspace jobs which run their respective command in the default 
-executor (which uses terraform 0.11).
+This orb contains the jobs:
+- plan
+- apply
+- check
+- destroy
+- new-workspace
+- destroy-workspace
 
-The jobs have the same parameters as the commands.
+These jobs run their respective command in the default executor 
+(which uses terraform 0.11). The jobs have the same parameters as the commands.
 
 ## Examples
 
@@ -360,3 +431,10 @@ the master branch:
 1. Select the 'ci/circleci: terraform_plan' check.
 1. Enable 'Require branches to be up to date before merging'
 1. In the CircleCI project advanced settings, enable 'Only build pull requests'.
+
+## Private Terraform Module Registries
+
+You can use this orb with private Terraform Module registries.
+
+To specify the registry api token, set TF_REGISTRY_HOST and 
+TF_REGISTRY_TOKEN environment variables in the CircleCI settings.

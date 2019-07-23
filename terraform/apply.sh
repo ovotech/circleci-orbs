@@ -1,17 +1,38 @@
-#!/usr/bin/env bash
-
-include init.sh
-terraform workspace select "$workspace" "$module_path"
-
-cat >/tmp/get_plan.py <<"EOF"
-include get_plan.py
+cat >/tmp/github.py <<"EOF"
+include github.py
 EOF
 
 cat >/tmp/cmp.py <<"EOF"
 include cmp.py
 EOF
 
-set +e
+export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
+export label="<< parameters.label >>"
+
+function update_status() {
+    local status="$1"
+
+    if ! echo "$status" | python3 /tmp/github.py status; then
+        echo "Unable to update status on PR"
+    fi
+}
+
+function apply() {
+    update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
+
+    set -e
+    terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
+    local TF_EXIT=${PIPESTATUS[0]}
+    set -e
+
+    if [[ $TF_EXIT -eq 0 ]]; then
+        update_status "Plan applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
+        exit 0
+    else
+        update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
+        exit 1
+    fi
+}
 
 if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
     for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
@@ -19,46 +40,37 @@ if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" 
     done
 fi
 
+exec 3>&1
+
+set +e
 terraform plan -input=false -no-color -detailed-exitcode -out=plan.out $PLAN_ARGS "$module_path" \
     | $TFMASK \
+    | tee /dev/fd/3 \
     | sed '1,/---/d' \
         >plan.txt
 
-readonly TF_EXIT=${PIPESTATUS[0]}
-
+TF_EXIT=${PIPESTATUS[0]}
 set -e
 
 if [[ $TF_EXIT -eq 1 ]]; then
-    echo "Error running terraform"
+    update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
     exit 1
+fi
 
-elif [[ $TF_EXIT -eq 0 ]]; then
-    # No changes to apply
-    echo "No changes to apply"
+if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
+    echo "Automatically approving plan"
+    apply
 
-elif [[ $TF_EXIT -eq 2 ]]; then
-
-    if [ "<< parameters.auto_approve >>" = "true" ]; then
-        echo "Automatically approving plan"
-        terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
-
-    else
-        export TF_ENV_LABEL="<< parameters.label >>"
-
-        if ! python3 /tmp/get_plan.py "$module_path" "$workspace" "$INIT_ARGS" "$PLAN_ARGS" >approved-plan.txt; then
-            echo "Approved plan not found"
-            exit 1
-        fi
-
-        if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
-            echo "Applying approved plan"
-            terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
-        else
-            echo "Plan has changed - approval needed"
-            cat plan.txt
-            exit 1
-        fi
-
+else
+    if ! python3 /tmp/github.py get >approved-plan.txt; then
+        echo "Approved plan not found"
+        exit 1
     fi
 
+    if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
+        apply
+    else
+        update_status "Plan not applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}) (Plan has changed)"
+        exit 1
+    fi
 fi
