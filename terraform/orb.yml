@@ -1,5 +1,5 @@
 version: 2.1
-description: "Terraform orb"
+description: "Terraform orb. See https://github.com/ovotech/circleci-orbs/tree/master/terraform"
 
 executors:
   default:
