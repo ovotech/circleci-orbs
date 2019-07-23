@@ -28,7 +28,8 @@ if [[ "$VERSION_FILE_PATH" == "" ]]; then
 fi
 
 if [[ ! -f "$VERSION_FILE_PATH" ]]; then
-  echo "Version file \"$VERSION_FILE_PATH\" doesn't exist"
+    echo "Version file \"$VERSION_FILE_PATH\" doesn't exist"
+    exit 2
 fi
 
 readonly VERSION=$(<"$VERSION_FILE_PATH")
@@ -52,6 +53,11 @@ cd "$MODULE_PATH"
 tar -czvf "/tmp/$VERSION.tar.gz" *
 
 REGISTRY_URL=$(curl --fail -sL "https://$TF_REGISTRY_HOST/.well-known/terraform.json" | jq -r '."modules.v1"')
+
+if [[ "$REGISTRY_URL" == "" ]]; then
+    echo "Failed to find registry API"
+    exit 2
+fi
 
 curl -sL --fail -X PUT "$REGISTRY_URL$MODULE_NAME/$VERSION/upload" \
  --data-binary "@/tmp/$VERSION.tar.gz" \
