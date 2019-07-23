@@ -14,7 +14,7 @@ docker build --tag "ovotech/terraform:${USER}_test_0.12" --file ../executor/Dock
 circleci orb publish /tmp/terraform_orb.yml "ovotech/terraform@dev:${USER}_test" --token "$CIRCLECI_TOKEN"
 
 DIR=$(pwd)
-for TEST_DIR in github; do
+for TEST_DIR in */; do
     echo $TEST_DIR
     cd $DIR/$TEST_DIR
     ./test.sh

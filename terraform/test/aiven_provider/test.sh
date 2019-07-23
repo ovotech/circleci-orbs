@@ -10,7 +10,7 @@ function test_case() {
     local JOB=$1
     local VERSION=$2
 
-    circleci local execute --job $JOB | tee /tmp/output
+    circleci local execute --job $JOB >/tmp/output #| tee /tmp/output
 
     if [[ "$(tail -n 1 /tmp/output)" == *"Success"* ]]; then
         echo "Job $JOB Success"

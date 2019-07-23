@@ -24,7 +24,7 @@ circleci local execute --job terraform_11_plan \
       --env CIRCLE_PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME \
       --env CIRCLE_PROJECT_REPONAME=$CIRCLE_PROJECT_REPONAME \
       --env CIRCLE_PR_NUMBER=$CIRCLE_PR_NUMBER \
-    | tee /tmp/output
+    > /tmp/output #| tee /tmp/output
 
 if [[ "$(tail -n 1 /tmp/output)" == *"Success"* ]]; then
     echo "Job $JOB Success"
