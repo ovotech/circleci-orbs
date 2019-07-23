@@ -71,6 +71,14 @@ aliases:
         type: "boolean"
         description: "Add the plan to a GitHub PR"
         default: true
+    module_name: &module_name
+      module_name:
+        type: "string"
+        description: "The full module name, of the form <namespace>/<name>/<provider>"
+    version_file_path: &version_file_path
+      version_file_path:
+        type: "string"
+        description: "Path to a file containing the semantic version of the module to publish"
 
   init-parameter-passthrough: &init-parameter-passthrough
     path: << parameters.path >>
@@ -278,15 +286,9 @@ commands:
   publish-module:
     description: "Publish a terraform module to a module registry"
     parameters:
-      path:
-        type: "string"
-        description: "Path to the terraform module"
-      module_name:
-        type: "string"
-        description: "The full module name, of the form <namespace>/<name>/<provider>"
-      version_file_path:
-        type: "string"
-        description: "Path to a file containing the semantic version of the module to publish"
+      <<: *path
+      <<: *module_name
+      <<: *version_file_path
     steps:
       - run:
           name: "terraform version"
