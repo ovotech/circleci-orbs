@@ -3,6 +3,13 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.5.1
+### Changed
+- Add GitHub link to orb description
+
+### Fixed
+- The publish-module command label was wrong
+
 ## ovotech/terraform@1.5.0
 ### Added
 - A `validate` command that validates a terraform module for correctness
