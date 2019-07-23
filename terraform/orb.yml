@@ -291,7 +291,7 @@ commands:
       <<: *version_file_path
     steps:
       - run:
-          name: "terraform version"
+          name: "publish terraform module"
           shell: /bin/bash -eo pipefail
           command: |
             include publish.sh
