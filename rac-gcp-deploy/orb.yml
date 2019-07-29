@@ -163,6 +163,7 @@ jobs:
             - ~/.m2
             - ~/.ivy2
             - ~/.sbt
+            - ~/.embedpostgresql
             - target/resolution-cache
             - project/target/resolution-cache
       - persist_workspace:
