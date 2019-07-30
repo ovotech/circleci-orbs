@@ -18,9 +18,7 @@ function update_status() {
 }
 
 function apply() {
-    update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
-
-    set -e
+    set +e
     terraform apply -input=false -no-color -auto-approve plan.out | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
@@ -39,6 +37,8 @@ if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" 
         PLAN_ARGS="$PLAN_ARGS -target $target"
     done
 fi
+
+update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
 
 exec 3>&1
 
