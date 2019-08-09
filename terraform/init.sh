@@ -13,11 +13,12 @@ fi
 
 export INIT_ARGS
 
-rm -rf .terraform
-terraform init -input=false -no-color $INIT_ARGS "$module_path"
-
-# Set workspace from parameter, allowing it to be overridden by TF_WORKSPACE
+# Set workspace from parameter, allowing it to be overridden by TF_WORKSPACE.
+# If TF_WORKSPACE is set we don't want terraform init to use the value, in the case we are running new_workspace.sh this would cause an error
 readonly workspace_parameter="<< parameters.workspace >>"
 readonly workspace="${TF_WORKSPACE:-$workspace_parameter}"
 export workspace
 unset TF_WORKSPACE
+
+rm -rf .terraform
+terraform init -input=false -no-color $INIT_ARGS "$module_path"
