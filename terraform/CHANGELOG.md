@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.5.3
+### Fixed
+- Updated terraform executor to allow `terraform init` when a workspace does not yet exist
+
 ## ovotech/terraform@1.5.2
 ### Changed
 - Updated executors to include:
