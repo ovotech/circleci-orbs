@@ -11,6 +11,7 @@ ARG AWSCLI_VERSION=1.16.210
 ARG HELM_VERSION=2.14.3
 ARG TFSWITCH_VERSION=0.7.737
 ARG TF_AIVEN_VERSIONS="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 1.0.7 1.0.8 1.0.9 1.0.10 1.0.11 1.0.12 1.0.13 1.0.15"
+ARG TF_OVO_VERSIONS="0.0.1"
 
 # Terraform environment variables
 ENV CHECKPOINT_DISABLE=true
@@ -54,6 +55,13 @@ RUN curl -sL "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSIO
  && rm -rf helm*.tar.gz linux-amd64/ \
  && helm init --client-only
 ENV HELM_HOME /root/.helm
+
+# ovo provider
+RUN for TF_OVO_VERSION in $TF_OVO_VERSIONS; do \
+      curl -L https://ovo-kafka-user.s3-eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_VERSION}/terraform-provider-ovo_${TF_OVO_VERSION}_linux_amd64.zip -o ovo.zip \
+      && unzip ovo.zip -d /root/.terraform.d/plugins \
+      && rm ovo.zip \
+    done
 
 RUN curl -sL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz -o /opt/google-cloud-sdk.tar.gz \
  && cd /opt; tar -xf google-cloud-sdk.tar.gz \
