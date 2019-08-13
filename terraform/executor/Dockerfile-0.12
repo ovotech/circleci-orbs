@@ -60,7 +60,7 @@ ENV HELM_HOME /root/.helm
 RUN for TF_OVO_VERSION in $TF_OVO_VERSIONS; do \
       curl -L https://ovo-kafka-user.s3-eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_VERSION}/terraform-provider-ovo_${TF_OVO_VERSION}_linux_amd64.zip -o ovo.zip \
       && unzip ovo.zip -d /root/.terraform.d/plugins \
-      && rm ovo.zip \
+      && rm ovo.zip; \
     done
 
 RUN curl -sL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz -o /opt/google-cloud-sdk.tar.gz \
