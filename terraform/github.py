@@ -99,6 +99,18 @@ class TerraformComment:
         return os.environ.get('path')
 
     @property
+    def build_url(self) -> str:
+        return os.environ['CIRCLE_BUILD_URL']
+
+    @property
+    def build_num(self) -> str:
+        return os.environ['CIRCLE_BUILD_NUM']
+
+    @property
+    def job_name(self) -> str:
+        return os.environ['CIRCLE_JOB']
+
+    @property
     def workspace(self) -> str:
         return os.environ.get('workspace')
 
@@ -134,8 +146,13 @@ class TerraformComment:
 
     def _update_comment(self):
         comment = f'{self._comment_identifier}\n```\n{self.plan}\n```'
+
         if self.status:
             comment += '\n' + self.status
+        else:
+            comment += (f'\nPlan generated in CircleCI Job '
+                        f'[{self.job_name} {self.build_num}]'
+                        f'({self.build_url})')
 
         if self._comment_url is None:
             # Create a new comment
