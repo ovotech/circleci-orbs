@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.5.5
+### Changed
+- Added link to CircleCI build at bottom of plan
+
 ## ovotech/terraform@1.5.4
 ### Changed
 - Updated executors with aiven-provider-terraform 1.0.13
