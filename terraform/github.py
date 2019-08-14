@@ -150,7 +150,7 @@ class TerraformComment:
         if self.status:
             comment += '\n' + self.status
         else:
-            comment += (f'Plan generated in CircleCI Job '
+            comment += (f'\nPlan generated in CircleCI Job '
                         f'[{self.job_name} {self.build_num}]'
                         f'({self.build_url})')
 
