@@ -3,6 +3,14 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.5.6
+### Changed
+- Updated executors to include:
+    - terraform 0.12.7
+    - gcloud 260.0.0
+    - awscli 1.16.230
+    - Ovo's kafka user provider 1.0.0
+
 ## ovotech/terraform@1.5.5
 ### Changed
 - Added link to CircleCI build at bottom of plan
