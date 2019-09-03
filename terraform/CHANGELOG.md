@@ -10,6 +10,7 @@ not listed.
     - gcloud 260.0.0
     - awscli 1.16.230
     - Ovo's kafka user provider 1.0.0
+    - Aivens' aiven-provider-terraform 1.0.15 (with data sources!)
 
 ## ovotech/terraform@1.5.5
 ### Changed
