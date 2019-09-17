@@ -24,36 +24,38 @@ if [ -n "<< parameters.whitelist >>" ]; then
     WHITELIST="-w /whitelist.yml"
 fi
 
-FOUND_UNAPPROVED_VULERNERABILITIES=0
-FOUND_UNSUPPORTED_IMAGE=0
-FOUND_UNKNOWN_EXIT_STATUS=0
-
 function scan() {
     local image=$1
     mkdir -p "$REPORT_DIR/$(dirname $image)"
 
     docker pull "$image"
 
-    ret=0 &>/dev/null
+    ret=0
     docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" --report "/report.json" --log "/log.json" $WHITELIST --reportAll=true --exit-when-no-features=false "$image" > /dev/null 2>&1 || ret=$? &>/dev/null
 
-    if [ $ret -eq 0 ] &>/dev/null; then
+    if [ $ret -eq 0 ]; then
         echo "No unapproved vulernabilities"
-    elif [ $ret -eq 1 ] &>/dev/null; then
+    elif [ $ret -eq 1 ]; then
         echo "Unapproved vulernabilities found"
-        FOUND_UNAPPROVED_VULERNERABILITIES=1 &>/dev/null
-    elif [ $ret -eq 5 ] &>/dev/null; then
+        if [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "true" ];then
+            EXIT_STATUS=1
+        fi
+    elif [ $ret -eq 5 ]; then
         echo "Image was not scanned, not supported."
-        FOUND_UNSUPPORTED_IMAGE=1 &>/dev/null
+        if [ "<< parameters.fail_on_unsupported_images >>" == "true" ];then
+            EXIT_STATUS=1
+        fi
     else
         echo "Unknown clair-scanner return code $ret."
-        FOUND_UNKNOWN_EXIT_STATUS=1 &>/dev/null
+        EXIT_STATUS=1
     fi
 
     if docker cp "$CLAIR_SCANNER:/report.json" "$REPORT_DIR/${image}.json"; then
         docker exec -it $CLAIR_SCANNER rm "/report.json"
     fi
 }
+
+EXIT_STATUS=0
 
 if [ -n "<< parameters.image_file >>" ]; then
     images=$(cat "<< parameters.image_file >>")
@@ -62,22 +64,6 @@ if [ -n "<< parameters.image_file >>" ]; then
     done
 else
     scan "<< parameters.image >>"
-fi
-
-EXIT_STATUS=0
-if [ $FOUND_UNKNOWN_EXIT_STATUS -eq 1 ] &>/dev/null; then
-    echo "Found unknown exit status"
-    EXIT_STATUS=1 &>/dev/null
-fi
-
-if [ $FOUND_UNSUPPORTED_IMAGE -eq 1 ] && [ "<< parameters.fail_on_unsupported_images >>" == "true" ] &>/dev/null; then
-    echo "Found unsupported image"
-    EXIT_STATUS=1 &>/dev/null
-fi
-
-if [ $FOUND_UNAPPROVED_VULERNERABILITIES -eq 1 ] && [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "true" ] &>/dev/null; then
-    echo "Found unapproved vulernerabilities"
-    EXIT_STATUS=1 &>/dev/null
 fi
 
 exit $EXIT_STATUS
