@@ -26,12 +26,20 @@ fi
 
 function scan() {
     local image=$1
-    mkdir -p "$REPORT_DIR/$(dirname $image)"
+    local sanitised_image_filename="$(echo $image | sed 's/\//_/g').json"
 
     docker pull "$image"
 
     ret=0
-    docker exec -it $CLAIR_SCANNER clair-scanner --ip ${scanner_ip} --clair=http://${clair_ip}:6060 -t "<< parameters.severity_threshold >>" --report "/report.json" --log "/log.json" $WHITELIST --reportAll=true --exit-when-no-features=false "$image" > /dev/null 2>&1 || ret=$? &>/dev/null
+    docker exec -it $CLAIR_SCANNER clair-scanner \
+        --ip ${scanner_ip} \
+        --clair=http://${clair_ip}:6060 \
+        -t "<< parameters.severity_threshold >>" \
+        --report "/$sanitised_image_filename" \
+        --log "/log.json" $WHITELIST
+        --reportAll=true \
+        --exit-when-no-features=false \
+        "$image" > /dev/null 2>&1 || ret=$? &>/dev/null
 
     if [ $ret -eq 0 ]; then
         echo "No unapproved vulernabilities"
@@ -50,9 +58,7 @@ function scan() {
         EXIT_STATUS=1
     fi
 
-    if docker cp "$CLAIR_SCANNER:/report.json" "$REPORT_DIR/${image}.json"; then
-        docker exec -it $CLAIR_SCANNER rm "/report.json"
-    fi
+    docker cp "$CLAIR_SCANNER:/$sanitised_image_filename" "$REPORT_DIR/$sanitised_image_filename"
 }
 
 EXIT_STATUS=0
