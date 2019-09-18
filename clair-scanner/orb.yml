@@ -35,6 +35,10 @@ commands:
         type: "boolean"
         description: "Fail command when image cannot be scanned for vulnerabilities"
         default: true
+      disable_verbose_console_output:
+        type: "boolean"
+        description: "Disable verbose console output"
+        default: false
     steps:
       - checkout
       - setup_remote_docker:

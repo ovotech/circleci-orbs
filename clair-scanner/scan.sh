@@ -27,34 +27,38 @@ fi
 function scan() {
     local image=$1
     local sanitised_image_filename="$(echo $image | sed 's/\//_/g').json"
+    local ret=0
+    local docker_cmd="docker exec -it $CLAIR_SCANNER clair-scanner \
+        --ip ${scanner_ip} \
+        --clair=http://${clair_ip}:6060 \
+        -t \"<< parameters.severity_threshold >>\" \
+        --report \"/$sanitised_image_filename\" \
+        --log \"/log.json\" $WHITELIST
+        --reportAll=true \
+        --exit-when-no-features=false \
+        $image"
 
     docker pull "$image"
 
-    ret=0
-    docker exec -it $CLAIR_SCANNER clair-scanner \
-        --ip ${scanner_ip} \
-        --clair=http://${clair_ip}:6060 \
-        -t "<< parameters.severity_threshold >>" \
-        --report "/$sanitised_image_filename" \
-        --log "/log.json" $WHITELIST
-        --reportAll=true \
-        --exit-when-no-features=false \
-        "$image" > /dev/null 2>&1 || ret=$? &>/dev/null
-
-    if [ $ret -eq 0 ]; then
-        echo "No unapproved vulernabilities"
-    elif [ $ret -eq 1 ]; then
-        echo "Unapproved vulernabilities found"
-        if [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "true" ];then
+    if [ "<< parameters.disable_verbose_console_output >>" == "true" ];then
+        $docker_cmd > /dev/null 2>&1 || ret=$?
+        if [ $ret -eq 0 ]; then
+            echo "No unapproved vulnerabilities"
+        elif [ $ret -eq 1 ]; then
+            echo "Unapproved vulnerabilities found"
+            if [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "true" ];then
+                EXIT_STATUS=1
+            fi
+        elif [ $ret -eq 5 ]; then
+            echo "Image was not scanned, not supported."
+            if [ "<< parameters.fail_on_unsupported_images >>" == "true" ];then
+                EXIT_STATUS=1
+            fi
+        else
+            echo "Unknown clair-scanner return code $ret."
             EXIT_STATUS=1
         fi
-    elif [ $ret -eq 5 ]; then
-        echo "Image was not scanned, not supported."
-        if [ "<< parameters.fail_on_unsupported_images >>" == "true" ];then
-            EXIT_STATUS=1
-        fi
-    else
-        echo "Unknown clair-scanner return code $ret."
+    elif ! $docker_cmd;then
         EXIT_STATUS=1
     fi
 
