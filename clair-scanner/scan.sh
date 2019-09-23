@@ -19,7 +19,7 @@ scanner_ip=$(docker exec -it "$CLAIR_SCANNER" hostname -i | grep -oE '[0-9]+\.[0
 
 if [ -n "<< parameters.whitelist >>" ]; then
     cat "<< parameters.whitelist >>"
-    docker cp "<< parameters.whitelist >>" "$CLAIR_SCANNER":/whitelist.yml
+    docker cp "<< parameters.whitelist >>" "$CLAIR_SCANNER:/whitelist.yml"
 
     WHITELIST="-w /whitelist.yml"
 fi
