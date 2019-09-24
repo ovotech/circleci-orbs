@@ -26,7 +26,8 @@ fi
 
 function scan() {
     local image=$1
-    munged_image=$(echo "$image" | sed 's/\//_/g')
+    # replace forward-slashes and colons with underscores
+    munged_image=$(echo "$image" | sed 's/\//_/g' | sed 's/:/_/g')
     sanitised_image_filename="${munged_image}.json"
     local ret=0
     local docker_cmd=(docker exec -it "$CLAIR_SCANNER" clair-scanner \
@@ -34,13 +35,14 @@ function scan() {
         --clair=http://"$clair_ip":6060 \
         -t "<< parameters.severity_threshold >>" \
         --report "/$sanitised_image_filename" \
-        --log "/log.json" "$WHITELIST"
+        --log "/log.json" ${WHITELIST:+"-x"}
         --reportAll=true \
         --exit-when-no-features=false \
         "$image")
 
     docker pull "$image"
 
+    # if verbose output is disabled, analyse status code for more fine-grained output
     if [ "<< parameters.disable_verbose_console_output >>" == "true" ];then
         "${docker_cmd[@]}" > /dev/null 2>&1 || ret=$?
         if [ $ret -eq 0 ]; then
@@ -60,10 +62,12 @@ function scan() {
             EXIT_STATUS=1
         fi
     elif ! "${docker_cmd[@]}";then
+      if [ "<< parameters.fail_on_scan_fail >>" == "true" ];then
         EXIT_STATUS=1
+      fi
     fi
 
-    docker cp "$CLAIR_SCANNER:/$sanitised_image_filename" "$REPORT_DIR/$sanitised_image_filename"
+    docker cp "$CLAIR_SCANNER:/$sanitised_image_filename" "$REPORT_DIR/$sanitised_image_filename" || true
 }
 
 EXIT_STATUS=0
