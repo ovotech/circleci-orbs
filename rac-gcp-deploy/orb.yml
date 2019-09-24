@@ -169,6 +169,27 @@ jobs:
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
+  compile_docs:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to persist the workspace"
+        type: string
+        default: ~/project
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache
+      - run:
+          name: "Compile docs"
+          command: sbt docs/compile
+      - persist_workspace:
+          to: <<parameters.workspace-dir>>
+
   unit_test:
     parameters:
       executor:
