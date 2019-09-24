@@ -31,10 +31,6 @@ commands:
         type: "boolean"
         description: "Fail command when vulnerabilities at severity equal to or above the threshold are discovered"
         default: true
-      fail_on_scan_fail:
-        type: "boolean"
-        description: "Fail command when any failure in the Clair scan is encountered. Only use when disable_verbose_console_output = false"
-        default: true
       fail_on_unsupported_images:
         type: "boolean"
         description: "Fail command when image cannot be scanned for vulnerabilities"

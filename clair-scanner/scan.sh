@@ -45,26 +45,24 @@ function scan() {
     # if verbose output is disabled, analyse status code for more fine-grained output
     if [ "<< parameters.disable_verbose_console_output >>" == "true" ];then
         "${docker_cmd[@]}" > /dev/null 2>&1 || ret=$?
-        if [ $ret -eq 0 ]; then
-            echo "No unapproved vulnerabilities"
-        elif [ $ret -eq 1 ]; then
-            echo "Unapproved vulnerabilities found"
-            if [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "true" ];then
-                EXIT_STATUS=1
-            fi
-        elif [ $ret -eq 5 ]; then
-            echo "Image was not scanned, not supported."
-            if [ "<< parameters.fail_on_unsupported_images >>" == "true" ];then
-                EXIT_STATUS=1
-            fi
-        else
-            echo "Unknown clair-scanner return code $ret."
+    else
+        "${docker_cmd[@]}" 2>&1 || ret=$?
+    fi
+    if [ $ret -eq 0 ]; then
+        echo "No unapproved vulnerabilities"
+    elif [ $ret -eq 1 ]; then
+        echo "Unapproved vulnerabilities found"
+        if [ "<< parameters.fail_on_discovered_vulnerabilities >>" == "true" ];then
             EXIT_STATUS=1
         fi
-    elif ! "${docker_cmd[@]}";then
-      if [ "<< parameters.fail_on_scan_fail >>" == "true" ];then
+    elif [ $ret -eq 5 ]; then
+        echo "Image was not scanned, not supported."
+        if [ "<< parameters.fail_on_unsupported_images >>" == "true" ];then
+            EXIT_STATUS=1
+        fi
+    else
+        echo "Unknown clair-scanner return code $ret."
         EXIT_STATUS=1
-      fi
     fi
 
     docker cp "$CLAIR_SCANNER:/$sanitised_image_filename" "$REPORT_DIR/$sanitised_image_filename" || true
