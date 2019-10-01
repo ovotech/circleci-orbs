@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 if [ -z "<< parameters.image_file >><< parameters.image >>" ]; then
     echo "Either the image_file or image parameters must be present"
