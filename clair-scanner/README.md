@@ -65,11 +65,13 @@ build will fail. Vulnerabilities can be approved using a whitelist file.
 
 Parameters:
 
-- image: Name of the image to scan.
-- image_file: Path to a file containing images to scan.
-- whitelist: Path to a CVE whitelist
-- severity_threshold: The threshold (equal and above) at which discovered vulnerabilities are reported. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'. The Default is 'High'.
-- fail_on_discovered_vulnerabilities: Fail command when vulnerabilities at severity equal to or above the threshold are discovered. Default is true.
+- `disable_verbose_console_output`: Disable verbose Clair output. Default is false.
+- `fail_on_discovered_vulnerabilities`: Fail command when vulnerabilities at severity equal to or above the threshold are discovered. Default is true.
+- `fail_on_unsupported_images`: Fail command when image cannot be scanned for vulnerabilities. Default is true.
+- `image`: Name of the image to scan.
+- `image_file`: Path to a file containing images to scan.
+- `severity_threshold`: The threshold (equal and above) at which discovered vulnerabilities are reported. May be 'Defcon1', 'Critical', 'High', 'Medium', 'Low', 'Negligible' or 'Unknown'. The Default is 'High'.
+- `whitelist`: Path to a CVE whitelist
 
 ## Examples
 
