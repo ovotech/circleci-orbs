@@ -52,7 +52,7 @@ def read_file(path: str, pad: str = '') -> None:
 
     do_escape = not path.endswith('.yml')
 
-    with open(path) as f:
+    with open(path, encoding='utf-8') as f:
 
         #if path.endswith('.py'):
         #    for line in python_minifier.minify(f.read(), rename_locals=False, hoist_literals=False).splitlines():
