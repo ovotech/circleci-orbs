@@ -40,8 +40,6 @@ function scan() {
         --exit-when-no-features=false \
         "$image")
 
-    docker pull "$image"
-
     # if verbose output is disabled, analyse status code for more fine-grained output
     if [ "<< parameters.disable_verbose_console_output >>" == "true" ];then
         "${docker_cmd[@]}" > /dev/null 2>&1 || ret=$?
@@ -70,13 +68,24 @@ function scan() {
 
 EXIT_STATUS=0
 
+for entry in "<< parameters.docker_tar_dir >>"/*.tar; do
+    [ -e "$entry" ] || continue
+    images=$(docker load -i $entry | sed -e 's/Loaded image: //g')
+    for image in images; do
+        scan "$image"
+    done
+done
+
 if [ -n "<< parameters.image_file >>" ]; then
     images=$(cat "<< parameters.image_file >>")
     for image in $images; do
+        docker pull "$image"
         scan "$image"
     done
 else
-    scan "<< parameters.image >>"
+    image="<< parameters.image >>"
+    docker pull "$image"
+    scan "$image"
 fi
 
 exit $EXIT_STATUS
