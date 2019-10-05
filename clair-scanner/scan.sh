@@ -2,8 +2,10 @@
 
 set -e
 
-if [ -z "<< parameters.image_file >><< parameters.image >>" ]; then
-    echo "Either the image_file or image parameters must be present"
+DOCKER_TAR_DIR="<< parameters.docker_tar_dir >>"
+
+if [ -z "<< parameters.image_file >><< parameters.image >>" ] && [ -z "$(ls -A "$DOCKER_TAR_DIR" 2>/dev/null)" ]; then
+    echo "image_file or image parameters or docker tarballs must be present"
     exit 255
 fi
 
@@ -68,7 +70,7 @@ function scan() {
 
 EXIT_STATUS=0
 
-for entry in "<< parameters.docker_tar_dir >>"/*.tar; do
+for entry in "$DOCKER_TAR_DIR"/*.tar; do
     [ -e "$entry" ] || continue
     images=$(docker load -i "$entry" | sed -e 's/Loaded image: //g')
     for image in $images; do
