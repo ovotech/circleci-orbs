@@ -70,8 +70,8 @@ EXIT_STATUS=0
 
 for entry in "<< parameters.docker_tar_dir >>"/*.tar; do
     [ -e "$entry" ] || continue
-    images=$(docker load -i $entry | sed -e 's/Loaded image: //g')
-    for image in images; do
+    images=$(docker load -i "$entry" | sed -e 's/Loaded image: //g')
+    for image in $images; do
         scan "$image"
     done
 done
