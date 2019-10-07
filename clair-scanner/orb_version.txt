@@ -1,1 +1,1 @@
-ovotech/clair-scanner@1.5.0
+ovotech/clair-scanner@1.6.0
