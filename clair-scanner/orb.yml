@@ -39,6 +39,10 @@ commands:
         type: "boolean"
         description: "Disable verbose console output"
         default: false
+      docker_tar_dir:
+        type: "string"
+        description: "Path of directory that Docker tarballs are stored"
+        default: "/docker-tars"
     steps:
       - checkout
       - setup_remote_docker:

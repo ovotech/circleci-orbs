@@ -66,6 +66,7 @@ build will fail. Vulnerabilities can be approved using a whitelist file.
 Parameters:
 
 - `disable_verbose_console_output`: Disable verbose Clair output. Default is false.
+- `docker_tar_dir`: Absolute path of directory of tarballs containing docker images to scan. Default is '/docker-tars'.
 - `fail_on_discovered_vulnerabilities`: Fail command when vulnerabilities at severity equal to or above the threshold are discovered. Default is true.
 - `fail_on_unsupported_images`: Fail command when image cannot be scanned for vulnerabilities. Default is true.
 - `image`: Name of the image to scan.

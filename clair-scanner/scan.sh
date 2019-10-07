@@ -2,8 +2,10 @@
 
 set -e
 
-if [ -z "<< parameters.image_file >><< parameters.image >>" ]; then
-    echo "Either the image_file or image parameters must be present"
+DOCKER_TAR_DIR="<< parameters.docker_tar_dir >>"
+
+if [ -z "<< parameters.image_file >><< parameters.image >>" ] && [ -z "$(ls -A "$DOCKER_TAR_DIR" 2>/dev/null)" ]; then
+    echo "image_file or image parameters or docker tarballs must be present"
     exit 255
 fi
 
@@ -40,8 +42,6 @@ function scan() {
         --exit-when-no-features=false \
         "$image")
 
-    docker pull "$image"
-
     # if verbose output is disabled, analyse status code for more fine-grained output
     if [ "<< parameters.disable_verbose_console_output >>" == "true" ];then
         "${docker_cmd[@]}" > /dev/null 2>&1 || ret=$?
@@ -70,13 +70,25 @@ function scan() {
 
 EXIT_STATUS=0
 
-if [ -n "<< parameters.image_file >>" ]; then
-    images=$(cat "<< parameters.image_file >>")
+for entry in "$DOCKER_TAR_DIR"/*.tar; do
+    [ -e "$entry" ] || continue
+    images=$(docker load -i "$entry" | sed -e 's/Loaded image: //g')
     for image in $images; do
         scan "$image"
     done
-else
-    scan "<< parameters.image >>"
+done
+
+if [ -n "<< parameters.image_file >>" ]; then
+    images=$(cat "<< parameters.image_file >>")
+    for image in $images; do
+        docker pull "$image"
+        scan "$image"
+    done
+fi
+if [ -n "<< parameters.image >>" ]; then
+    image="<< parameters.image >>"
+    docker pull "$image"
+    scan "$image"
 fi
 
 exit $EXIT_STATUS
