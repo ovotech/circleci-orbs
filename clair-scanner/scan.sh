@@ -84,7 +84,8 @@ if [ -n "<< parameters.image_file >>" ]; then
         docker pull "$image"
         scan "$image"
     done
-elif [ -n "<< parameters.image >>" ]; then
+fi
+if [ -n "<< parameters.image >>" ]; then
     image="<< parameters.image >>"
     docker pull "$image"
     scan "$image"
