@@ -3,6 +3,13 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.5.10
+### Changed
+- Updated executors to include:
+    - terraform 0.12.10
+    - gcloud 266.0.0
+    - awscli 1.16.258
+
 ## ovotech/terraform@1.5.9
 ### Changed
 - Updated executors to include:
