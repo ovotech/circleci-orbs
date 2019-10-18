@@ -43,4 +43,19 @@ commands:
             curl --fail https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/envvar?circle-token=<< parameters.circleci-token >> \
               -X POST --header "Content-Type: application/json" \
               -d "{ \"name\":\"<< parameters.aws-secret-access-key-var >>\", \"value\":\"${new_secret_access_key}\" }" &&
-            aws iam delete-access-key --user-name << parameters.aws-username >> --access-key-id ${old_access_key_id}
+            aws iam delete-access-key --user-name << parameters.aws-username >> --access-key-id ${old_access_key_id} &&
+            echo &&
+            # Although the new token is visible on the aws API, aws does not accept it
+            # for authentication immediately.
+            AWS_ACCESS_KEY_ID=$new_access_key_id &&
+            AWS_SECRET_ACCESS_KEY=$new_secret_access_key &&
+            echo Testing new token... &&
+            while true; do
+              aws iam list-access-keys \
+                --user-name << parameters.aws-username >> \
+                --query 'AccessKeyMetadata[0].AccessKeyId' \
+                --output text 2>/dev/null && break
+              echo New token not usable yet, retrying in 10 seconds...
+              sleep 10
+            done &&
+            echo SUCCESS: New token ready to use.
