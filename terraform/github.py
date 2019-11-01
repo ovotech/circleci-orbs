@@ -7,8 +7,13 @@ from typing import Optional, Dict, Iterable
 
 import requests
 
-github_username = os.environ['GITHUB_USERNAME']
-github_token = os.environ['GITHUB_TOKEN']
+github_username = os.environ.get('GITHUB_USERNAME')
+github_token = os.environ.get('GITHUB_TOKEN')
+
+if github_username == None or github_token == None:
+    print(f'Missing GITHUB_USERNAME or GITHUB_TOKEN in Environment')
+    sys.exit(1)
+
 owner = os.environ['CIRCLE_PROJECT_USERNAME']
 repo = os.environ['CIRCLE_PROJECT_REPONAME']
 pr_number = os.environ.get('CIRCLE_PR_NUMBER')
