@@ -79,6 +79,16 @@ aliases:
       version_file_path:
         type: "string"
         description: "Path to a file containing the semantic version of the module to publish"
+    retries: &retries
+      retries:
+        type: "integer"
+        description: "Number of retries to run the terraform command"
+        default: 0
+    retry_delay: &retry_delay
+      retry_delay:
+        type: "integer"
+        description: "Delay between retries in seconds"
+        default: 30
 
   init-parameter-passthrough: &init-parameter-passthrough
     path: << parameters.path >>
@@ -147,6 +157,8 @@ commands:
       <<: *label
       <<: *auto_approve
       <<: *target
+      <<: *retries
+      <<: *retry_delay
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
@@ -191,6 +203,8 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *retries
+      <<: *retry_delay
     steps:
       - run:
           name: "terraform destroy << parameters.path >> << parameters.label >>"
@@ -233,6 +247,8 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *retries
+      <<: *retry_delay
     steps:
       - run:
           name: "terraform workspace delete"
@@ -318,6 +334,8 @@ jobs:
           <<: *init-parameter-passthrough
           target: << parameters.target >>
           auto_approve: << parameters.auto_approve >>
+          retries: << parameters.retries >>
+          retry_delay: << parameters.retry_delay >>
 
   check:
     executor: default
@@ -338,6 +356,8 @@ jobs:
       - checkout
       - destroy:
           <<: *init-parameter-passthrough
+          retries: << parameters.retries >>
+          retry_delay: << parameters.retry_delay >>
 
   new-workspace:
     executor: default
@@ -358,3 +378,5 @@ jobs:
       - checkout
       - destroy-workspace:
           <<: *init-parameter-passthrough
+          retries: << parameters.retries >>
+          retry_delay: << parameters.retry_delay >>
