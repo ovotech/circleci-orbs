@@ -88,7 +88,7 @@ else
     fi
 
     if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
-        exit apply
+        exit $(apply)
     else
         update_status "Plan not applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}) (Plan has changed)"
         exit 1
