@@ -15,4 +15,6 @@ for ((i=0; i <= $RETRIES; i++)); do
   fi
 done
 
-exit $TF_EXIT
+if [[ $TF_EXIT -ne 0 ]]; then
+  exit $TF_EXIT
+fi
