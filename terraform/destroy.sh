@@ -1,3 +1,12 @@
+function countdown() {
+    seconds=$1
+    while [ $seconds -gt 0 ]; do
+        sleep 1
+        echo -ne "."
+        : $((seconds--))
+    done
+    echo ""
+}
 
 RETRIES="<< parameters.retries >>"
 RETRY_DELAY="<< parameters.retry_delay >>"
@@ -11,10 +20,11 @@ for ((i=0; i <= $RETRIES; i++)); do
   fi
 
   if [[ $i -ne $RETRIES ]]; then
-    sleep $RETRY_DELAY
+    echo -ne "Delay ${RETRY_DELAY}s before next attempt"
+    countdown $RETRY_DELAY
   fi
 done
 
 if [[ $TF_EXIT -ne 0 ]]; then
-  exit $TF_EXIT
+  exit 1
 fi

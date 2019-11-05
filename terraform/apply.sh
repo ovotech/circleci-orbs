@@ -13,6 +13,7 @@ function update_status() {
     local status="$1"
 
     if ! echo "$status" | python3 /tmp/github.py status; then
+        echo "$status"
         echo "Unable to update status on PR"
     fi
 }
@@ -59,6 +60,16 @@ if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" 
     done
 fi
 
+function countdown() {
+    seconds=$1
+    while [ $seconds -gt 0 ]; do
+        sleep 1
+        echo -ne "."
+        : $((seconds--))
+    done
+    echo ""
+}
+
 update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
 
 if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
@@ -73,9 +84,12 @@ if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
         fi
 
         if [[ $i -ne $RETRIES ]]; then
-            sleep $RETRY_DELAY
+            echo -ne "Delay ${RETRY_DELAY}s before next attempt"
+            countdown $RETRY_DELAY
         fi
     done
+
+    exit 1
 
 else
     if ! plan; then
@@ -87,10 +101,12 @@ else
         exit 1
     fi
 
-    if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
-        exit $(apply)
-    else
+    if ! python3 /tmp/cmp.py plan.txt approved-plan.txt; then
         update_status "Plan not applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}) (Plan has changed)"
+        exit 1
+    fi
+
+    if ! apply; then
         exit 1
     fi
 fi
