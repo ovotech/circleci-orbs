@@ -72,7 +72,7 @@ if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
             break
         fi
 
-        if [[ $i -nq $RETRIES ]]; then
+        if [[ $i -ne $RETRIES ]]; then
             sleep $RETRY_DELAY
         fi
     done

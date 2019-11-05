@@ -10,7 +10,7 @@ for ((i=0; i <= $RETRIES; i++)); do
     break
   fi
 
-  if [[ $i -nq $RETRIES ]]; then
+  if [[ $i -ne $RETRIES ]]; then
     sleep $RETRY_DELAY
   fi
 done
