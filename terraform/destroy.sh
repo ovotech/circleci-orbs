@@ -12,8 +12,11 @@ RETRIES="<< parameters.retries >>"
 RETRY_DELAY="<< parameters.retry_delay >>"
 
 for ((i=0; i <= $RETRIES; i++)); do
+  echo "Destroy (Attempt: $(expr $i + 1)"
+  set +e
   terraform destroy -input=false -no-color -auto-approve $PLAN_ARGS "$module_path"
   TF_EXIT=$?
+  set -e
 
   if [[ $TF_EXIT -eq 0 ]]; then
     break

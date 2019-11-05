@@ -54,12 +54,6 @@ function apply() {
     fi
 }
 
-if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
-    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
-        PLAN_ARGS="$PLAN_ARGS -target $target"
-    done
-fi
-
 function countdown() {
     seconds=$1
     while [ $seconds -gt 0 ]; do
@@ -70,6 +64,12 @@ function countdown() {
     echo ""
 }
 
+if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" ]]; then
+    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -target $target"
+    done
+fi
+
 update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
 
 if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
@@ -79,8 +79,9 @@ if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
     RETRY_DELAY="<< parameters.retry_delay >>"
 
     for ((i=0; i <= $RETRIES; i++)); do
+        echo "Apply (Attempt: $(expr $i + 1)"
         if plan && apply; then 
-            break
+            exit 0
         fi
 
         if [[ $i -ne $RETRIES ]]; then
@@ -109,4 +110,6 @@ else
     if ! apply; then
         exit 1
     fi
+
+    exit 0
 fi
