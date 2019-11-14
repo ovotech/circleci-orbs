@@ -47,10 +47,10 @@ commands:
   load_cache:
     description: "Restore cached dependencies"
     parameters:
-    cache-suffix:
-      description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
-      default: ""
-      type: string
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     steps:
       - restore_cache:
           keys:
