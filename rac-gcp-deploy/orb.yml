@@ -46,10 +46,15 @@ commands:
 
   load_cache:
     description: "Restore cached dependencies"
+    parameters:
+    cache-suffix:
+      description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+      default: ""
+      type: string
     steps:
       - restore_cache:
           keys:
-            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
 
   bintray_credentials:
     description: "Create Bintray credentials file"
@@ -144,13 +149,18 @@ jobs:
         description: "Name of the environment variable storing the bintray api key"
         default: BINTRAY_API_KEY
         type: env_var_name
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
       - checkout
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - bintray_credentials:
           username: <<parameters.bintray-username>>
           api-key: <<parameters.bintray-api-key>>
@@ -158,7 +168,7 @@ jobs:
           name: "Compile"
           command: sbt update compile test:compile
       - save_cache:
-          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
           paths:
             - ~/.m2
             - ~/.ivy2
