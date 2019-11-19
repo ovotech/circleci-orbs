@@ -3,7 +3,7 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
-## ovotech/terraform@1.5.16
+## ovotech/terraform@1.5.13
 ### Changed
 - Updated executors to include:
     - terraform 0.12.14, 0.12.15, 0.12.16
