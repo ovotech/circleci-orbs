@@ -167,6 +167,12 @@ jobs:
       - run:
           name: "Compile"
           command: sbt update compile test:compile
+      - run:
+          name: "avoid unnecessary cache updates"
+          command: |
+            rm -fv ~/.ivy2/.sbt.ivy.lock
+            find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
+            find ~/.sbt -name "*.lock" -print -delete
       - save_cache:
           key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
           paths:
@@ -174,8 +180,8 @@ jobs:
             - ~/.ivy2
             - ~/.sbt
             - ~/.embedpostgresql
-            - target/resolution-cache
-            - project/target/resolution-cache
+            - ~/.cache/coursier
+
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
