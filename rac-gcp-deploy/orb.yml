@@ -70,6 +70,20 @@ commands:
           name: "Create Bintray credentials file"
           command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
 
+  snyk_monitor:
+    description: "Runs snyk monitor"
+    parameters:
+      api-key:
+        description: "Name of the environment variable storing the snyk api key"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Run snyk monitor"
+          command: |
+            echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
+            snyk auth $<<parameters.api-key>>
+            snyk monitor --project-name="${CIRCLE_PROJECT_REPONAME}"
+
   initialize_gcloud:
     description: "Initialize the `gcloud` CLI"
     parameters:
@@ -332,6 +346,10 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      snyk-api-key:
+        description: "Name of the environment variable storing the snyk api key"
+        default: SNYK_TOKEN
+        type: env_var_name
     executor: <<parameters.executor>>
     steps:
       - setup_remote_docker
@@ -379,6 +397,8 @@ jobs:
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${PRD_IMAGE_ROOT}"
+      - snyk_monitor:
+          api-key: <<parameters.snyk-api-key>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -434,7 +454,6 @@ jobs:
             helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
               --set "image.repository=${NONPROD_IMAGE_ROOT}" \
               --set "image.tag=$(cat version.txt)"
-
 
   prd-deploy:
     parameters:
