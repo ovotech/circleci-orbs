@@ -59,6 +59,7 @@ apply the current plan anyway.
 Available commands:
 - plan
 - apply
+- output
 - check
 - destroy
 - new-workspace
@@ -101,6 +102,19 @@ Parameters:
 - var: Comma separated list of vars to set, e.g. foo=bar
 - auto_approve: true, to apply the plan, even if it has not been approved through a PR.
 - parallelism: Limit the number of concurrent operations
+- output_path (string): An optional path to write a json file containing the output variables.
+
+### output
+
+This command saves the output variables from a terraform state into a json file.
+
+Parameters:
+
+- path (string): Path the the terraform module to get the outputs for
+- workspace (string): Terraform workspace to run the command in (default: 'default')
+- backend_config_file (string): Comma separated list of terraform backend config files
+- backend_config (string): Comma separated list of backend configs, e.g. foo=bar
+- output_path (string): The path to write the json file containing the output variables.
 
 ### check
 

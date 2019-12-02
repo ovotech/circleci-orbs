@@ -79,6 +79,11 @@ aliases:
       version_file_path:
         type: "string"
         description: "Path to a file containing the semantic version of the module to publish"
+    output_path: &output_path
+      output_path:
+        type: "string"
+        description: "Path to the json file to save the output variables to"
+        default: ""
 
   init-parameter-passthrough: &init-parameter-passthrough
     path: << parameters.path >>
@@ -147,6 +152,7 @@ commands:
       <<: *label
       <<: *auto_approve
       <<: *target
+      <<: *output_path
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
@@ -157,6 +163,7 @@ commands:
             include select_workspace.sh
             include set_plan_args.sh
             include apply.sh
+            include output.sh
 
   check:
     description: "Check that terraform state hasn't drifted"
@@ -244,6 +251,30 @@ commands:
             include set_plan_args.sh
             include destroy.sh
             include delete_workspace.sh
+
+  output:
+    description: "Save the output variables from a terraform state into a json file"
+    parameters:
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *output_path
+    steps:
+      - run:
+          name: "terraform output << parameters.path >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+
+            if [ -z "<< parameters.output_path >>" ]; then
+                echo "output_path parameter not specified"
+                exit 1
+            fi
+
+            include output.sh
 
   # These commands don't need an initialized workspace:
 

@@ -3,6 +3,11 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.0
+### Added
+- An `output_path` parameter to the `apply` command, for saving output variables to a json file
+- A separate `output` command that writes output variables from a terraform state to a json file
+
 ## ovotech/terraform@1.5.13
 ### Changed
 - Updated executors to include:
