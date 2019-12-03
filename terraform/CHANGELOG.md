@@ -7,6 +7,8 @@ not listed.
 ### Added
 - An `output_path` parameter to the `apply` command, for saving output variables to a json file
 - A separate `output` command that writes output variables from a terraform state to a json file
+- Helm 3.0.0 is included in the executors as `helm3`. You can make helm3 the default version by setting the
+  environment variable `HELM=helm3`.
 
 ### Changed
 - Updated executors to include:
