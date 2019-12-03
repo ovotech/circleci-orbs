@@ -34,9 +34,12 @@ This executor uses terraform 0.12
 It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
-- helm
+- Helm 2 available as `helm2` and `helm`
+- Helm 3+ available as `helm3`
 - aws-cli
 - ovo's kafka user provider
+
+If the `HELM` environment variable is set to `helm3`, the `helm` command invokes Helm 3.
 
 ## Commands
 
