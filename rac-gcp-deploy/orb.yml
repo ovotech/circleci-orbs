@@ -209,11 +209,16 @@ jobs:
         description: "Path to persist the workspace"
         type: string
         default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Compile docs"
           command: sbt docs/compile
@@ -230,11 +235,16 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run: sbt test:test
 
   service-tests-with-docker:
@@ -247,11 +257,16 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: Service Tests
           command: sbt service-test:test
@@ -350,12 +365,17 @@ jobs:
         description: "Name of the environment variable storing the snyk api key"
         default: SNYK_TOKEN
         type: env_var_name
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - setup_remote_docker
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Setup git config"
           command: |
@@ -440,11 +460,16 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - initialize_gcloud:
           *initialize_gcloud_uat
       - run:
@@ -493,11 +518,16 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - initialize_gcloud:
           *initialize_gcloud_prd
       - run:
