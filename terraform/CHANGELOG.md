@@ -8,6 +8,11 @@ not listed.
 - An `output_path` parameter to the `apply` command, for saving output variables to a json file
 - A separate `output` command that writes output variables from a terraform state to a json file
 
+### Changed
+- Updated executors to include:
+    - terraform 0.12.17
+    - awscli 1.16.294
+
 ## ovotech/terraform@1.5.13
 ### Changed
 - Updated executors to include:
