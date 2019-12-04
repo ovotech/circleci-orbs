@@ -1,7 +1,7 @@
 # Terraform Orb
 
 This orb can be used to plan and apply terraform modules.
-It is published as `ovotech/terraform@1.5`
+It is published as `ovotech/terraform@1.6`
 
 ## Executors
 
@@ -252,7 +252,7 @@ to the open PR. If that PR is then merged, the plan is applied.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
 
 workflows:
   test:
@@ -283,7 +283,7 @@ terraform helm provider.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
 
 jobs:
   terraform_plan:
@@ -384,7 +384,7 @@ always available. (And OVO's is not).
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
   
 jobs:
   terraform_plan:
@@ -415,7 +415,7 @@ detected to any of the terraform resources the build is failed.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
 
 workflows:
   nightly:
