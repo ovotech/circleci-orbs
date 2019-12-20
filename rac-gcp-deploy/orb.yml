@@ -447,7 +447,7 @@ jobs:
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
-  nonprod-deploy:
+  uat-deploy:
     parameters:
       executor:
         description: "Name of executor to use for this job. Defaults to docker executor"
