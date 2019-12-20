@@ -1,23 +1,20 @@
 version: 2.1
 description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
-.initialize_gcloud_nonprod: &initialize_gcloud_nonprod
+.gcloud_auth_nonprod: &gcloud_auth_nonprod
   gcloud-service-key: <<parameters.nonprod-gcloud-service-key>>
   project-id: <<parameters.nonprod-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
-  cluster-name: <<parameters.cluster-name>>
 
-.initialize_gcloud_uat: &initialize_gcloud_uat
+.gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
   project-id: <<parameters.uat-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
-  cluster-name: <<parameters.cluster-name>>
 
-.initialize_gcloud_prd: &initialize_gcloud_prd
+.gcloud_auth_prd: &gcloud_auth_prd
   gcloud-service-key: <<parameters.prd-gcloud-service-key>>
   project-id: <<parameters.prd-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
-  cluster-name: <<parameters.cluster-name>>
 
 executors:
   machine:
@@ -89,7 +86,7 @@ commands:
             snyk auth $<<parameters.api-key>>
             snyk monitor --project-name="${CIRCLE_PROJECT_REPONAME}"
 
-  initialize_gcloud:
+  gcloud_auth:
     description: "Initialize the `gcloud` CLI"
     parameters:
       gcloud-service-key:
@@ -101,9 +98,6 @@ commands:
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI"
         type: string
-      cluster-name:
-        description: "Name of environment variable storing the Kubernetes cluster name"
-        type: env_var_name
     steps:
       - run:
           name: "Initilize the gcloud CLI"
@@ -113,6 +107,16 @@ commands:
             gcloud config set project $<<parameters.project-id>>
             gcloud config set compute/zone <<parameters.google-compute-zone>>
 
+  k8s_auth:
+    description: "Authenticate with K8s cluster"
+    parameters:
+      cluster-name:
+        description: "Name of environment variable storing the Kubernetes cluster name"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Authenticate with K8s cluster"
+          command: |
             gcloud --quiet config set container/cluster $<<parameters.cluster-name>>
             gcloud --quiet container clusters get-credentials $<<parameters.cluster-name>>
 
@@ -338,10 +342,6 @@ jobs:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
         default: europe-west1-b
-      cluster-name:
-        description: "Name of the environment variable storing the Kubernetes cluster name"
-        type: env_var_name
-        default: K8S_CLUSTER_NAME
       container-name:
         description: "Name of environment variable storing the name of the container we are publishing"
         type: env_var_name
@@ -402,7 +402,7 @@ jobs:
       - run:
           name: "Release"
           command: sbt "release with-defaults"
-      - initialize_gcloud: *initialize_gcloud_nonprod
+      - gcloud_auth: *gcloud_auth_nonprod
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
@@ -414,7 +414,7 @@ jobs:
             NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${NONPROD_IMAGE_ROOT}"
-      - initialize_gcloud: *initialize_gcloud_uat
+      - gcloud_auth: *gcloud_auth_uat
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
@@ -426,7 +426,7 @@ jobs:
             UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker tag "${UAT_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${UAT_IMAGE_ROOT}"
-      - initialize_gcloud: *initialize_gcloud_prd
+      - gcloud_auth: *gcloud_auth_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
@@ -493,7 +493,9 @@ jobs:
           to: <<parameters.workspace-dir>>
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
-      - initialize_gcloud: *initialize_gcloud_nonprod
+      - gcloud_auth: *gcloud_auth_nonprod
+      - k8s_auth:
+          cluster-name: <<parameters.cluster-name>>
       - run:
           name: "NONPROD Helm deploy"
           command: |
@@ -550,7 +552,9 @@ jobs:
           to: <<parameters.workspace-dir>>
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
-      - initialize_gcloud: *initialize_gcloud_prd
+      - gcloud_auth: *gcloud_auth_prd
+      - k8s_auth:
+          cluster-name: <<parameters.cluster-name>>
       - run:
           name: "PRD helm deploy"
           command: |
