@@ -7,6 +7,12 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
   google-compute-zone: <<parameters.google-compute-zone>>
   cluster-name: <<parameters.cluster-name>>
 
+.initialize_gcloud_uat: &initialize_gcloud_uat
+  gcloud-service-key: <<parameters.uat-gcloud-service-key>>
+  project-id: <<parameters.uat-project-id>>
+  google-compute-zone: <<parameters.google-compute-zone>>
+  cluster-name: <<parameters.cluster-name>>
+
 .initialize_gcloud_prd: &initialize_gcloud_prd
   gcloud-service-key: <<parameters.prd-gcloud-service-key>>
   project-id: <<parameters.prd-project-id>>
@@ -352,6 +358,14 @@ jobs:
         description: "The NONPROD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: NONPROD_PROJECT_ID
+      uat-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
+        type: env_var_name
+        default: UAT_GCLOUD_ACCOUNT_AUTH
+      uat-project-id:
+        description: "The UAT Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: UAT_PROJECT_ID
       prd-gcloud-service-key:
         description: "Name of environment variable storing the full service key JSON file for the PRD Google project"
         type: env_var_name
@@ -400,6 +414,18 @@ jobs:
             NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${NONPROD_IMAGE_ROOT}"
+      - initialize_gcloud: *initialize_gcloud_uat
+      - run:
+          name: "Configure Docker to use gcloud as a credential helper"
+          command: |
+            mkdir -p "$HOME/.docker"
+            gcloud auth configure-docker --quiet --project $<<parameters.uat-project-id>>
+      - run:
+          name: "Tag and push container to GCR UAT"
+          command: |
+            UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            docker tag "${UAT_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${UAT_IMAGE_ROOT}"
       - initialize_gcloud: *initialize_gcloud_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
