@@ -424,7 +424,8 @@ jobs:
           name: "Tag and push container to GCR UAT"
           command: |
             UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
-            docker tag "${UAT_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "$UAT_IMAGE_ROOT}:latest"
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${UAT_IMAGE_ROOT}"
       - gcloud_auth: *gcloud_auth_prd
       - run:
