@@ -1,12 +1,11 @@
 version: 2.1
 description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
-.initialize_gcloud_uat: &initialize_gcloud_uat
-  gcloud-service-key: <<parameters.uat-gcloud-service-key>>
-  project-id: <<parameters.uat-project-id>>
+.initialize_gcloud_nonprod: &initialize_gcloud_nonprod
+  gcloud-service-key: <<parameters.nonprod-gcloud-service-key>>
+  project-id: <<parameters.nonprod-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
   cluster-name: <<parameters.cluster-name>>
-
 
 .initialize_gcloud_prd: &initialize_gcloud_prd
   gcloud-service-key: <<parameters.prd-gcloud-service-key>>
@@ -345,12 +344,12 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
-      uat-gcloud-service-key:
-        description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
+      nonprod-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the NONPROD Google project"
         type: env_var_name
         default: NONPROD_GCLOUD_ACCOUNT_AUTH
-      uat-project-id:
-        description: "The UAT Google project ID to connect with via the gcloud CLI"
+      nonprod-project-id:
+        description: "The NONPROD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: NONPROD_PROJECT_ID
       prd-gcloud-service-key:
@@ -389,21 +388,19 @@ jobs:
       - run:
           name: "Release"
           command: sbt "release with-defaults"
-      - initialize_gcloud:
-          *initialize_gcloud_uat
+      - initialize_gcloud: *initialize_gcloud_nonprod
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
             mkdir -p "$HOME/.docker"
-            gcloud auth configure-docker --quiet --project $<<parameters.uat-project-id>>
+            gcloud auth configure-docker --quiet --project $<<parameters.nonprod-project-id>>
       - run:
-          name: "Tag and push container to GCR UAT"
+          name: "Tag and push container to GCR NONPROD"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${NONPROD_IMAGE_ROOT}"
-      - initialize_gcloud:
-          *initialize_gcloud_prd
+      - initialize_gcloud: *initialize_gcloud_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
@@ -412,7 +409,7 @@ jobs:
       - run:
           name: "Tag and push container to GCR PRD"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
@@ -422,7 +419,7 @@ jobs:
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
-  uat-deploy:
+  nonprod-deploy:
     parameters:
       executor:
         description: "Name of executor to use for this job. Defaults to docker executor"
@@ -444,12 +441,12 @@ jobs:
         description: "Name of environment variable storing the helm release name"
         type: env_var_name
         default: CIRCLE_PROJECT_REPONAME
-      uat-gcloud-service-key:
-        description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
+      nonprod-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the NONPROD Google project"
         type: env_var_name
         default: NONPROD_GCLOUD_ACCOUNT_AUTH
-      uat-project-id:
-        description: "The UAT Google project ID to connect with via the gcloud CLI"
+      nonprod-project-id:
+        description: "The NONPROD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: NONPROD_PROJECT_ID
       container-name:
@@ -470,12 +467,11 @@ jobs:
           to: <<parameters.workspace-dir>>
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
-      - initialize_gcloud:
-          *initialize_gcloud_uat
+      - initialize_gcloud: *initialize_gcloud_nonprod
       - run:
-          name: "UAT Helm deploy"
+          name: "NONPROD Helm deploy"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
               --set "image.repository=${NONPROD_IMAGE_ROOT}" \
               --set "image.tag=$(cat version.txt)"
@@ -528,8 +524,7 @@ jobs:
           to: <<parameters.workspace-dir>>
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
-      - initialize_gcloud:
-          *initialize_gcloud_prd
+      - initialize_gcloud: *initialize_gcloud_prd
       - run:
           name: "PRD helm deploy"
           command: |
