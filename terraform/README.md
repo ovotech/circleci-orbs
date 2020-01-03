@@ -1,4 +1,4 @@
-# Terraform Orb
+# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform)](https://circleci.com/orbs/registry/orb/ovotech/terraform)
 
 This orb can be used to plan and apply terraform modules.
 It is published as `ovotech/terraform@1.6`
