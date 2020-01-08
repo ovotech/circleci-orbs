@@ -14,7 +14,12 @@ The executor named `default` is the same as `terraform-0_11`
 
 ### terraform-0_11
 
-This executor uses terraform 0.11.14 by default.
+[Dockerfile](executor/Dockerfile-0.11)
+
+This executor uses terraform 0.11.14 by default. However `tfswitch` is
+installed to allow you to adjust at runtime.
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+to change this.
 
 It also contains:
 - helm + terraform-provider-helm
@@ -29,7 +34,10 @@ If the AIVEN_PROVIDER environment variable is set, also has:
 
 ### terraform-0_12
 
-This executor contains terraform 0.12.x, with terraform 0.12.5 being the default.
+[Dockerfile](executor/Dockerfile-0.12)
+
+This executor uses terraform 0.12.5 by default. However `tfswitch` is
+installed to allow you to adjust at runtime.
 See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
 to change this.
 
@@ -51,8 +59,9 @@ circleci.
 For the AWS provider, set the AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY
 environment variables.
 
-For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service 
-account key. You can also set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
+For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service
+account key as a base64 encoded or plain text string. You can also
+optionally set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
 
 If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set,
 the `plan` command will add a comment on an open PR with the plan.
@@ -244,7 +253,7 @@ This orb contains the jobs:
 - new-workspace
 - destroy-workspace
 
-These jobs run their respective command in the default executor 
+These jobs run their respective command in the default executor
 (which uses terraform 0.11). The jobs have the same parameters as the commands.
 
 ## Examples
@@ -280,7 +289,7 @@ workflows:
 ### A real-world example
 
 This configuration defines it's own plan and apply jobs which use the
-orb's plan and apply commands on multiple terraform modules. It uses 
+orb's plan and apply commands on multiple terraform modules. It uses
 terraform 0.12 via `terraform-0_12` executor.
 It also configures a helm repo within the the container for use with the
 terraform helm provider.
@@ -377,10 +386,10 @@ workflows:
 
 ### Using the aiven provider
 
-When using the default or terraform-0_11 executors, OVO's 
+When using the default or terraform-0_11 executors, OVO's
 `terraform-provider-aiven` is available at version `0.0.1`.
-To use Aiven's `terraform-provider-aiven` set the AIVEN_PROVIDER 
-environment variable and set a version equal or greater than `1.0.0` in 
+To use Aiven's `terraform-provider-aiven` set the AIVEN_PROVIDER
+environment variable and set a version equal or greater than `1.0.0` in
 the provider configuration.
 
 When using the terraform-0_12 executor Aiven's `terraform-provider-aiven` is
@@ -392,7 +401,7 @@ version: 2.1
 
 orbs:
   terraform: ovotech/terraform@1.6
-  
+
 jobs:
   terraform_plan:
     executor: terraform/default
@@ -442,9 +451,9 @@ workflows:
 ## GitHub
 
 To attach the plan to a PR, create the GITHUB_USERNAME and GITHUB_TOKEN
-environment variables in the CircleCI project. This should be a
-Personal Access Token of a github user that has access to the repo.
-The token requires the `repo, write:discussion` scopes.
+environment variables in the CircleCI project. This should be the username
+(not email address) and a Personal Access Token of a github user that has access to
+the repo. The token requires the `repo, write:discussion` scopes.
 
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by
@@ -462,7 +471,7 @@ the master branch:
 
 You can use this orb with private Terraform Module registries.
 
-To specify the registry api token, set TF_REGISTRY_HOST and 
+To specify the registry api token, set TF_REGISTRY_HOST and
 TF_REGISTRY_TOKEN environment variables in the CircleCI settings.
 
 ## Masking of sensitive values
@@ -478,8 +487,8 @@ Please create a github issue to suggest additional resources that need masking.
 
 ## Specifying a terraform version
 
-Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/) 
-`.tfswitchrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform 
+Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/)
+`.tfswitchrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform
 configuration, e.g.
 
 ```
