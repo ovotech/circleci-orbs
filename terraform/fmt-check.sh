@@ -7,7 +7,7 @@ if terraform fmt -help | grep -e "-recursive" >/dev/null; then
 
     for dir in $(find "$module_path" -type d);
     do
-      if ! terraform fmt -no-color -check "$dir"; then
+      if ! terraform fmt -no-color -check -diff "$dir"; then
         EXIT_CODE=1
       fi
     done
@@ -15,5 +15,5 @@ if terraform fmt -help | grep -e "-recursive" >/dev/null; then
     exit $EXIT_CODE
 
 else
-    terraform fmt -no-color -check "$module_path"
+    terraform fmt -no-color -check -diff "$module_path"
 fi
