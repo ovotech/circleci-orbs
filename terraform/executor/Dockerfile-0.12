@@ -48,7 +48,7 @@ RUN mkdir -p $TF_PLUGIN_CACHE_DIR
 
 RUN mkdir -p /root/.terraform.d/plugins \
  && for TF_AIVEN_VERSION in $TF_AIVEN_VERSIONS; do \
-      curl -L "https://github.com/aiven/terraform-provider-aiven/releases/download/v${TF_AIVEN_VERSION}/terraform-provider-aiven-linux_amd64_v${TF_AIVEN_VERSION}" \
+      curl -L "https://github.com/aiven/terraform-provider-aiven/releases/download/v${TF_AIVEN_VERSION}/terraform-provider-aiven-linux_amd64" \
         -o /root/.terraform.d/plugins/terraform-provider-aiven_v${TF_AIVEN_VERSION}; \
      chmod +x /root/.terraform.d/plugins/terraform-provider-aiven_v${TF_AIVEN_VERSION}; \
     done
