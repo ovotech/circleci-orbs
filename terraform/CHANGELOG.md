@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.2
+### Fixed
+- Older versions of aiven-provider that were accidentally left out of 1.6.1 have been restored
+
 ## ovotech/terraform@1.6.1
 ### Changed
 - Updated executors to include:
