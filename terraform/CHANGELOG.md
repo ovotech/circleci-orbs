@@ -9,7 +9,7 @@ not listed.
     - terraform 0.12.20
     - Aiven's aiven-provider-terraform 1.1.1, 1.1.2, 1.1.3
     - gcloud 277.0.0
-    - awscli 1.17.19
+    - awscli 1.17.9
 
 ## ovotech/terraform@1.6.2
 
