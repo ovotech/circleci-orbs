@@ -3,6 +3,14 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.4
+### Changed
+- Updated executors to include:
+    - helm3 @ v3.0.3
+    - Aiven's aiven-provider-terraform 1.1.4
+    - gcloud 279.0.0
+    - awscli 1.17.11
+
 ## ovotech/terraform@1.6.3
 ### Changed
 - Updated executors to include:
