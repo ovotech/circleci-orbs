@@ -52,12 +52,17 @@ environment variables.
 For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service 
 account key. You can also set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
 
-If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set, a comment
-is made on an open PR with the plan. Merging the PR approves the plan.
+If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set,
+the `plan` command will add a comment on an open PR with the plan.
 
-If github credentials are not set the apply step will fail, as it can't
-find the approved plan. You can instead set auto_approve to true to
-apply the current plan anyway.
+By default, when using the `apply` command the plan must have been approved
+by being merged from a PR that has had a comment added by a previous `plan` command.
+If the plan is not found or has drifted, then the `apply` command will fail.
+
+This is to ensure that the orb only applies changes that have been reviewed by a human.
+
+You can disable this behaviour by setting `auto_approve: true` in the `apply` step,
+which will always apply any terraform changes.
 
 Available commands:
 - plan
@@ -434,7 +439,7 @@ workflows:
 
 ## GitHub
 
-To attach the plan to PR create the GITHUB_USERNAME and GITHUB_TOKEN
+To attach the plan to a PR, create the GITHUB_USERNAME and GITHUB_TOKEN
 environment variables in the CircleCI project. This should be a
 Personal Access Token of a github user that has access to the repo.
 The token requires the `repo, write:discussion` scopes.
