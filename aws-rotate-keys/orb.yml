@@ -54,7 +54,7 @@ commands:
               aws iam list-access-keys \
                 --user-name << parameters.aws-username >> \
                 --query 'AccessKeyMetadata[0].AccessKeyId' \
-                --output text 2>/dev/null && break
+                --output text >/dev/null 2>/dev/null && break
               echo New token not usable yet, retrying in 10 seconds...
               sleep 10
             done &&
