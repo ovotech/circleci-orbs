@@ -489,4 +489,4 @@ $ cat .tfswitchrc
 
 This also allows you to use newer terraform versions without waiting for a new orb version.
 You may also want to add a [`required_version`](https://www.terraform.io/docs/configuration/terraform.html#specifying-a-required-terraform-version)
-you your terraform configuration to prevent using the wrong version locally.
+to your terraform configuration to prevent using the wrong version locally.
