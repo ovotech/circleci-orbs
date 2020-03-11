@@ -59,7 +59,7 @@ if [[ "$REGISTRY_URL" == "" ]]; then
     exit 2
 fi
 
-curl -L --fail -X PUT "$REGISTRY_URL$MODULE_NAME/$VERSION/upload" \
+curl -Lv -X PUT "$REGISTRY_URL$MODULE_NAME/$VERSION/upload" \
  --data-binary "@/tmp/$VERSION.tar.gz" \
  -H "Content-Type: application/x-tar" \
  -H "Authorization: Bearer $TF_REGISTRY_TOKEN"
