@@ -14,7 +14,7 @@ The executor named `default` is the same as `terraform-0_11`
 
 ### terraform-0_11
 
-This executor uses terraform 0.11
+This executor uses terraform 0.11.14 by default.
 
 It also contains:
 - helm + terraform-provider-helm
@@ -29,7 +29,9 @@ If the AIVEN_PROVIDER environment variable is set, also has:
 
 ### terraform-0_12
 
-This executor uses terraform 0.12
+This executor contains terraform 0.12.x, with terraform 0.12.5 being the default.
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+to change this.
 
 It also contains:
 - Aiven's terraform-provider-aiven
@@ -462,3 +464,29 @@ You can use this orb with private Terraform Module registries.
 
 To specify the registry api token, set TF_REGISTRY_HOST and 
 TF_REGISTRY_TOKEN environment variables in the CircleCI settings.
+
+## Masking of sensitive values
+
+The terraform commands use [tfmask](https://github.com/cloudposse/tfmask) to mask sensitive output for these resources:
+
+- random_id
+- kubernetes_secret
+- acme_certificate
+
+You can customise this list using the TFMASK_RESOURCES_REGEX environment variable. See the tfmask docs for details.
+Please create a github issue to suggest additional resources that need masking.
+
+## Specifying a terraform version
+
+Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/) 
+`.tfswitchrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform 
+configuration, e.g.
+
+```
+$ cat .tfswitchrc
+0.12.18
+```
+
+This also allows you to use newer terraform versions without waiting for a new orb version.
+You may also want to add a [`required_version`](https://www.terraform.io/docs/configuration/terraform.html#specifying-a-required-terraform-version)
+you your terraform configuration to prevent using the wrong version locally.
