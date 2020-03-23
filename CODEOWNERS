@@ -2,3 +2,4 @@
 /clair-scanner/     @ovotech/production-eng
 /aws-rotate-keys/   @mwz
 /rac-gcp-deploy/    @ovotech/reads-consumption
+/aws-get-parameters/ @ovotech/jaws
