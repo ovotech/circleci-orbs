@@ -41,7 +41,7 @@ commands:
           aws-secret-access-key: << parameters.aws-secret-access-key >>
           profile-name: << parameters.profile-name >>
           aws-region: << parameters.aws-region >>
-      - aws-cli/configure
+      - aws-cli/configure:
           aws-access-key-id: << parameters.aws-access-key-id >>
           aws-secret-access-key: << parameters.aws-secret-access-key >>
           profile-name: << parameters.profile-name >>
