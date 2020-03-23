@@ -123,6 +123,11 @@ workflows:
   commit:
     jobs:
       - validate_orbs
+      -   publish_orb:
+            name: aws-get-parameters
+            path: aws-get-parameters
+            requires:
+              - validate_orbs
       - publish_orb:
           name: aws-rotate-keys
           path: aws-rotate-keys

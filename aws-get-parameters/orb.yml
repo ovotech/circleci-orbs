@@ -1,10 +1,9 @@
 version: 2.1
 description: An orb to get AWS parameters from the parameter store
 orbs:
-  aws-cli: circleci/aws-cli@0.1.13
-
+  aws-cli: circleci/aws-cli@0.1.22
 commands:
-  get-parameters:
+  aws-get-parameters:
     description: "Get parameter list from aws"
     parameters:
       values:
@@ -36,12 +35,7 @@ commands:
         description: Profile name to be configured.
         type: string
     steps:
-      - aws-cli/install:
-          aws-access-key-id: << parameters.aws-access-key-id >>
-          aws-secret-access-key: << parameters.aws-secret-access-key >>
-          profile-name: << parameters.profile-name >>
-          aws-region: << parameters.aws-region >>
-      - aws-cli/configure
+      - aws-cli/setup:
           aws-access-key-id: << parameters.aws-access-key-id >>
           aws-secret-access-key: << parameters.aws-secret-access-key >>
           profile-name: << parameters.profile-name >>
@@ -58,5 +52,9 @@ commands:
                 AWS_KEY=${tmp[0]}
                 LOCAL_KEY=${tmp[1]}
                 PARDATA=$(aws ssm get-parameters --with-decryption --names "${AWS_KEY}" | jq '.Parameters[].Value')
+                if  [ -z "$PARDATA" ]; then
+                    echo no data found in AWS for $AWS_KEY $LOCAL_KEY
+                    exit -1
+                fi
                 echo "export ${LOCAL_KEY}=${PARDATA}" >> << parameters.output-file >>
             done

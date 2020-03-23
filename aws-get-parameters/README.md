@@ -3,7 +3,7 @@
 This orb can be used to retrieve and rename paramaters from aws parameter store.
 
 ## Commands
-### get-parameters
+### aws-get-parameters
 This is the only command available in this orb. It gets a list of parameters from aws, renames them and saves them to the given file.
 
 **Parameters**
@@ -62,10 +62,10 @@ jobs:
             - attach_workspace:
                   at: ~/working
             - run:
-                  name: Login to aws
+                  name: Use AWS parameters
                   command: |
                       source ENVIRONMENT_STORE_FILE
-                      use environmetal variables
+                      <some command using the parameters>
 
 workflows:
     version: 2.1
