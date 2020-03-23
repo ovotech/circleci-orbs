@@ -24,7 +24,7 @@ The following example has the following CircleCI env vars `AWS_ACCESS_KEY_ID`, `
 version: 2.1
 
 orbs:
-  aws-get-parameters: ovotech/aws-get-parameters@1
+  aws-get-orb: ovotech/aws-get-parameters@1
 executors:
     kotlin:
         docker:
@@ -36,7 +36,7 @@ jobs:
     steps:
         - attach_workspace:
               at: ~/working
-        - aws-get-parameters:
+        - aws-get-orb/aws-get-parameters:
               output-file: ENVIRONMENT_STORE_FILE
               values: >-
                   /aiven/clusterUrl=KAFKA_CLUSTER_URL \
@@ -93,7 +93,7 @@ jobs:
     steps:
         - attach_workspace:
               at: ~/working
-        - aws-get-parameters:
+        - aws-get-orb/aws-get-parameters:
               output-file: ENVIRONMENT_STORE_FILE
               values: /aiven/clusterUrl=KAFKA_CLUSTER_URL
               aws-access-key-id: $PROD_AWS_ACCESS_KEY_ID
