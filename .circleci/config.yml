@@ -89,14 +89,18 @@ jobs:
 
               filename=$(basename $path)
 
-              if [[ "$filename" == "Dockerfile" ]]; then
-                  TAG="latest"
-              else
-                  TAG="${filename#"Dockerfile-"}"
+              if [[ -f "$filename" ]]; then
+                if [[ "$filename" == "Dockerfile" ]]; then
+                    TAG="latest"
+                else
+                    TAG="${filename#"Dockerfile-"}"
+                fi
+
+                # update the executor image tag to point at the image that was just published
+                DIGEST=$(<"${ORB}_${TAG}_digest.txt")
+                sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
               fi
 
-              DIGEST=$(<"${ORB}_${TAG}_digest.txt")
-              sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
             done
 
             circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
