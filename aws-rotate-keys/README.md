@@ -35,8 +35,6 @@ jobs:
       - rotate-aws-keys/rotate:
           aws-username: circleci-user
           circleci-token: $CIRCLECI_TOKEN
-          aws-access-key-id-var: AWS_ACCESS_KEY_ID
-          aws-secret-access-key-var: AWS_SECRET_ACCESS_KEY
 
 workflows:
   version: 2
@@ -61,11 +59,6 @@ jobs:
   rotate-aws-keys:
     executor: rotate-aws-keys/default
     steps:
-      - run:
-          command: |
-            export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
-            export AWS_DEFAULT_REGION=$PROD_AWS_DEFAULT_REGION
       - rotate-aws-keys/rotate:
           aws-username: circleci-user
           circleci-token: $CIRCLECI_TOKEN
