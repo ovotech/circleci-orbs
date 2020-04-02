@@ -103,9 +103,12 @@ jobs:
 
             done
 
+            echo "Publishing branch development-version: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
             circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
+              echo "Publishing master to ovotech/${ORB}"
+
               if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
                 circleci orb publish promote "ovotech/${ORB}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
@@ -127,6 +130,10 @@ jobs:
                 # This is a new version
                 circleci orb publish increment "/tmp/${ORB}_orb.yml" "ovotech/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
               fi
+            elif
+              echo "Orb can now be tested using the following circleci config"
+              echo "  orbs:"
+              echo "    ${ORB}: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
             fi
 
 workflows:
