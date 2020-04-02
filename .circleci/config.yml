@@ -29,7 +29,7 @@ jobs:
       path:
         type: string
         description: The path to the orb
-      publish-docker:
+      publish-docker-image:
         type: boolean
         description: |
           Some orbs actions don't require us to maintain an executor image; set this to false if the orb uses existing public images
