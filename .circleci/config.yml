@@ -7,8 +7,7 @@ version: 2.1
 #   A single Dockerfile in the executor directory
 #   The orb yaml is in a file name orb.yml
 #   Published in the ovotech namespace
-#   An orb_version.txt file may exists in an orb directory containing the version of the orb.
-#     (A new version is only published when the version changes)
+#   An orb_version.txt file may exists in an orb directory containing the version of the orb.  #     (A new version is only published when the version changes)
 
 jobs:
   validate_orbs:
@@ -138,7 +137,7 @@ workflows:
       - publish_orb:
           name: aws-rotate-keys
           path: aws-rotate-keys
-          publish-docker: false
+          publish-docker-image: false
           requires:
             - validate_orbs
       - publish_orb:
