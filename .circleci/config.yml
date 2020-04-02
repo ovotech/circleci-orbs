@@ -4,7 +4,7 @@ version: 2.1
 
 # Orbs follow the conventions:
 #   Directory named the same as the orb
-#   A single Dockerfile in the executor directory
+#   A single Dockerfile in the executor directory (unless you specify publish-docker-image:false)
 #   The orb yaml is in a file name orb.yml
 #   Published in the ovotech namespace
 #   An orb_version.txt file may exists in an orb directory containing the version of the orb.  #     (A new version is only published when the version changes)
