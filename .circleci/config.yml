@@ -132,7 +132,7 @@ jobs:
                 # This is a new version
                 circleci orb publish increment "/tmp/${ORB}_orb.yml" "ovotech/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
               fi
-            elif
+            else
               echo "Orb can now be tested using the following circleci config"
               echo "  orbs:"
               echo "    ${ORB}: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
