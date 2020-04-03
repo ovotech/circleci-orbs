@@ -106,7 +106,7 @@ jobs:
             done
 
             echo "Publishing branch development-version: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
-            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TEST_TOKEN"
+            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               echo "Publishing master to ovotech/${ORB}"
