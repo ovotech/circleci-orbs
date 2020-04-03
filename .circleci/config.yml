@@ -44,6 +44,7 @@ jobs:
           steps:
             - run:
                 name: docker build << parameters.path >>
+                # language=bash
                 command: |
                   docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
 
@@ -80,6 +81,7 @@ jobs:
                   done
       - run:
           name: Publish << parameters.path >> orb
+          # language=bash
           command: |
             readonly ORB="<< parameters.path >>"
 
