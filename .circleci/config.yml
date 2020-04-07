@@ -92,13 +92,15 @@ jobs:
               DIGEST=$(<"${ORB}_${TAG}_digest.txt")
               sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
             done
+            
+            DEV_VERSION=dev:$(echo $CIRCLE_BRANCH | tr / _)
 
-            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
+            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
-                circleci orb publish promote "ovotech/${ORB}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
+                circleci orb publish promote "ovotech/${ORB}@$DEV_VERSION" major --token "$CIRCLECI_PROD_TOKEN"
                 exit 0
               fi
 
