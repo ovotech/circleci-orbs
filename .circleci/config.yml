@@ -2,14 +2,6 @@ version: 2.1
 
 # Reuse a common job for publishing each orb
 
-# Orbs follow the conventions:
-#   Directory named the same as the orb
-#   A single Dockerfile in the executor directory
-#   The orb yaml is in a file name orb.yml
-#   Published in the ovotech namespace
-#   An orb_version.txt file may exists in an orb directory containing the version of the orb.
-#     (A new version is only published when the version changes)
-
 jobs:
   validate_orbs:
     description: Validate orbs
@@ -29,51 +21,60 @@ jobs:
       path:
         type: string
         description: The path to the orb
+      publish-docker-image:
+        type: boolean
+        description: |
+          Some orbs actions don't require us to maintain an executor image; set this to false if the orb uses existing public images
+        default: true
     docker:
       - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
     steps:
       - checkout
       - setup_remote_docker:
           version: 17.11.0-ce
-      - run:
-          name: docker build << parameters.path >>
-          command: |
-            docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+      - when:
+          condition: <<parameters.publish-docker-image>>
+          steps:
+            - run:
+                name: docker build << parameters.path >>
+                # language=bash
+                command: |
+                  docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
 
-            readonly ORB="<< parameters.path >>"
+                  readonly ORB="<< parameters.path >>"
 
-            for path in $ORB/executor/Dockerfile*; do
+                  for path in $ORB/executor/Dockerfile*; do
 
-              filename=$(basename $path)
+                    filename=$(basename $path)
 
-              if [[ "$filename" == "Dockerfile" ]]; then
-                  TAG="latest"
-                  BUILD_TAG="$(date "+%d-%m-%Y")"
-              else
-                  TAG="${filename#"Dockerfile-"}"
-                  BUILD_TAG="${TAG}_$(date "+%d-%m-%Y")"
-              fi
+                    if [[ "$filename" == "Dockerfile" ]]; then
+                        TAG="latest"
+                        BUILD_TAG="$(date "+%d-%m-%Y")"
+                    else
+                        TAG="${filename#"Dockerfile-"}"
+                        BUILD_TAG="${TAG}_$(date "+%d-%m-%Y")"
+                    fi
 
-              docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
-              --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
-              --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
-              --label org.label-schema.schema-version="1.0" \
-              --file $path \
-              "${ORB}/executor"
+                    docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
+                    --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
+                    --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
+                    --label org.label-schema.schema-version="1.0" \
+                    --file $path \
+                    "${ORB}/executor"
 
-              docker push "ovotech/${ORB}:${BUILD_TAG}"
+                    docker push "ovotech/${ORB}:${BUILD_TAG}"
 
-              DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${ORB}:${BUILD_TAG}")
-              echo $DIGEST > "${ORB}_${TAG}_digest.txt"
+                    DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${ORB}:${BUILD_TAG}")
+                    echo $DIGEST > "${ORB}_${TAG}_digest.txt"
 
-              if [ "$CIRCLE_BRANCH" = "master" ]; then
-                  docker tag "ovotech/${ORB}:${BUILD_TAG}" "ovotech/${ORB}:${TAG}"
-                  docker push "ovotech/${ORB}:${TAG}"
-              fi
-            done
-
+                    if [ "$CIRCLE_BRANCH" = "master" ]; then
+                        docker tag "ovotech/${ORB}:${BUILD_TAG}" "ovotech/${ORB}:${TAG}"
+                        docker push "ovotech/${ORB}:${TAG}"
+                    fi
+                  done
       - run:
           name: Publish << parameters.path >> orb
+          # language=bash
           command: |
             readonly ORB="<< parameters.path >>"
 
@@ -83,21 +84,28 @@ jobs:
 
               filename=$(basename $path)
 
-              if [[ "$filename" == "Dockerfile" ]]; then
-                  TAG="latest"
-              else
-                  TAG="${filename#"Dockerfile-"}"
+              if [[ -f "$filename" ]]; then
+                if [[ "$filename" == "Dockerfile" ]]; then
+                    TAG="latest"
+                else
+                    TAG="${filename#"Dockerfile-"}"
+                fi
+
+                # update the executor image tag to point at the image that was just published
+                DIGEST=$(<"${ORB}_${TAG}_digest.txt")
+                sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
               fi
 
-              DIGEST=$(<"${ORB}_${TAG}_digest.txt")
-              sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
             done
-            
+
             DEV_VERSION=dev:$(echo $CIRCLE_BRANCH | tr / _)
 
+            echo "Publishing branch development-version: ovotech/${ORB}@$DEV_VERSION"
             circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
+              echo "Publishing master to ovotech/${ORB}"
+
               if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
                 circleci orb publish promote "ovotech/${ORB}@$DEV_VERSION" major --token "$CIRCLECI_PROD_TOKEN"
@@ -119,6 +127,10 @@ jobs:
                 # This is a new version
                 circleci orb publish increment "/tmp/${ORB}_orb.yml" "ovotech/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
               fi
+            else
+              echo "Orb can now be tested using the following circleci config"
+              echo "  orbs:"
+              echo "    ${ORB}: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
             fi
 
 workflows:
@@ -133,6 +145,7 @@ workflows:
       - publish_orb:
           name: aws-rotate-keys
           path: aws-rotate-keys
+          publish-docker-image: false
           requires:
             - validate_orbs
       - publish_orb:

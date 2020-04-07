@@ -1,11 +1,11 @@
 version: 2.1
 description: An orb to rotate AWS keys
 
+orbs:
+  aws-cli: circleci/aws-cli@1
+
 executors:
-  default:
-    description: Default executor
-    docker:
-      - image: ovotech/aws-rotate-keys:latest
+  default: aws-cli/default
 
 commands:
   rotate:
@@ -30,6 +30,10 @@ commands:
           you will use to hold this value, i.e. AWS_SECRET_ACCESS_KEY.
         default: AWS_SECRET_ACCESS_KEY
     steps:
+      - aws-cli/setup:
+          aws-access-key-id: << parameters.aws-access-key-id-var >>
+          aws-secret-access-key: << parameters.aws-secret-access-key-var >>
+          configure-default-region: false
       - run:
           name: Rotate AWS keys
           command: |
