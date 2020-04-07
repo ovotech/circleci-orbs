@@ -2,7 +2,7 @@ version: 2.1
 description: An orb to rotate AWS keys
 
 orbs:
-  aws-cli: circleci/aws-cli@1
+  aws-cli: circleci/aws-cli@1.0.0
 
 executors:
   default: aws-cli/default
@@ -30,13 +30,15 @@ commands:
           you will use to hold this value, i.e. AWS_SECRET_ACCESS_KEY.
         default: AWS_SECRET_ACCESS_KEY
     steps:
-      - aws-cli/setup:
-          aws-access-key-id: << parameters.aws-access-key-id-var >>
-          aws-secret-access-key: << parameters.aws-secret-access-key-var >>
-          configure-default-region: false
+      - aws-cli/install:
+          # This only install the cli if it is missing from $PATH
+          version: '2'
       - run:
           name: Rotate AWS keys
           command: |
+            # Configure the credentials needed to access AWS (not using aws-cli/setup since it precludes interpolation via usage of env_var_name type
+            [[ -z "$AWS_ACCESS_KEY_ID" ]] && << parameters.aws-access-key-id-var >>
+            [[ -z "$AWS_SECRET_ACCESS_KEY" ]] && << parameters.aws-access-key-id-var >>
             old_access_key_id=`aws iam list-access-keys --user-name << parameters.aws-username >> --query 'AccessKeyMetadata[0].AccessKeyId' --output text` &&
             create_access_key_output=`aws iam create-access-key --user-name << parameters.aws-username >>` &&
             new_access_key_id=`echo $create_access_key_output | jq -r -e '.AccessKey.AccessKeyId'` &&
