@@ -98,15 +98,17 @@ jobs:
 
             done
 
-            echo "Publishing branch development-version: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
-            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@dev:$CIRCLE_BRANCH" --token "$CIRCLECI_TOKEN"
+            DEV_VERSION=dev:$(echo $CIRCLE_BRANCH | tr / _)
+
+            echo "Publishing branch development-version: ovotech/${ORB}@$DEV_VERSION"
+            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               echo "Publishing master to ovotech/${ORB}"
 
               if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
-                circleci orb publish promote "ovotech/${ORB}@dev:$CIRCLE_BRANCH" major --token "$CIRCLECI_PROD_TOKEN"
+                circleci orb publish promote "ovotech/${ORB}@$DEV_VERSION" major --token "$CIRCLECI_PROD_TOKEN"
                 exit 0
               fi
 
