@@ -36,7 +36,7 @@ commands:
       - run:
           name: Rotate AWS keys
           command: |
-            # Configure the credentials needed to access AWS (not using aws-cli/setup since it precludes interpolation via usage of env_var_name type
+            # Configure the credentials needed to access AWS (not using aws-cli/setup since it precludes interpolation via its usage of the env_var_name type)
             [[ -z "$AWS_ACCESS_KEY_ID" ]] && << parameters.aws-access-key-id-var >>
             [[ -z "$AWS_SECRET_ACCESS_KEY" ]] && << parameters.aws-access-key-id-var >>
             old_access_key_id=`aws iam list-access-keys --user-name << parameters.aws-username >> --query 'AccessKeyMetadata[0].AccessKeyId' --output text` &&
