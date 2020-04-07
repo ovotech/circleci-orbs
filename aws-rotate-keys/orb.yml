@@ -31,14 +31,12 @@ commands:
         default: AWS_SECRET_ACCESS_KEY
     steps:
       - aws-cli/install:
-          # This only install the cli if it is missing from $PATH
+          # This only installs the cli if it is missing from $PATH
           version: '2'
       - run:
           name: Rotate AWS keys
           command: |
-            # Configure the credentials needed to access AWS (not using aws-cli/setup since it precludes interpolation via its usage of the env_var_name type)
-            [[ -z "$AWS_ACCESS_KEY_ID" ]] && export AWS_ACCESS_KEY_ID=<< parameters.aws-access-key-id-var >>
-            [[ -z "$AWS_SECRET_ACCESS_KEY" ]] && export AWS_SECRET_ACCESS_KEY=<< parameters.aws-secret-access-key-var >>
+            # Assumes that AWS credentials have already been configured
             old_access_key_id=`aws iam list-access-keys --user-name << parameters.aws-username >> --query 'AccessKeyMetadata[0].AccessKeyId' --output text` &&
             create_access_key_output=`aws iam create-access-key --user-name << parameters.aws-username >>` &&
             new_access_key_id=`echo $create_access_key_output | jq -r -e '.AccessKey.AccessKeyId'` &&
