@@ -59,6 +59,11 @@ jobs:
   rotate-aws-keys:
     executor: rotate-aws-keys/default
     steps:
+      - run:
+          name: Set AWS environment to PROD
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID' >> $BASH_ENV
+            echo 'export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY' >> $BASH_ENV
       - rotate-aws-keys/rotate:
           aws-username: circleci-user
           circleci-token: $CIRCLECI_TOKEN
