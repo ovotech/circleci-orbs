@@ -103,5 +103,6 @@ RUN pip3 install awscli==$AWSCLI_VERSION
 
 COPY --from=tfmask /go/tfmask/release/tfmask /usr/local/bin/tfmask
 ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"
+ENV TFENV="0.11"
 
 ENTRYPOINT ["/usr/local/bin/terraform"]
