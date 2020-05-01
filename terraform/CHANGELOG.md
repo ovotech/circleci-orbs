@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.6
+### Changed
+- Added `TFENV` env var to 0.11 Docker image, as `tfmask` now defaults to tf 0.12
+
 ## ovotech/terraform@1.6.5
 ### Changed
 - Updated executors to include:
