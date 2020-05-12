@@ -3,6 +3,73 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.6
+### Changed
+- Added `TFENV` env var to 0.11 Docker image, as `tfmask` now defaults to tf 0.12
+
+## ovotech/terraform@1.6.5
+### Changed
+- Updated executors to include:
+    - wget
+    
+## ovotech/terraform@1.6.4
+### Changed
+- Updated executors to include:
+    - helm3 @ v3.0.3
+    - Aiven's aiven-provider-terraform 1.1.4
+    - gcloud 279.0.0
+    - awscli 1.17.11
+
+## ovotech/terraform@1.6.3
+### Changed
+- Updated executors to include:
+    - terraform 0.12.20
+    - Aiven's aiven-provider-terraform 1.1.1, 1.1.2, 1.1.3
+    - gcloud 277.0.0
+    - awscli 1.17.9
+
+## ovotech/terraform@1.6.2
+
+### Changed
+- Updated executors to include:
+    - Aiven's aiven-provider-terraform 1.0.20, 1.1.0
+    
+### Fixed
+- Older versions of aiven-provider that were accidentally left out of 1.6.1 have been restored
+
+## ovotech/terraform@1.6.1
+### Changed
+- Updated executors to include:
+    - Aiven's aiven-provider-terraform 1.0.19
+
+## ovotech/terraform@1.6.0
+### Added
+- An `output_path` parameter to the `apply` command, for saving output variables to a json file
+- A separate `output` command that writes output variables from a terraform state to a json file
+- Helm 3.0.0 is included in the executors as `helm3`. You can make helm3 the default version by setting the
+  environment variable `HELM=helm3`.
+
+### Changed
+- Updated executors to include:
+    - terraform 0.12.17
+    - awscli 1.16.294
+
+## ovotech/terraform@1.5.13
+### Changed
+- Updated executors to include:
+    - terraform 0.12.14, 0.12.15, 0.12.16
+    - gcloud 272.0.0
+    - awscli 1.16.284
+    - helm 2.16.1
+
+## ovotech/terraform@1.5.12
+### Changed
+- Updated executors to include:
+    - terraform 0.12.13
+    - gcloud 270.0.0
+    - awscli 1.16.274
+    - helm 2.15.2
+
 ## ovotech/terraform@1.5.11
 ### Changed
 - Updated executors to include:

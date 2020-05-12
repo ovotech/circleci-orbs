@@ -1,7 +1,7 @@
-# Terraform Orb
+# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform)](https://circleci.com/orbs/registry/orb/ovotech/terraform)
 
 This orb can be used to plan and apply terraform modules.
-It is published as `ovotech/terraform@1.5`
+It is published as `ovotech/terraform@1.6`
 
 ## Executors
 
@@ -14,7 +14,12 @@ The executor named `default` is the same as `terraform-0_11`
 
 ### terraform-0_11
 
-This executor uses terraform 0.11
+[Dockerfile](executor/Dockerfile-0.11)
+
+This executor uses terraform 0.11.14 by default. However `tfswitch` is
+installed to allow you to adjust at runtime.
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+to change this.
 
 It also contains:
 - helm + terraform-provider-helm
@@ -29,14 +34,22 @@ If the AIVEN_PROVIDER environment variable is set, also has:
 
 ### terraform-0_12
 
-This executor uses terraform 0.12
+[Dockerfile](executor/Dockerfile-0.12)
+
+This executor uses terraform 0.12.5 by default. However `tfswitch` is
+installed to allow you to adjust at runtime.
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+to change this.
 
 It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
-- helm
+- Helm 2 available as `helm2` and `helm`
+- Helm 3+ available as `helm3`
 - aws-cli
 - ovo's kafka user provider
+
+If the `HELM` environment variable is set to `helm3`, the `helm` command invokes Helm 3.
 
 ## Commands
 
@@ -46,19 +59,26 @@ circleci.
 For the AWS provider, set the AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY
 environment variables.
 
-For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service 
-account key. You can also set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
+For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service
+account key as a base64 encoded or plain text string. You can also
+optionally set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
 
-If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set, a comment
-is made on an open PR with the plan. Merging the PR approves the plan.
+If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set,
+the `plan` command will add a comment on an open PR with the plan.
 
-If github credentials are not set the apply step will fail, as it can't
-find the approved plan. You can instead set auto_approve to true to
-apply the current plan anyway.
+By default, when using the `apply` command the plan must have been approved
+by being merged from a PR that has had a comment added by a previous `plan` command.
+If the plan is not found or has drifted, then the `apply` command will fail.
+
+This is to ensure that the orb only applies changes that have been reviewed by a human.
+
+You can disable this behaviour by setting `auto_approve: true` in the `apply` step,
+which will always apply any terraform changes.
 
 Available commands:
 - plan
 - apply
+- output
 - check
 - destroy
 - new-workspace
@@ -101,6 +121,19 @@ Parameters:
 - var: Comma separated list of vars to set, e.g. foo=bar
 - auto_approve: true, to apply the plan, even if it has not been approved through a PR.
 - parallelism: Limit the number of concurrent operations
+- output_path (string): An optional path to write a json file containing the output variables.
+
+### output
+
+This command saves the output variables from a terraform state into a json file.
+
+Parameters:
+
+- path (string): Path the the terraform module to get the outputs for
+- workspace (string): Terraform workspace to run the command in (default: 'default')
+- backend_config_file (string): Comma separated list of terraform backend config files
+- backend_config (string): Comma separated list of backend configs, e.g. foo=bar
+- output_path (string): The path to write the json file containing the output variables.
 
 ### check
 
@@ -220,7 +253,7 @@ This orb contains the jobs:
 - new-workspace
 - destroy-workspace
 
-These jobs run their respective command in the default executor 
+These jobs run their respective command in the default executor
 (which uses terraform 0.11). The jobs have the same parameters as the commands.
 
 ## Examples
@@ -235,7 +268,7 @@ to the open PR. If that PR is then merged, the plan is applied.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
 
 workflows:
   test:
@@ -256,7 +289,7 @@ workflows:
 ### A real-world example
 
 This configuration defines it's own plan and apply jobs which use the
-orb's plan and apply commands on multiple terraform modules. It uses 
+orb's plan and apply commands on multiple terraform modules. It uses
 terraform 0.12 via `terraform-0_12` executor.
 It also configures a helm repo within the the container for use with the
 terraform helm provider.
@@ -266,7 +299,7 @@ terraform helm provider.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
 
 jobs:
   terraform_plan:
@@ -353,10 +386,10 @@ workflows:
 
 ### Using the aiven provider
 
-When using the default or terraform-0_11 executors, OVO's 
+When using the default or terraform-0_11 executors, OVO's
 `terraform-provider-aiven` is available at version `0.0.1`.
-To use Aiven's `terraform-provider-aiven` set the AIVEN_PROVIDER 
-environment variable and set a version equal or greater than `1.0.0` in 
+To use Aiven's `terraform-provider-aiven` set the AIVEN_PROVIDER
+environment variable and set a version equal or greater than `1.0.0` in
 the provider configuration.
 
 When using the terraform-0_12 executor Aiven's `terraform-provider-aiven` is
@@ -367,8 +400,8 @@ always available. (And OVO's is not).
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
-  
+  terraform: ovotech/terraform@1.6
+
 jobs:
   terraform_plan:
     executor: terraform/default
@@ -398,7 +431,7 @@ detected to any of the terraform resources the build is failed.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.5
+  terraform: ovotech/terraform@1.6
 
 workflows:
   nightly:
@@ -417,10 +450,16 @@ workflows:
 
 ## GitHub
 
-To attach the plan to PR create the GITHUB_USERNAME and GITHUB_TOKEN
-environment variables in the CircleCI project. This should be a
-Personal Access Token of a github user that has access to the repo.
-The token requires the `repo, write:discussion` scopes.
+To attach the plan to a PR, create the GITHUB_USERNAME and GITHUB_TOKEN
+environment variables in the CircleCI project. This should be the username
+(not email address) and a Personal Access Token of a github user that has access to
+the repo. The token requires the `repo, write:discussion` scopes.
+
+It's recommended to enable **"Only build pull requests"**  in your CircleCI 
+config when using this setting. If not enabled this could lead to a creation
+of a PR after the CircleCI job has run, which means the Plan comment cannot be
+added. Settings can be found under "Advanced Settings" e.g.
+https://circleci.com/gh/ovotech/$YOUR_REPO/edit#advanced-settings
 
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by
@@ -438,5 +477,31 @@ the master branch:
 
 You can use this orb with private Terraform Module registries.
 
-To specify the registry api token, set TF_REGISTRY_HOST and 
+To specify the registry api token, set TF_REGISTRY_HOST and
 TF_REGISTRY_TOKEN environment variables in the CircleCI settings.
+
+## Masking of sensitive values
+
+The terraform commands use [tfmask](https://github.com/cloudposse/tfmask) to mask sensitive output for these resources:
+
+- random_id
+- kubernetes_secret
+- acme_certificate
+
+You can customise this list using the TFMASK_RESOURCES_REGEX environment variable. See the tfmask docs for details.
+Please create a github issue to suggest additional resources that need masking.
+
+## Specifying a terraform version
+
+Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/)
+`.tfswitchrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform
+configuration, e.g.
+
+```
+$ cat .tfswitchrc
+0.12.18
+```
+
+This also allows you to use newer terraform versions without waiting for a new orb version.
+You may also want to add a [`required_version`](https://www.terraform.io/docs/configuration/terraform.html#specifying-a-required-terraform-version)
+to your terraform configuration to prevent using the wrong version locally.

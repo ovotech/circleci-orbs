@@ -35,8 +35,6 @@ function plan() {
         update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
         return 1
     fi
-
-    return 0
 }
 
 function apply() {        
@@ -47,7 +45,6 @@ function apply() {
 
     if [[ $TF_EXIT -eq 0 ]]; then
         update_status "Plan applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
-        return 0
     else
         update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
         return 1

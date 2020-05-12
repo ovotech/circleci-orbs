@@ -1,18 +1,20 @@
 version: 2.1
 description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
-.initialize_gcloud_uat: &initialize_gcloud_uat
+.gcloud_auth_nonprod: &gcloud_auth_nonprod
+  gcloud-service-key: <<parameters.nonprod-gcloud-service-key>>
+  project-id: <<parameters.nonprod-project-id>>
+  google-compute-zone: <<parameters.google-compute-zone>>
+
+.gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
   project-id: <<parameters.uat-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
-  cluster-name: <<parameters.cluster-name>>
 
-
-.initialize_gcloud_prd: &initialize_gcloud_prd
+.gcloud_auth_prd: &gcloud_auth_prd
   gcloud-service-key: <<parameters.prd-gcloud-service-key>>
   project-id: <<parameters.prd-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
-  cluster-name: <<parameters.cluster-name>>
 
 executors:
   machine:
@@ -46,10 +48,15 @@ commands:
 
   load_cache:
     description: "Restore cached dependencies"
+    parameters:
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     steps:
       - restore_cache:
           keys:
-            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
 
   bintray_credentials:
     description: "Create Bintray credentials file"
@@ -65,7 +72,21 @@ commands:
           name: "Create Bintray credentials file"
           command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
 
-  initialize_gcloud:
+  snyk_monitor:
+    description: "Runs snyk monitor"
+    parameters:
+      api-key:
+        description: "Name of the environment variable storing the snyk api key"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Run snyk monitor"
+          command: |
+            echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
+            snyk auth $<<parameters.api-key>>
+            snyk monitor --project-name="${CIRCLE_PROJECT_REPONAME}"
+
+  gcloud_auth:
     description: "Initialize the `gcloud` CLI"
     parameters:
       gcloud-service-key:
@@ -77,9 +98,6 @@ commands:
       google-compute-zone:
         description: "The Google compute zone to connect with via the gcloud CLI"
         type: string
-      cluster-name:
-        description: "Name of environment variable storing the Kubernetes cluster name"
-        type: env_var_name
     steps:
       - run:
           name: "Initilize the gcloud CLI"
@@ -89,6 +107,16 @@ commands:
             gcloud config set project $<<parameters.project-id>>
             gcloud config set compute/zone <<parameters.google-compute-zone>>
 
+  k8s_auth:
+    description: "Authenticate with K8s cluster"
+    parameters:
+      cluster-name:
+        description: "Name of environment variable storing the Kubernetes cluster name"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Authenticate with K8s cluster"
+          command: |
             gcloud --quiet config set container/cluster $<<parameters.cluster-name>>
             gcloud --quiet container clusters get-credentials $<<parameters.cluster-name>>
 
@@ -144,28 +172,39 @@ jobs:
         description: "Name of the environment variable storing the bintray api key"
         default: BINTRAY_API_KEY
         type: env_var_name
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
       - checkout
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - bintray_credentials:
           username: <<parameters.bintray-username>>
           api-key: <<parameters.bintray-api-key>>
       - run:
           name: "Compile"
           command: sbt update compile test:compile
+      - run:
+          name: "avoid unnecessary cache updates"
+          command: |
+            rm -fv ~/.ivy2/.sbt.ivy.lock
+            find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
+            find ~/.sbt -name "*.lock" -print -delete
       - save_cache:
-          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
           paths:
             - ~/.m2
             - ~/.ivy2
             - ~/.sbt
             - ~/.embedpostgresql
-            - target/resolution-cache
-            - project/target/resolution-cache
+            - ~/.cache/coursier
+
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -179,11 +218,16 @@ jobs:
         description: "Path to persist the workspace"
         type: string
         default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Compile docs"
           command: sbt docs/compile
@@ -200,11 +244,16 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run: sbt test:test
 
   service-tests-with-docker:
@@ -217,11 +266,16 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: Service Tests
           command: sbt service-test:test
@@ -288,10 +342,6 @@ jobs:
         description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
         type: string
         default: europe-west1-b
-      cluster-name:
-        description: "Name of the environment variable storing the Kubernetes cluster name"
-        type: env_var_name
-        default: K8S_CLUSTER_NAME
       container-name:
         description: "Name of environment variable storing the name of the container we are publishing"
         type: env_var_name
@@ -300,14 +350,22 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
+      nonprod-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the NONPROD Google project"
+        type: env_var_name
+        default: NONPROD_GCLOUD_ACCOUNT_AUTH
+      nonprod-project-id:
+        description: "The NONPROD Google project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: NONPROD_PROJECT_ID
       uat-gcloud-service-key:
         description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
         type: env_var_name
-        default: NONPROD_GCLOUD_ACCOUNT_AUTH
+        default: UAT_GCLOUD_ACCOUNT_AUTH
       uat-project-id:
         description: "The UAT Google project ID to connect with via the gcloud CLI"
         type: env_var_name
-        default: NONPROD_PROJECT_ID
+        default: UAT_PROJECT_ID
       prd-gcloud-service-key:
         description: "Name of environment variable storing the full service key JSON file for the PRD Google project"
         type: env_var_name
@@ -316,12 +374,21 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      snyk-api-key:
+        description: "Name of the environment variable storing the snyk api key"
+        default: SNYK_TOKEN
+        type: env_var_name
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - setup_remote_docker
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Setup git config"
           command: |
@@ -335,8 +402,19 @@ jobs:
       - run:
           name: "Release"
           command: sbt "release with-defaults"
-      - initialize_gcloud:
-          *initialize_gcloud_uat
+      - gcloud_auth: *gcloud_auth_nonprod
+      - run:
+          name: "Configure Docker to use gcloud as a credential helper"
+          command: |
+            mkdir -p "$HOME/.docker"
+            gcloud auth configure-docker --quiet --project $<<parameters.nonprod-project-id>>
+      - run:
+          name: "Tag and push container to GCR NONPROD"
+          command: |
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${NONPROD_IMAGE_ROOT}"
+      - gcloud_auth: *gcloud_auth_uat
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
@@ -345,11 +423,12 @@ jobs:
       - run:
           name: "Tag and push container to GCR UAT"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
-            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
-            docker push "${NONPROD_IMAGE_ROOT}"
-      - initialize_gcloud:
-          *initialize_gcloud_prd
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
+            UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${UAT_IMAGE_ROOT}"
+      - gcloud_auth: *gcloud_auth_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
           command: |
@@ -358,11 +437,13 @@ jobs:
       - run:
           name: "Tag and push container to GCR PRD"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${PRD_IMAGE_ROOT}"
+      - snyk_monitor:
+          api-key: <<parameters.snyk-api-key>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -388,12 +469,12 @@ jobs:
         description: "Name of environment variable storing the helm release name"
         type: env_var_name
         default: CIRCLE_PROJECT_REPONAME
-      uat-gcloud-service-key:
-        description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
+      nonprod-gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the NONPROD Google project"
         type: env_var_name
         default: NONPROD_GCLOUD_ACCOUNT_AUTH
-      uat-project-id:
-        description: "The UAT Google project ID to connect with via the gcloud CLI"
+      nonprod-project-id:
+        description: "The NONPROD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: NONPROD_PROJECT_ID
       container-name:
@@ -404,21 +485,26 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
-      - initialize_gcloud:
-          *initialize_gcloud_uat
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
+      - gcloud_auth: *gcloud_auth_nonprod
+      - k8s_auth:
+          cluster-name: <<parameters.cluster-name>>
       - run:
-          name: "UAT Helm deploy"
+          name: "NONPROD Helm deploy"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
               --set "image.repository=${NONPROD_IMAGE_ROOT}" \
               --set "image.tag=$(cat version.txt)"
-
 
   prd-deploy:
     parameters:
@@ -458,13 +544,19 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache
-      - initialize_gcloud:
-          *initialize_gcloud_prd
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
+      - gcloud_auth: *gcloud_auth_prd
+      - k8s_auth:
+          cluster-name: <<parameters.cluster-name>>
       - run:
           name: "PRD helm deploy"
           command: |
