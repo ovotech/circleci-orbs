@@ -1,11 +1,11 @@
 version: 2.1
 description: An orb to rotate AWS keys
 
+orbs:
+  aws-cli: circleci/aws-cli@1.0.0
+
 executors:
-  default:
-    description: Default executor
-    docker:
-      - image: ovotech/aws-rotate-keys:latest
+  default: aws-cli/default
 
 commands:
   rotate:
@@ -30,9 +30,13 @@ commands:
           you will use to hold this value, i.e. AWS_SECRET_ACCESS_KEY.
         default: AWS_SECRET_ACCESS_KEY
     steps:
+      - aws-cli/install:
+          # This only installs the cli if it is missing from $PATH
+          version: '2'
       - run:
           name: Rotate AWS keys
           command: |
+            # Assumes that AWS credentials have already been configured
             old_access_key_id=`aws iam list-access-keys --user-name << parameters.aws-username >> --query 'AccessKeyMetadata[0].AccessKeyId' --output text` &&
             create_access_key_output=`aws iam create-access-key --user-name << parameters.aws-username >>` &&
             new_access_key_id=`echo $create_access_key_output | jq -r -e '.AccessKey.AccessKeyId'` &&
@@ -54,7 +58,7 @@ commands:
               aws iam list-access-keys \
                 --user-name << parameters.aws-username >> \
                 --query 'AccessKeyMetadata[0].AccessKeyId' \
-                --output text 2>/dev/null && break
+                --output text 2>&1 >/dev/null && break
               echo New token not usable yet, retrying in 10 seconds...
               sleep 10
             done &&

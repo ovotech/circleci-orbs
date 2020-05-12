@@ -37,7 +37,7 @@ function scan() {
         --clair=http://"$clair_ip":6060 \
         -t "<< parameters.severity_threshold >>" \
         --report "/$sanitised_image_filename" \
-        --log "/log.json" ${WHITELIST:+"-x"}
+        --log "/log.json" $WHITELIST
         --reportAll=true \
         --exit-when-no-features=false \
         "$image")
