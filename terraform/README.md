@@ -45,11 +45,10 @@ It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3`
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - ovo's kafka user provider
 
-If the `HELM` environment variable is set to `helm3`, the `helm` command invokes Helm 3.
 
 ## Commands
 
@@ -383,6 +382,36 @@ workflows:
               only: master
 
 ```
+
+### Using Helm 3
+#### Repositories
+If you are using Helm 3 (terraform provider > v1) you must explicitly add
+repositories, this includes charts in `stable` which is no longer included 
+in Helm by default. 
+
+[Official Documentation](https://helm.sh/docs/intro/quickstart/#initialize-a-helm-chart-repository)
+
+This can be done using the `helm3` command prior to any apply jobs.
+
+```yaml
+  terraform_apply:
+    executor: terraform/terraform-0_12
+    steps:
+    - checkout
+    - run:
+        name: Add helm repo
+        command: |
+            helm3 repo add stable https://kubernetes-charts.storage.googleapis.com
+            helm3 repo update
+
+    - terraform/apply:
+        path: terraform/deployments/cluster
+        workspace: gauges-uat
+```
+
+#### Default version
+The `helm` command will use `helm2` by default, however if the `HELM` 
+environment variable is set to `helm3`, the `helm` command invokes Helm 3 instead.
 
 ### Using the aiven provider
 
