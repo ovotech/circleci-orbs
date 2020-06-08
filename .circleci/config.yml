@@ -80,6 +80,7 @@ jobs:
 
             tools/include.py "${ORB}/orb.yml" > "/tmp/${ORB}_orb.yml"
 
+            shopt -s nullglob   # allow orbs to have no dockerfile
             for path in $ORB/executor/Dockerfile*; do
 
               filename=$(basename $path)
@@ -161,5 +162,10 @@ workflows:
       - publish_orb:
           name: rac-gcp-deploy
           path: rac-gcp-deploy
+          requires:
+            - validate_orbs
+      - publish_orb:
+          name: tools-install
+          path: tools-install
           requires:
             - validate_orbs
