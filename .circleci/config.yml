@@ -169,3 +169,7 @@ workflows:
           path: tools-install
           requires:
             - validate_orbs
+      - publish_orb:
+          name: with-git-deploy-key
+          path: with-git-deploy-key
+          publish-docker-image: false
