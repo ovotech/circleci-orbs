@@ -26,6 +26,7 @@ Orbs follow the conventions:
  - [ovotech/clair-scanner@1](clair-scanner) - Scan Docker images for vulnerabilities.
  - [ovotech/rac-gcp-deply@1](rac-gcp-deploy) - Deploy Scala services to a Kubernetes cluster running in Google Cloud.
  - [ovotech/terraform@1](terraform) - Plan and apply Terraform modules.
+ - [ovotech/tools-install@1](tools-install) - Download and unpack tools archives
  
  Other orbs in the ovotech namespace:
  - [ovotech/shipit@1](https://github.com/ovotech/pe-orbs/tree/master/shipit) - Run shipit and record deployments to https://shipit.ovotech.org.uk.
