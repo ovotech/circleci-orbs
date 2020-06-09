@@ -105,7 +105,7 @@ jobs:
             circleci update install
 
             echo "Creating orb ovotech/${ORB} if it wasn't created before"
-            circleci orb info ovotech/"${ORB}" || circleci orb create ovotech/"${ORB}" --token "$CIRCLECI_PROD_TOKEN"
+            circleci orb info ovotech/"${ORB}" || circleci orb create ovotech/"${ORB}" --no-prompt --token "$CIRCLECI_PROD_TOKEN"
 
             echo "Publishing branch development-version: ovotech/${ORB}@$DEV_VERSION"
             circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
