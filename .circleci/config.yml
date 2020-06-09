@@ -167,6 +167,7 @@ workflows:
       - publish_orb:
           name: tools-install
           path: tools-install
+          publish-docker-image: false
           requires:
             - validate_orbs
       - publish_orb:
