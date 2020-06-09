@@ -101,6 +101,9 @@ jobs:
 
             DEV_VERSION=dev:$(echo $CIRCLE_BRANCH | tr / _)
 
+            # Ian made me do it
+            circleci update install
+
             echo "Creating orb ovotech/${ORB} if it wasn't created before"
             circleci orb info ovotech/"${ORB}" || circleci orb create ovotech/"${ORB}" --token "$CIRCLECI_PROD_TOKEN"
 
