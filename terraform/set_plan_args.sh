@@ -10,7 +10,14 @@ fi
 
 if [[ -n "<< parameters.var_file >>" ]]; then
     for file in $(echo "<< parameters.var_file >>" | tr ',' '\n'); do
-        PLAN_ARGS="$PLAN_ARGS -var-file=$file"
+        if [[ -f "$file" ]]; then
+            PLAN_ARGS="$PLAN_ARGS -var-file=$file"
+        elif [[ -f "$module_path/$file" ]]; then
+            PLAN_ARGS="$PLAN_ARGS -var-file=$module_path/$file"
+        else
+            echo "Var file '$file' wasn't found" >&2
+            exit 1
+        fi
     done
 fi
 
