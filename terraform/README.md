@@ -97,9 +97,9 @@ Parameters:
 - path (string): Path the the terraform module to run the plan in
 - workspace (string): Terraform workspace to run the command in (default: 'default')
 - label (string): An optional friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
-- backend_config_file (string): Comma separated list of terraform backend config files
+- backend_config_file (string): Comma separated list of terraform backend config files. File location is relative to either checkout dir or directory specified in `path`.
 - backend_config (string): Comma separated list of backend configs, e.g. foo=bar
-- var_file (string): Comma separater list of terraform var files
+- var_file (string): Comma separater list of terraform var files. File location is relative to either checkout dir or directory specified in `path`.
 - var (string): Comma separated list of vars to set, e.g. foo=bar
 - parallelism (int): Limit the number of concurrent operations
 - add_github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
