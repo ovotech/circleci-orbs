@@ -36,10 +36,7 @@ commands:
           command: |
             mkdir -p <<parameters.download_basedir>>
             DEST_DIR=$(mktemp -d -p <<parameters.download_basedir>>)
-            [[ -d ${DEST_DIR} ]] || {
-              mkdir -p "${DEST_DIR}"
-              curl -q -f -L  << parameters.archive_url>> | tar -C "${DEST_DIR}" -xzf -
-            }
+            curl -q -f -L  << parameters.archive_url>> | tar -C "${DEST_DIR}" -xzf -
 
             SYMLINK_NAME="<<parameters.symlink_destination_name>>"
             SYMLINK_NAME="${SYMLINK_NAME:-$(basename <<parameters.symlink_source>>)}"
