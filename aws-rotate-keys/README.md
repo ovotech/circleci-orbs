@@ -2,6 +2,15 @@
 
 This orb can be used to rotate AWS access keys and update corresponding CircleCI environment variables. A common use case would be to set up a scheduled CircleCI job which rotates access keys for the used user.
 
+__Note__:  
+CircleCI used to allow for AWS credentials to be entered separately, not as environment variables.  
+If set these will be used by builds in preference of any AWS credentials that are set as environment variables.  
+This can cause build failures after this Orb has rotated the environment variable values.  
+ 
+Before using this Orb you should check that there are no AWS Credentials set on the deprecated settings page in CircleCI.  
+The settings page is now hidden but can be accessed on a link similar to this:  
+`https://circleci.com/gh/ovotech/<project name>/edit#aws` 
+
 ## Executors
 This orb defines a small 'default' executor for running the aws commands. Any container that has `aws` cli, `curl` and `jq` can be used to run this orb.
 
