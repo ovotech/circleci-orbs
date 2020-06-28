@@ -8,16 +8,8 @@ if [[ ! -d "$module_path" ]]; then
 fi
 
 # Select the correct terraform version - this will persist for the rest of the job
-if [[ -f "$module_path/.tfswitchrc" ]]; then
-    if hash tfswitch 2>/dev/null; then
-        tfswitch $(<"$module_path/.tfswitchrc")
-    fi
-fi
-
-if [[ -f "$module_path/.terraform-version" ]]; then
-    if hash tfswitch 2>/dev/null; then
-        tfswitch $(<"$module_path/.terraform-version")
-    fi
+if hash tfswitch 2>/dev/null; then
+  (cd "$module_path" && echo "" | tfswitch | grep -e Switched -e Reading | sed 's/^.*Switched/Switched/')
 fi
 
 if [ -n "$TF_REGISTRY_TOKEN" ]; then

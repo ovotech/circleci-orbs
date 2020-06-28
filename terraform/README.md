@@ -487,15 +487,23 @@ Please create a github issue to suggest additional resources that need masking.
 
 ## Specifying a terraform version
 
-Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/)
-`.tfswitchrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform
-configuration, e.g.
+The version of terraform to use is discovered from the first of:
+1. A [`required_version`](https://www.terraform.io/docs/configuration/terraform.html#specifying-a-required-terraform-version)
+   constraint in the terraform configuration.
+2. A [tfswitch](https://warrensbox.github.io/terraform-switcher/) `.tfswitchrc` file
+3. A [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform
+   configuration.
+4. Terraform v0.12.5 for the 0.12 executor, or 0.11.14 for the 0.11 executor.
 
+The `required_version` constraint goes somewhere in your terraform configuration:
+```hcl
+terraform {
+  required_version = "0.12.28"
+}
 ```
-$ cat .tfswitchrc
+
+tfswitch and tfenv make it easy to install the correct version locally.  
+Their config files contain a terraform version number to use:
+```
 0.12.18
 ```
-
-This also allows you to use newer terraform versions without waiting for a new orb version.
-You may also want to add a [`required_version`](https://www.terraform.io/docs/configuration/terraform.html#specifying-a-required-terraform-version)
-to your terraform configuration to prevent using the wrong version locally.
