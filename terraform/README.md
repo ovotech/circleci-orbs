@@ -45,11 +45,10 @@ It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3`
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - ovo's kafka user provider
 
-If the `HELM` environment variable is set to `helm3`, the `helm` command invokes Helm 3.
 
 ## Commands
 
@@ -98,9 +97,9 @@ Parameters:
 - path (string): Path the the terraform module to run the plan in
 - workspace (string): Terraform workspace to run the command in (default: 'default')
 - label (string): An optional friendly name for the environment this plan is for. This must be set if there are multiple plans in a job with the same path and workspace.
-- backend_config_file (string): Comma separated list of terraform backend config files
+- backend_config_file (string): Comma separated list of terraform backend config files. File location is relative to either checkout dir or directory specified in `path`.
 - backend_config (string): Comma separated list of backend configs, e.g. foo=bar
-- var_file (string): Comma separater list of terraform var files
+- var_file (string): Comma separater list of terraform var files. File location is relative to either checkout dir or directory specified in `path`.
 - var (string): Comma separated list of vars to set, e.g. foo=bar
 - parallelism (int): Limit the number of concurrent operations
 - add_github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
@@ -384,6 +383,36 @@ workflows:
 
 ```
 
+### Using Helm 3
+#### Repositories
+If you are using Helm 3 (terraform provider > v1) you must explicitly add
+repositories, this includes charts in `stable` which is no longer included 
+in Helm by default. 
+
+[Official Documentation](https://helm.sh/docs/intro/quickstart/#initialize-a-helm-chart-repository)
+
+This can be done using the `helm3` command prior to any apply jobs.
+
+```yaml
+  terraform_apply:
+    executor: terraform/terraform-0_12
+    steps:
+    - checkout
+    - run:
+        name: Add helm repo
+        command: |
+            helm3 repo add stable https://kubernetes-charts.storage.googleapis.com
+            helm3 repo update
+
+    - terraform/apply:
+        path: terraform/deployments/cluster
+        workspace: gauges-uat
+```
+
+#### Default version
+The `helm` command will use `helm2` by default, however if the `HELM` 
+environment variable is set to `helm3`, the `helm` command invokes Helm 3 instead.
+
 ### Using the aiven provider
 
 When using the default or terraform-0_11 executors, OVO's
@@ -454,6 +483,12 @@ To attach the plan to a PR, create the GITHUB_USERNAME and GITHUB_TOKEN
 environment variables in the CircleCI project. This should be the username
 (not email address) and a Personal Access Token of a github user that has access to
 the repo. The token requires the `repo, write:discussion` scopes.
+
+It's recommended to enable **"Only build pull requests"**  in your CircleCI 
+config when using this setting. If not enabled this could lead to a creation
+of a PR after the CircleCI job has run, which means the Plan comment cannot be
+added. Settings can be found under "Advanced Settings" e.g.
+https://circleci.com/gh/ovotech/$YOUR_REPO/edit#advanced-settings
 
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by

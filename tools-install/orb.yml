@@ -1,0 +1,60 @@
+version: 2.1
+description: |
+  An orb to download and unpack tools archives.
+
+  Often you require some extra tools, not included in CircleCI images, but would like to
+  avoid overhead of managing your custom build image.
+
+  Often tools are distributed as an archive with a statically linked executable file in it,
+  This orb makes it easy to download, unpack such archives and make executable inside
+  available in the PATH.
+
+commands:
+  do:
+    parameters:
+      archive_url:
+        type: string
+        description: "URL of archive to download and unpack"
+      download_basedir:
+        type: string
+        default: "/tmp/cached_tools"
+        description: "Base directory to unpack archive to"
+      symlink_destdir:
+        type: string
+        default: "~/bin"
+        description: "Directory where to create symlink. Should be in PATH env var for best results"
+      symlink_source:
+        type: string
+        description: "Path to the binary inside archive to create symlink for"
+      symlink_destination_name:
+        type: string
+        default: ""
+        description: "Symlink name to create. Defaults to basename of symlink source if empty."
+    steps:
+      - run:
+          name: Installing <<parameters.archive_url>>
+          command: |
+            mkdir -p <<parameters.download_basedir>>
+            DEST_DIR=$(mktemp -d -p <<parameters.download_basedir>>)
+            curl -q -f -L  << parameters.archive_url>> | tar -C "${DEST_DIR}" -xzf -
+
+            SYMLINK_NAME="<<parameters.symlink_destination_name>>"
+            SYMLINK_NAME="${SYMLINK_NAME:-$(basename <<parameters.symlink_source>>)}"
+            mkdir -p << parameters.symlink_destdir >>
+            ln -f -s "${DEST_DIR}/<<parameters.symlink_source>>" <<parameters.symlink_destdir>>/"${SYMLINK_NAME}"
+
+examples:
+  install_helm:
+    description: Downloads helm and creates ~/bin/helm symlink to an executable
+    usage:
+      version: 2.1
+      orbs:
+        tools-install: ovotech/tools-install@1
+      jobs:
+        build:
+          machine: true
+          steps:
+            - tools-install/do:
+                archive_url: https://get.helm.sh/helm-v3.2.2-linux-amd64.tar.gz
+                symlink_source: linux-amd64/helm
+            - run: helm version

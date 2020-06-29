@@ -1,7 +1,14 @@
 # Initialize terraform
 if [[ -n "<< parameters.backend_config_file >>" ]]; then
     for file in $(echo "<< parameters.backend_config_file >>" | tr ',' '\n'); do
-        INIT_ARGS="$INIT_ARGS -backend-config=$file"
+        if [[ -f "$file" ]]; then
+            INIT_ARGS="$INIT_ARGS -backend-config=$file"
+        elif [[ -f "$module_path/$file" ]]; then
+            INIT_ARGS="$INIT_ARGS -backend-config=$module_path/$file"
+        else
+            echo "Backend config '$file' wasn't found" >&2
+            exit 1
+        fi
     done
 fi
 

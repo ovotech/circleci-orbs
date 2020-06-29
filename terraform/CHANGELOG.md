@@ -8,6 +8,10 @@ not listed.
 - Updated tfswitch to 0.8.832.
   This will use any required_version constraint in the terraform config to pick the terraform version to use.
 
+## ovotech/terraform@1.6.6
+### Changed
+- Added `TFENV` env var to 0.11 Docker image, as `tfmask` now defaults to tf 0.12
+
 ## ovotech/terraform@1.6.5
 ### Changed
 - Updated executors to include:
