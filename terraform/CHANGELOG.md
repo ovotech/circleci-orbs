@@ -3,6 +3,11 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.7
+### Changed
+- Updated tfswitch to 0.8.832.
+  This will use any required_version constraint in the terraform config to pick the terraform version to use.
+
 ## ovotech/terraform@1.6.5
 ### Changed
 - Updated executors to include:
