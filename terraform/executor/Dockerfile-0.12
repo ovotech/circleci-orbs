@@ -83,8 +83,8 @@ RUN mkdir -p /root/.terraform.d/plugins \
     done
 
 # ovorotatetest provider
-RUN for TF_OVO_VERSION in $TF_OVO_VERSIONS; do \
-      curl -f -L https://ovo-kafka-user-tf-provider.s3-eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_VERSION}/terraform-provider-ovo-rotate-test_${TF_OVO_VERSION}_linux_amd64.zip -o ovo.zip \
+RUN for TF_OVO_ROTATE_TEST_VERSION in $TF_OVO_ROTATE_TEST_VERSIONS; do \
+      curl -f -L https://ovo-kafka-user-tf-provider.s3-eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_ROTATE_TEST_VERSION}/terraform-provider-ovo-rotate-test_${TF_OVO_ROTATE_TEST_VERSION}_linux_amd64.zip -o ovo.zip \
       && unzip ovo.zip -d /root/.terraform.d/plugins \
       && rm ovo.zip; \
     done
