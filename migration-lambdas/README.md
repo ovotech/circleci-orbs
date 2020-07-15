@@ -7,6 +7,17 @@ published and aliased versions of AWS Lambdas. The orb currently only supports b
 lambda function code zip file from node.js (12.x by default) but the steps can be used
 independently if you need to define a custom job to build the zip file.
 
+**NOTE:** The source code will be built into the `dist` folder in the packaged lambda function code.
+You will need to check that the terraform defining the entry point references this directory e.g.:
+
+```
+resource "aws_lambda_function" "cool-lambda" {
+  ...
+  handler = "dist/handler.handler"
+  ...
+}
+```
+
 ## Jobs
 
 ### node-test-and-package
