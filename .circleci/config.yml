@@ -141,11 +141,11 @@ workflows:
   commit:
     jobs:
       - validate_orbs
-      -   publish_orb:
-            name: aws-get-parameters
-            path: aws-get-parameters
-            requires:
-              - validate_orbs
+      - publish_orb:
+          name: aws-get-parameters
+          path: aws-get-parameters
+          requires:
+            - validate_orbs
       - publish_orb:
           name: aws-rotate-keys
           path: aws-rotate-keys
@@ -176,6 +176,12 @@ workflows:
       - publish_orb:
           name: with-git-deploy-key
           path: with-git-deploy-key
+          publish-docker-image: false
+          requires:
+            - validate_orbs
+      - publish_orb:
+          name: migration-lambdas
+          path: migration-lambdas
           publish-docker-image: false
           requires:
             - validate_orbs
