@@ -7,7 +7,7 @@ published and aliased versions of AWS Lambdas. The orb currently only supports b
 lambda function code zip file from node.js (12.x by default) but the steps can be used
 independently if you need to define a custom job to build the zip file.
 
-## Jobs
+## Jobs
 
 ### node-test-and-package
 
@@ -23,10 +23,13 @@ s3://<< parameters.build-bucket >>/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH/$CIRC
 
 **Parameters**
 
-- `executor` - : Name of the executor to use for this job. Defaults to the `lambci/lambda:build-nodejs12.x`
+- `executor` - Name of the executor to use for this job. Defaults to the `lambci/lambda:build-nodejs12.x`
   docker image.
-- `lambda-zipfile` - : Name of the lambda zip file to be built. Defaults to `lambda.zip`.
-- `build-bucket` - : Name of the S3 bucket into which the built zip will be uploaded.
+- `lambda-zipfile` - Name of the lambda zip file to be built. Defaults to `lambda.zip`.
+- `build-bucket` - Name of the S3 bucket into which the built zip will be uploaded.
+- `vulnerability-audit` - Whether or not to run `npm audit` to check vulnerabilities. Defaults to `true`.
+  When run, the build will fail if any dependency vulnerabilities are reported with a severity greater than
+  or equal to "moderate".
 
 ### create-lambda-version
 
@@ -36,16 +39,16 @@ alias will be updated to point to the latest version upon commit to `master`.
 
 **Parameters**
 
-- `lambda-zipfile` - : Name of the built lambda zip file. Defaults to `lambda.zip`.
-- `build-bucket` - : Name of the S3 bucket containing the built zip will be uploaded.
-- `lambda-function-name` - : Name of the Lambda function.
+- `lambda-zipfile` - Name of the built lambda zip file. Defaults to `lambda.zip`.
+- `build-bucket` - Name of the S3 bucket containing the built zip will be uploaded.
+- `lambda-function-name` - Name of the Lambda function.
 
 ## Example
 
 This is the simplest example of using the orb for the Migration team's preferred workflow. In the
 example the `lambda-zipfile` argument is not provided so will default to `lambda.zip`. In situations
-where one repo/workflow produces multiple zip files, you will need to use at least one non-default
-name for the artifact.
+where one repo/workflow produces lambda functions from the same function zip, you will need to use
+additional `create-lambda-version` jobs.
 
 ```yaml
 version: 2.1
