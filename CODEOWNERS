@@ -5,4 +5,4 @@
 /aws-get-parameters/   @ovotech/jaws
 /tools-install/        @ovotech/orion-sre
 /with-git-deploy-key/  @ovotech/orion-sre
-/versioned-lambdas/    @ovotech/orion-migration
+/versioned-lambda/     @ovotech/orion-migration
