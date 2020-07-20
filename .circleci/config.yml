@@ -180,8 +180,8 @@ workflows:
           requires:
             - validate_orbs
       - publish_orb:
-          name: migration-lambdas
-          path: migration-lambdas
+          name: versioned-lambda
+          path: versioned-lambda
           publish-docker-image: false
           requires:
             - validate_orbs
