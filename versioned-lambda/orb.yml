@@ -25,6 +25,10 @@ jobs:
         description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
         type: string
         default: lambda.zip
+      vulnerability-audit:
+        description: "Whether or not to run the Snyk Scan step. Defaults to true"
+        type: boolean
+        default: true
     executor: << parameters.executor >>
     steps:
       - checkout
@@ -39,14 +43,17 @@ jobs:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
-      - run:
-          name: Sudo install
-          command: yum install -y sudo
-      - snyk/scan:
-          token-variable: SNYK_TOKEN
-          monitor-on-build: true
-          severity-threshold: medium
-          project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
+      - when:
+          condition: << parameters.vulnerability-audit >>
+          steps:
+            - run:
+                name: Sudo install
+                command: yum install -y sudo
+            - snyk/scan:
+                token-variable: SNYK_TOKEN
+                monitor-on-build: true
+                severity-threshold: medium
+                project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
       - run:
           name: Lint
           command: npm run lint

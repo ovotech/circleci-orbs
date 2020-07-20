@@ -15,6 +15,8 @@ When using the `create-lambda-version` step, the orb will:
 The orb also offers a `build-test-and-package` job, which runs a standardised node.js build to create the
 zip file of the function code.
 
+The orb includes an optional Snyk vulnerability scan step. To ensure this runs the CircleCI project will need a SNYK_TOKEN to be included in the Environment Variables settings page.
+
 ## Jobs
 
 ### node-test-and-package
