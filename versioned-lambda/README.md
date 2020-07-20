@@ -15,17 +15,6 @@ When using the `create-lambda-version` step, the orb will:
 The orb also offers a `build-test-and-package` job, which runs a standardised node.js build to create the
 zip file of the function code.
 
-**NOTE:** The source code will be built into the `dist` folder in the packaged lambda function code.
-You will need to check that the terraform defining the entry point references this directory e.g.:
-
-```
-resource "aws_lambda_function" "cool-lambda" {
-  ...
-  handler = "dist/handler.handler"
-  ...
-}
-```
-
 ## Jobs
 
 ### node-test-and-package
@@ -38,6 +27,17 @@ The built lambda zip artifact will be namespaced according to repo, branch and j
 
 ```
 s3://<< parameters.build-bucket >>/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH/$CIRCLE_SHA1/<< parameters.lambda-zipfile >>
+```
+
+**NOTE:** The source code will be built into the `dist` folder in the packaged lambda function code.
+You will need to check that the terraform defining the entry point references this directory e.g.:
+
+```
+resource "aws_lambda_function" "cool-lambda" {
+  ...
+  handler = "dist/handler.handler"
+  ...
+}
 ```
 
 **Parameters**
