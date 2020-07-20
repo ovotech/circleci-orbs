@@ -20,7 +20,6 @@ jobs:
       build-bucket:
         description: "AWS S3 bucket containing lambda build artifacts"
         type: string
-        default: ovo-orion-versioned-build
       lambda-zipfile:
         description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
         type: string
@@ -79,7 +78,6 @@ jobs:
       build-bucket:
         description: "AWS S3 bucket containing lambda build artifacts"
         type: string
-        default: ovo-orion-versioned-build
       lambda-zipfile:
         description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
         type: string
