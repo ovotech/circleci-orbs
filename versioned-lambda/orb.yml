@@ -1,8 +1,9 @@
 version: 2.1
-description: An orb to build and deploy AWS Lambda functions written in node.js for Orion Migrations.
+description: An orb to build and deploy AWS Lambda functions written in node.js for Orion Lambdas.
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.0
+  snyk: snyk/snyk@0.0.10
 
 executors:
   lambci-node12:
@@ -19,15 +20,11 @@ jobs:
       build-bucket:
         description: "AWS S3 bucket containing lambda build artifacts"
         type: string
-        default: ovo-orion-migration-builds
+        default: ovo-orion-versioned-build
       lambda-zipfile:
         description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
         type: string
         default: lambda.zip
-      vulnerability-audit:
-        description: "Whether or not to run the npm audit step. Defaults to true"
-        type: boolean
-        default: true
     executor: << parameters.executor >>
     steps:
       - checkout
@@ -42,26 +39,14 @@ jobs:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
-      - when:
-          condition: << parameters.vulnerability-audit >>
-          steps:
-            - run:
-                name: Vulnerability audit
-                command: |
-                  set +e
-                  yum -y install jq
-                  npm audit --json > npm-audit.log
-                  cat npm-audit.log
-
-                  critical=$(jq '.metadata.vulnerabilities.critical' npm-audit.log)
-                  high=$(jq '.metadata.vulnerabilities.high' npm-audit.log)
-                  moderate=$(jq '.metadata.vulnerabilities.moderate' npm-audit.log)
-
-                  echo "Vulnerability scan results critical $critical high $high moderate $moderate"
-                  if [ "$high" -gt 0 ] || [ "$moderate" -gt 0 ] || [ "$critical" -gt 0 ]
-                    then
-                      exit 1
-                  fi
+      - run:
+          name: Sudo install
+          command: yum install -y sudo
+      - snyk/scan:
+          token-variable: SNYK_TOKEN
+          monitor-on-build: true
+          severity-threshold: medium
+          project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
       - run:
           name: Lint
           command: npm run lint
@@ -87,7 +72,7 @@ jobs:
       build-bucket:
         description: "AWS S3 bucket containing lambda build artifacts"
         type: string
-        default: ovo-orion-migration-builds
+        default: ovo-orion-versioned-build
       lambda-zipfile:
         description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
         type: string

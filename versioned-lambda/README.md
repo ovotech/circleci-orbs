@@ -1,4 +1,4 @@
-# Orion Migration AWS Lambda Build and Deploy CircleCI Orb
+# Orion Versioned AWS Lambda Build and Deploy CircleCI Orb
 
 This orb can be used to build and deploy AWS lamba functions.
 
