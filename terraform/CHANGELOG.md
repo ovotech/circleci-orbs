@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.8
+### Changed
+- Terraform commands will now keep trying to obtain the state lock for 5 minutes instead of failing immediately.
+
 ## ovotech/terraform@1.6.7
 ### Changed
 - Updated tfswitch to 0.8.832.
