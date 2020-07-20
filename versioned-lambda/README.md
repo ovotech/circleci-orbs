@@ -1,11 +1,19 @@
-# Orion Versioned AWS Lambda Build and Deploy CircleCI Orb
+# Versioned AWS Lambda Build and Deploy CircleCI Orb
 
-This orb can be used to build and deploy AWS lamba functions.
+This orb can be used to build and deploy aliased, versioned AWS lamba functions.
 
-The orb is designed with the Migration team workflow in mind, which involves using
-published and aliased versions of AWS Lambdas. The orb currently only supports building the
-lambda function code zip file from node.js (12.x by default) but the steps can be used
-independently if you need to define a custom job to build the zip file.
+The orb is designed with a workflow which makes use of published lambda
+[versions](https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html) and
+[aliases](https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html).
+
+When using the `create-lambda-version` step, the orb will:
+
+1. update the function code of the specified lambda (from the given build directory and lambda zip file).
+2. publish a new version
+3. assign the branch name as an alias for that version.
+
+The orb also offers a `build-test-and-package` job, which runs a standardised node.js build to create the
+zip file of the function code.
 
 **NOTE:** The source code will be built into the `dist` folder in the packaged lambda function code.
 You will need to check that the terraform defining the entry point references this directory e.g.:
@@ -48,6 +56,9 @@ This job updates the lambda function code, publishes a new version and creates a
 this version. The alias will be the branch name for all branches, which means that the `master`
 alias will be updated to point to the latest version upon commit to `master`.
 
+**NOTE:** this step assumes that the function code zip has been built into a bucket/key as defined
+in the `build-test-and-package` job, i.e. using the repo name, branch and SHA.
+
 **Parameters**
 
 - `lambda-zipfile` - Name of the built lambda zip file. Defaults to `lambda.zip`.
@@ -65,18 +76,18 @@ additional `create-lambda-version` jobs.
 version: 2.1
 
 orbs:
-  migration-lambdas: ovotech/migration-lambdas@1
+  versioned-lambda: ovotech/versioned-lambda@1
 
 workflows:
   version: 2
   build-test-deploy:
     jobs:
-      - migration-lambdas/node-test-and-package:
+      - versioned-lambda/node-test-and-package:
           name: test-and-package
-          build-bucket: ovo-migration-lambda-builds
-      - migration-lambdas/create-lambda-version:
+          build-bucket: my-build-bucket
+      - versioned-lambda/create-lambda-version:
           name: create-lambda-uat
-          build-bucket: ovo-migration-lambda-builds
+          build-bucket: my-build-bucket
           lambda-function-name: cool-lambda-uat
           requires:
             - test-and-package
@@ -87,9 +98,9 @@ workflows:
           type: approval
           requires:
             - create-lambda-uat
-      - migration-lambdas/create-lambda-version:
+      - versioned-lambda/create-lambda-version:
           name: create-lambda-prod
-          build-bucket: ovo-migration-lambda-builds
+          build-bucket: my-build-bucket
           lambda-function-name: cool-lambda-prod
           filters:
             branches:
