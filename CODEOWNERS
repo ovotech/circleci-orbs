@@ -1,7 +1,8 @@
-/terraform/         @ovotech/production-eng
-/clair-scanner/     @ovotech/production-eng
-/aws-rotate-keys/   @mwz
-/rac-gcp-deploy/    @ovotech/reads-consumption
-/aws-get-parameters/ @ovotech/jaws
-/tools-install      @ovotech/orion-sre
-/with-git-deploy-key  @ovotech/orion-sre
+/terraform/            @ovotech/production-eng
+/clair-scanner/        @ovotech/production-eng
+/aws-rotate-keys/      @mwz
+/rac-gcp-deploy/       @ovotech/reads-consumption
+/aws-get-parameters/   @ovotech/jaws
+/tools-install/        @ovotech/orion-sre
+/with-git-deploy-key/  @ovotech/orion-sre
+/versioned-lambda/     @ovotech/orion-migration

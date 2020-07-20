@@ -1,0 +1,116 @@
+version: 2.1
+description: An orb to build and deploy AWS Lambda functions written in node.js for Orion Lambdas.
+
+orbs:
+  aws-cli: circleci/aws-cli@1.2.0
+  snyk: snyk/snyk@0.0.10
+
+executors:
+  lambci-node12:
+    docker:
+      - image: lambci/lambda:build-nodejs12.x
+
+jobs:
+  node-test-and-package:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to lambci/lambda:build-nodejs12.x docker executor"
+        type: executor
+        default: lambci-node12
+      build-bucket:
+        description: "AWS S3 bucket containing lambda build artifacts"
+        type: string
+      lambda-zipfile:
+        description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
+        type: string
+        default: lambda.zip
+      vulnerability-audit:
+        description: "Whether or not to run the Snyk Scan step. Defaults to true"
+        type: boolean
+        default: true
+    executor: << parameters.executor >>
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: NPM install
+          command: |
+            npm install -g npm
+            npm ci --no-save
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - ./node_modules
+      - when:
+          condition: << parameters.vulnerability-audit >>
+          steps:
+            - run:
+                name: Sudo install
+                command: yum install -y sudo
+            - snyk/scan:
+                token-variable: SNYK_TOKEN
+                monitor-on-build: true
+                severity-threshold: medium
+                project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Unit test
+          command: npm run test-all
+      - run:
+          name: Production build
+          command: |
+            npm run build
+            npm ci --production --no-save
+      - run:
+          name: Zip and upload lambda package to s3
+          command: |
+            ZIPFILE=<< parameters.lambda-zipfile >>
+            S3PATH=s3://<< parameters.build-bucket >>/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH/$CIRCLE_SHA1
+
+            zip -r -q $ZIPFILE dist node_modules
+            aws s3 cp $ZIPFILE $S3PATH/$ZIPFILE
+
+  create-lambda-version:
+    parameters:
+      build-bucket:
+        description: "AWS S3 bucket containing lambda build artifacts"
+        type: string
+      lambda-zipfile:
+        description: "Name of the zip file containing the lambda application code. Defaults to lambda.zip"
+        type: string
+        default: lambda.zip
+      lambda-function-name:
+        description: Name of the lambda function
+        type: string
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup
+      - run:
+          name: Update lambda with package and create new version
+          command: |
+            KEY=$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH/$CIRCLE_SHA1/<< parameters.lambda-zipfile >>
+
+            aws lambda update-function-code \
+              --function-name << parameters.lambda-function-name >> \
+              --s3-bucket << parameters.build-bucket >> \
+              --s3-key $KEY \
+              --publish > /tmp/function.json
+      - run:
+          name: Update lambda alias to point at latest build from branch
+          command: |
+            VERSION=$(cat /tmp/function.json | jq '.Version' -r)
+            ALIAS=$(echo $CIRCLE_BRANCH | tr / _)
+
+            aws lambda update-alias \
+              --function-name << parameters.lambda-function-name >> \
+              --name $ALIAS \
+              --function-version $VERSION \
+            || \
+            aws lambda create-alias \
+              --function-name << parameters.lambda-function-name >> \
+              --name $ALIAS \
+              --function-version $VERSION \
+              --description "The latest build in the $CIRCLE_BRANCH branch"
