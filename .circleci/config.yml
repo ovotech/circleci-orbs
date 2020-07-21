@@ -38,10 +38,10 @@ jobs:
           command: |
             readonly ORB="<< parameters.path >>"
             if ls $ORB/executor/Dockerfile* 1> /dev/null 2>&1; then
-                echo "files do exist"
+                echo "Has docker files - continuing"
             else
-                echo "files do not exist"
-                circleci step halt
+                echo "Has no docker files - exiting step"
+                exit 0
 
             fi
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
