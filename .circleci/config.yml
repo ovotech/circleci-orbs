@@ -21,11 +21,6 @@ jobs:
       path:
         type: string
         description: The path to the orb
-      publish-docker-image:
-        type: boolean
-        description: |
-          Some orbs actions don't require us to maintain an executor image; set this to false if the orb uses existing public images
-        default: true
     docker:
       - image: 361339499037.dkr.ecr.eu-west-1.amazonaws.com/pe-orbs:latest
     steps:
@@ -145,7 +140,6 @@ workflows:
       - validate_orbs
       - publish_orb:
           name: << matrix.path >>
-          publish-docker-image: true
           requires:
             - validate_orbs
           matrix:
