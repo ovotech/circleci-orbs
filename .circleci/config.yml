@@ -142,46 +142,19 @@ workflows:
     jobs:
       - validate_orbs
       - publish_orb:
-          name: aws-get-parameters
-          path: aws-get-parameters
+          name: << matrix.orb-name >>
+          path: << matrix.orb-name >>
+            publish-docker-image: true
           requires:
             - validate_orbs
-      - publish_orb:
-          name: aws-rotate-keys
-          path: aws-rotate-keys
-          publish-docker-image: false
-          requires:
-            - validate_orbs
-      - publish_orb:
-          name: clair-scanner
-          path: clair-scanner
-          requires:
-            - validate_orbs
-      - publish_orb:
-          name: terraform
-          path: terraform
-          requires:
-            - validate_orbs
-      - publish_orb:
-          name: rac-gcp-deploy
-          path: rac-gcp-deploy
-          requires:
-            - validate_orbs
-      - publish_orb:
-          name: tools-install
-          path: tools-install
-          publish-docker-image: false
-          requires:
-            - validate_orbs
-      - publish_orb:
-          name: with-git-deploy-key
-          path: with-git-deploy-key
-          publish-docker-image: false
-          requires:
-            - validate_orbs
-      - publish_orb:
-          name: versioned-lambda
-          path: versioned-lambda
-          publish-docker-image: false
-          requires:
-            - validate_orbs
+          matrix:
+            parameters:
+              orb-name:
+                - aws-get-parameters
+                - aws-rotate-keys
+                - clair-scanner
+                - rac-gcp-deploy
+                - set-current-environment
+                - teraform
+                - versioned-lambda
+
