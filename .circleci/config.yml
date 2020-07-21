@@ -31,18 +31,15 @@ jobs:
           name: docker build << parameters.path >>
           # language=bash
           command: |
-            readonly ORB="<< parameters.path >>"
-            ls $ORB/executor/Dockerfile*
-            if ls $ORB/executor/Dockerfile* 1> /dev/null 2>&1; then
-                echo "$ORB Has docker files - continuing"
-            else
-                echo "$ORB Has no docker files - exiting step"
-                exit 0
-
-            fi
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+            readonly ORB="<< parameters.path >>"
             for path in $ORB/executor/Dockerfile*; do
-
+              if [ -e "$path" ];
+                 echo "$ORB Has docker files - continuing"
+              ls
+                 echo "$ORB $path Has no docker files - exiting step"
+                 exit 0
+              fi
               filename=$(basename $path)
 
               if [[ "$filename" == "Dockerfile" ]]; then
