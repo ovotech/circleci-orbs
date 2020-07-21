@@ -148,6 +148,6 @@ workflows:
                 - clair-scanner
                 - rac-gcp-deploy
                 - set-current-environment
-                - teraform
+                - terraform
                 - versioned-lambda
 
