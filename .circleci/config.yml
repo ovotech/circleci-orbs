@@ -41,7 +41,7 @@ jobs:
                 echo "files do exist"
             else
                 echo "files do not exist"
-                circleci-agent step halt
+                circleci step halt
 
             fi
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
