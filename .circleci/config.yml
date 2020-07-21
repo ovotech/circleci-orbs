@@ -32,46 +32,48 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 17.11.0-ce
-      - when:
-          condition: <<parameters.publish-docker-image>>
-          steps:
-            - run:
-                name: docker build << parameters.path >>
-                # language=bash
-                command: |
-                  docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+      - run:
+          name: docker build << parameters.path >>
+          # language=bash
+          command: |
+            readonly ORB="<< parameters.path >>"
+            if ls $ORB/executor/Dockerfile* 1> /dev/null 2>&1; then
+                echo "files do exist"
+            else
+                echo "files do not exist"
+                circleci-agent step halt
 
-                  readonly ORB="<< parameters.path >>"
+            fi
+            docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+            for path in $ORB/executor/Dockerfile*; do
 
-                  for path in $ORB/executor/Dockerfile*; do
+              filename=$(basename $path)
 
-                    filename=$(basename $path)
+              if [[ "$filename" == "Dockerfile" ]]; then
+                  TAG="latest"
+                  BUILD_TAG="$(date "+%d-%m-%Y")"
+              else
+                  TAG="${filename#"Dockerfile-"}"
+                  BUILD_TAG="${TAG}_$(date "+%d-%m-%Y")"
+              fi
 
-                    if [[ "$filename" == "Dockerfile" ]]; then
-                        TAG="latest"
-                        BUILD_TAG="$(date "+%d-%m-%Y")"
-                    else
-                        TAG="${filename#"Dockerfile-"}"
-                        BUILD_TAG="${TAG}_$(date "+%d-%m-%Y")"
-                    fi
+              docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
+              --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
+              --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
+              --label org.label-schema.schema-version="1.0" \
+              --file $path \
+              "${ORB}/executor"
 
-                    docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
-                    --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
-                    --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
-                    --label org.label-schema.schema-version="1.0" \
-                    --file $path \
-                    "${ORB}/executor"
+              docker push "ovotech/${ORB}:${BUILD_TAG}"
 
-                    docker push "ovotech/${ORB}:${BUILD_TAG}"
+              DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${ORB}:${BUILD_TAG}")
+              echo $DIGEST > "${ORB}_${TAG}_digest.txt"
 
-                    DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${ORB}:${BUILD_TAG}")
-                    echo $DIGEST > "${ORB}_${TAG}_digest.txt"
-
-                    if [ "$CIRCLE_BRANCH" = "master" ]; then
-                        docker tag "ovotech/${ORB}:${BUILD_TAG}" "ovotech/${ORB}:${TAG}"
-                        docker push "ovotech/${ORB}:${TAG}"
-                    fi
-                  done
+              if [ "$CIRCLE_BRANCH" = "master" ]; then
+                  docker tag "ovotech/${ORB}:${BUILD_TAG}" "ovotech/${ORB}:${TAG}"
+                  docker push "ovotech/${ORB}:${TAG}"
+              fi
+            done
       - run:
           name: Publish << parameters.path >> orb
           # language=bash
