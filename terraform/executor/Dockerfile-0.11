@@ -8,7 +8,7 @@ FROM debian:buster-slim
 ARG TF_VERSIONS="0.11.12 0.11.13 0.11.14"
 ARG GCLOUD_VERSION=279.0.0
 ARG AWSCLI_VERSION=1.17.11
-ARG HELM_VERSION=2.16.1
+ARG HELM_VERSION=2.16.9
 ARG TFSWITCH_VERSION=0.8.832
 ARG TF_HELM_VERSIONS="0.6.0 0.5.1 0.5.0 0.4.0 0.3.2 0.3.1 0.3.0 0.2.0 0.1.0"
 ARG TF_ACME_VERSIONS="1.0.0 0.6.0 0.5.0 0.4.0 0.3.0"
@@ -66,7 +66,7 @@ RUN mkdir -p /root/aiven \
       && chmod +x /root/aiven/terraform-provider-aiven_v${TF_AIVEN_VERSION}; \
     done
 
-RUN curl -fsL "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | tar -xzvf- \
+RUN curl -fsL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | tar -xzvf- \
  && mv linux-amd64/helm /usr/local/bin/helm \
  && rm -rf helm*.tar.gz linux-amd64/ \
  && helm init --client-only

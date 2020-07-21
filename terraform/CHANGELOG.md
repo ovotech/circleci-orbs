@@ -5,6 +5,7 @@ not listed.
 
 ## ovotech/terraform@1.6.8
 ### Changed
+- Updated executors to include helm2 @v2.16.9
 - Terraform commands will now keep trying to obtain the state lock for 5 minutes instead of failing immediately.
 
 ## ovotech/terraform@1.6.7
