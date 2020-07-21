@@ -1,73 +1,100 @@
 version: 2.1
-description: |
-  Orb provides helper command to execute git operations using sepcific
-  SSH key from an ssh agent. 
-
-  Useful when you need to work with another private repository accessible by SSH.
-
-  SSH key is identified by a fingerprint and must be available in an SSH agent and
-  can be added in CircleCI project settings.
+description: "Assigns environmental variable dependant on if we are running on main branch, tag or another branch"
 
 commands:
-  do:
-    description: |
-      Executes git commands selecting sepcific SSH key from an ssh agent.
-
-      This command restores $BASH_ENV to the state, before it started, therefore
-      if your `git_steps` modify $BASH_ENV, these changes will be revereted.
+  set-env:
     parameters:
-      git_steps:
-        type: steps
-        description: "Steps, usually git clone/push commands, to execute using an SSH key selected by the ssh_key_fingerprint param."
-        default: []
-      ssh_key_fingerprint:
+      git-branch:
         type: string
-        description: "SSH Public key fingerprint to use. Must be exactly as seen in CircleCI UI. Example aa:bb:cc:dd:..."
+        default: ""
+      git-tag:
+        type: string
+        default: ""
+      main-branch-name:
+        type: string
+        default: master
+      env-name-tag:
+        type: string
+        default: prod
+      env-name-main-branch:
+        type: string
+        default: nonprod
+      env-name-other-branch:
+        type: string
+        default: sandbox
+      environment-variable:
+        type: string
+        default: ENVIRONMENT
+    description: Set which environment we are in to environment variable << parameters.environment-variable>>
     steps:
-      - run:
-          name: "Configuring SSH environment"
-          command: |
-            f=$(mktemp)
-            ssh-add -L | while read -r l; do
-              if [[ $(ssh-keygen -l -E md5 -f <(echo "$l")) =~ "<< parameters.ssh_key_fingerprint >>" ]]; then
-                echo "$l" >"$f"; break
-              fi
-            done
-            [[ -s "$f" ]] || { >&2 echo "Fingerprint not found, did you add key to your CircleCI project settings?"; exit 1; }
+      - when:
+          condition:
+            and:
+              - not: << parameters.git-tag >>
+              - not:
+                  equal: [<< parameters.main-branch-name >>, << parameters.git-branch >>]
+          steps:
+            - run:
+                name: "Other Branch: Set << parameters.environment-variable >> to << parameters.env-name-other-branch >>"
+                command: echo 'export << parameters.environment-variable >>=<< parameters.env-name-other-branch >>' >> $BASH_ENV
+      - when:
+          condition:
+            equal: [<< parameters.main-branch-name >>, << parameters.git-branch >>]
+          steps:
+            - run:
+                name: "Main Branch: Set << parameters.environment-variable >> to << parameters.env-name-main-branch >>"
+                command: echo 'export << parameters.environment-variable >>=<< parameters.env-name-main-branch >>' >> $BASH_ENV
+      - when:
+          condition: << parameters.git-tag >>
+          steps:
+            - run:
+                name: "Tag: Set << parameters.environment-variable >> to << parameters.env-name-tag >>"
+                command: echo 'export << parameters.environment-variable >>=<< parameters.env-name-tag >>' >> $BASH_ENV
 
-            oldenv=$(mktemp)
-            [[ ! -f "$BASH_ENV" ]] || cp "$BASH_ENV" $oldenv
-            echo "export GIT_SSH_COMMAND='ssh -i $f'" >> $BASH_ENV
-            echo "export ORB_GIT_CLONE_WITH_KEY_OLD_ENV=$oldenv" >> $BASH_ENV
-      - steps: << parameters.git_steps >>
-      - run:
-          name: "Restore SSH environment"
-          command: |
-            mv "${ORB_GIT_CLONE_WITH_KEY_OLD_ENV:?}" "$BASH_ENV"
 
 examples:
-  gitops:
-    description: Clone and push to another private Git repository
+  bare-bones:
+    description: Simply pass git branch and git tag
     usage:
       version: 2.1
+      
       orbs:
-        with-git-deploy-key: ovotech/with-git-deploy-key@1
+        env-orb: ovotech/set-current-environment@1
+      
       jobs:
-        gitops_image_update:
-          machine: true
-          parameters:
-            image: {type: string}
+        set-environment:
+          executor: any
           steps:
-          - with-git-deploy-key/do:
-              ssh_key_fingerprint: "00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff"
-              git_steps:
-                - run: git clone git@github.com:myorg/gitops.git gitops
-                - run:
-                    name: "Gitops: update image"
-                    command: |
-                      cd gitops
-                      #
-                      # Update image here, for instance 'kustomize edit set image << parameters.image >>'
-                      #
-                      git commit -m "CircleCI deploy ${CIRCLE_PROJECT_REPONAME}" -m  "Build URL: ${CIRCLE_BUILD_URL}" -a
-                      git push
+            - env-orb/set-env:
+                git-branch: << pipeline.git.branch >>
+                git-tag: << pipeline.git.tag >>
+      
+      workflows:
+        test:
+          jobs:
+            - set-environment
+  full-parameters:
+    description: all parameters set
+    usage:
+      version: 2.1
+      
+      orbs:
+        env-orb: ovotech/set-current-environment@1
+      
+      jobs:
+        set-environment:
+          executor: any
+          steps:
+            - env-orb/set-env:
+                git-branch: << pipeline.git.branch >>
+                git-tag: << pipeline.git.tag >>
+                main-branch-name: main
+                env-name-tag: tag-name
+                env-name-main-branch: main-name
+                env-name-other-branch: other-name
+                environment-variable: PROFILE
+      
+      workflows:
+        test:
+          jobs:
+            - set-environment
