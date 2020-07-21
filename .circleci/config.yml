@@ -142,14 +142,13 @@ workflows:
     jobs:
       - validate_orbs
       - publish_orb:
-          name: << matrix.orb-name >>
-          path: << matrix.orb-name >>
+          name: << matrix.path >>
           publish-docker-image: true
           requires:
             - validate_orbs
           matrix:
             parameters:
-              orb-name:
+              path:
                 - aws-get-parameters
                 - aws-rotate-keys
                 - clair-scanner
