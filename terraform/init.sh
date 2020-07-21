@@ -28,4 +28,4 @@ export workspace
 unset TF_WORKSPACE
 
 rm -rf .terraform
-terraform init -input=false -no-color $INIT_ARGS "$module_path"
+terraform init -input=false -lock-timeout=300s -no-color $INIT_ARGS "$module_path"

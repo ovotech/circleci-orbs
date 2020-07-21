@@ -1,7 +1,7 @@
 exec 3>&1
 
 set +e
-terraform plan -input=false -no-color -detailed-exitcode $PLAN_ARGS "$module_path" \
+terraform plan -input=false -no-color -detailed-exitcode -lock-timeout=300s $PLAN_ARGS "$module_path" \
     | $TFMASK \
     | tee /dev/fd/3 \
     | sed '1,/---/d' \
