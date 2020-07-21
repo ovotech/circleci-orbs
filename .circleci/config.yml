@@ -144,7 +144,7 @@ workflows:
       - publish_orb:
           name: << matrix.orb-name >>
           path: << matrix.orb-name >>
-            publish-docker-image: true
+          publish-docker-image: true
           requires:
             - validate_orbs
           matrix:
