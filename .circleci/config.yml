@@ -34,10 +34,10 @@ jobs:
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
             readonly ORB="<< parameters.path >>"
             for path in $ORB/executor/Dockerfile*; do
-              if [ -e "$path" ];
-                 echo "$ORB Has docker files - continuing"
-              ls
-                 echo "$ORB $path Has no docker files - exiting step"
+              if [ -e "$path" ]; then
+                 echo "Has docker files - continuing"
+              else
+                 echo "Has no docker files - exiting step"
                  exit 0
               fi
               filename=$(basename $path)
