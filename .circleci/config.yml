@@ -32,10 +32,11 @@ jobs:
           # language=bash
           command: |
             readonly ORB="<< parameters.path >>"
+            echo ls $ORB/executor/Dockerfile*
             if ls $ORB/executor/Dockerfile* 1> /dev/null 2>&1; then
-                echo "Has docker files - continuing"
+                echo "$ORB Has docker files - continuing"
             else
-                echo "Has no docker files - exiting step"
+                echo "$ORB Has no docker files - exiting step"
                 exit 0
 
             fi
