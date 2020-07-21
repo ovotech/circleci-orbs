@@ -32,8 +32,11 @@ jobs:
           # language=bash
           command: |
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+
             readonly ORB="<< parameters.path >>"
+
             for path in $ORB/executor/Dockerfile*; do
+
               if [ -e "$path" ]; then
                  echo "Has docker files - continuing"
               else
