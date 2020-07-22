@@ -1,0 +1,100 @@
+version: 2.1
+description: "Assigns environmental variable dependant on if we are running on main branch, tag or another branch"
+
+commands:
+  set-env:
+    parameters:
+      git-branch:
+        type: string
+        default: ""
+      git-tag:
+        type: string
+        default: ""
+      main-branch-name:
+        type: string
+        default: master
+      env-name-tag:
+        type: string
+        default: prod
+      env-name-main-branch:
+        type: string
+        default: nonprod
+      env-name-other-branch:
+        type: string
+        default: sandbox
+      environment-variable:
+        type: string
+        default: ENVIRONMENT
+    description: Set which environment we are in to environment variable << parameters.environment-variable>>
+    steps:
+      - when:
+          condition:
+            and:
+              - not: << parameters.git-tag >>
+              - not:
+                  equal: [<< parameters.main-branch-name >>, << parameters.git-branch >>]
+          steps:
+            - run:
+                name: "Other Branch: Set << parameters.environment-variable >> to << parameters.env-name-other-branch >>"
+                command: echo 'export << parameters.environment-variable >>=<< parameters.env-name-other-branch >>' >> $BASH_ENV
+      - when:
+          condition:
+            equal: [<< parameters.main-branch-name >>, << parameters.git-branch >>]
+          steps:
+            - run:
+                name: "Main Branch: Set << parameters.environment-variable >> to << parameters.env-name-main-branch >>"
+                command: echo 'export << parameters.environment-variable >>=<< parameters.env-name-main-branch >>' >> $BASH_ENV
+      - when:
+          condition: << parameters.git-tag >>
+          steps:
+            - run:
+                name: "Tag: Set << parameters.environment-variable >> to << parameters.env-name-tag >>"
+                command: echo 'export << parameters.environment-variable >>=<< parameters.env-name-tag >>' >> $BASH_ENV
+
+
+examples:
+  bare-bones:
+    description: Simply pass git branch and git tag
+    usage:
+      version: 2.1
+      
+      orbs:
+        env-orb: ovotech/set-current-environment@1
+      
+      jobs:
+        set-environment:
+          executor: any
+          steps:
+            - env-orb/set-env:
+                git-branch: << pipeline.git.branch >>
+                git-tag: << pipeline.git.tag >>
+      
+      workflows:
+        test:
+          jobs:
+            - set-environment
+  full-parameters:
+    description: all parameters set
+    usage:
+      version: 2.1
+      
+      orbs:
+        env-orb: ovotech/set-current-environment@1
+      
+      jobs:
+        set-environment:
+          executor: any
+          steps:
+            - env-orb/set-env:
+                git-branch: << pipeline.git.branch >>
+                git-tag: << pipeline.git.tag >>
+                main-branch-name: main
+                env-name-tag: tag-name
+                env-name-main-branch: main-name
+                env-name-other-branch: other-name
+                environment-variable: PROFILE
+      
+      workflows:
+        test:
+          jobs:
+            - set-environment

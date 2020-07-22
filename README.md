@@ -25,6 +25,7 @@ Orbs follow the conventions:
  - [ovotech/aws-rotate-keys@1](aws-rotate-keys) - Rotate AWS access keys and update corresponding CircleCI environment variables.
  - [ovotech/clair-scanner@1](clair-scanner) - Scan Docker images for vulnerabilities.
  - [ovotech/rac-gcp-deply@1](rac-gcp-deploy) - Deploy Scala services to a Kubernetes cluster running in Google Cloud.
+ - [ovotech/set-current-environment@1](aws-get-parameters) - Set current environment (master branch, tag or other) to environemntal variable..
  - [ovotech/terraform@1](terraform) - Plan and apply Terraform modules.
  - [ovotech/tools-install@1](tools-install) - Download and unpack tools archives
  - [ovotech/with-git-deploy-key@1](with-git-deploy-key) - Execute Git operations on another repo selecting specific public key.
