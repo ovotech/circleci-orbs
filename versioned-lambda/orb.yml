@@ -51,7 +51,7 @@ jobs:
             - snyk/scan:
                 token-variable: SNYK_TOKEN
                 monitor-on-build: true
-                severity-threshold: medium
+                severity-threshold: low
                 project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
       - run:
           name: Lint
