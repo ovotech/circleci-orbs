@@ -1,1 +1,0 @@
-ovotech/versioned-lambda@1.0.1
