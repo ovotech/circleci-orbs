@@ -31,6 +31,7 @@ jobs:
           name: docker build << parameters.path >>
           # language=bash
           command: |
+            set -x
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
 
             readonly ORB="<< parameters.path >>"
