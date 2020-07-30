@@ -3,6 +3,11 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.9
+### Changed
+- Updated Terraform to the latest version 0.12.29
+- Updated default Terraform version 0.12.5 -> 0.12.29
+
 ## ovotech/terraform@1.6.8
 ### Changed
 - Updated executors to include helm2 @v2.16.9
