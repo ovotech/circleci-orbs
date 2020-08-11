@@ -8,7 +8,7 @@ orbs:
 executors:
   lambci-node12:
     docker:
-      - image: lambci/lambda:build-nodejs12.x
+      - image: lambci/lambda:20200721-build-nodejs12.x
 
 jobs:
   node-test-and-package:
