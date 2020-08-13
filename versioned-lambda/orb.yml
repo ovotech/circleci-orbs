@@ -4,6 +4,7 @@ description: An orb to build and deploy AWS Lambda functions written in node.js 
 orbs:
   aws-cli: circleci/aws-cli@1.2.0
   snyk: snyk/snyk@0.0.10
+  shipit: ovotech/shipit@1
 
 executors:
   lambci-node12:
@@ -95,6 +96,10 @@ jobs:
       lambda-function-name:
         description: Name of the lambda function
         type: string
+      notify-shipit:
+        description: Whether or not to notify shipit
+        type: boolean
+        default: false
     executor: aws-cli/default
     steps:
       - aws-cli/setup
@@ -124,3 +129,7 @@ jobs:
               --name $ALIAS \
               --function-version $VERSION \
               --description "The latest build in the $CIRCLE_BRANCH branch"
+      - when:
+          condition: << parameters.notify-shipit >>
+          steps:
+            - shipit/shipit
