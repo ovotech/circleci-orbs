@@ -28,9 +28,19 @@ jobs:
         description: "Whether or not to run the Snyk Scan step. Defaults to true"
         type: boolean
         default: true
+      authenticate-npm:
+        description: "Whether or not to authenticate with the npm registry service. Defaults to true"
+        type: boolean
+        default: true
     executor: << parameters.executor >>
     steps:
       - checkout
+      - when:
+          condition: << parameters.authenticate-npm >>
+          steps:
+            - run:
+                name: Authenticate with npm registry
+                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ./.npmrc
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
