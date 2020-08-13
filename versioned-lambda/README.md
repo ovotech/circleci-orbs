@@ -108,6 +108,7 @@ workflows:
           name: deploy-uat
           build-bucket: my-build-bucket
           lambda-function-name: cool-lambda-uat
+          context: my-uat-context
           requires:
             - test-and-package
 
@@ -124,6 +125,7 @@ workflows:
           name: deploy-prod
           build-bucket: my-build-bucket
           lambda-function-name: cool-lambda-prod
+          context: my-prod-context
           notify-shipit: true
           filters:
             branches:
