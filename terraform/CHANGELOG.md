@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.10
+### Changed
+- No changes to Orb, latest tfmask to be cloned, built and added to Docker image at build time.
+
 ## ovotech/terraform@1.6.9
 ### Changed
 - Updated Terraform to the latest version 0.12.29
