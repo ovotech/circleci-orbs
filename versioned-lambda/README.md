@@ -46,13 +46,14 @@ resource "aws_lambda_function" "cool-lambda" {
 
 **Parameters**
 
-- `executor` - Name of the executor to use for this job. Defaults to the `lambci/lambda:build-nodejs12.x`
-  docker image.
+- `executor` - Name of the executor to use for this job. Defaults a Node `12.x` image.
 - `lambda-zipfile` - Name of the lambda zip file to be built. Defaults to `lambda.zip`.
 - `build-bucket` - Name of the S3 bucket into which the built zip will be uploaded.
-- `vulnerability-audit` - Whether or not to run `npm audit` to check vulnerabilities. Defaults to `true`.
+- `vulnerability-audit` - Whether or not to run `snyk` to check vulnerabilities. Defaults to `true`.
   When run, the build will fail if any dependency vulnerabilities are reported with a severity greater than
-  or equal to "moderate".
+  or equal to "moderate". Requires the `SNYK_TOKEN` environment variable.
+- `authenticate-npm` - Whether or not to authenticate access to the NPM registry. Defaults to `true`. Requires the
+  `NPM_TOKEN` environment variable.
 
 ### create-lambda-version
 
@@ -68,6 +69,10 @@ in the `build-test-and-package` job, i.e. using the repo name, branch and SHA.
 - `lambda-zipfile` - Name of the built lambda zip file. Defaults to `lambda.zip`.
 - `build-bucket` - Name of the S3 bucket containing the built zip will be uploaded.
 - `lambda-function-name` - Name of the Lambda function.
+- `notify-shipit` - Whether or not to notify the `shipit` deployment service. Defaults to `false`.
+  This should be set to `true` only when calling this job for a production deployment. Requires the
+  `SHIPIT_API_KEY` and `TEAM_NAME` environment variables. Uses the
+  [shipit orb](https://github.com/ovotech/pe-orbs/tree/master/shipit) with all default settings.
 
 ## Example
 
@@ -87,25 +92,41 @@ workflows:
   build-test-deploy:
     jobs:
       - versioned-lambda/node-test-and-package:
-          name: test-and-package
+          name: build-uat
           build-bucket: my-build-bucket
-      - versioned-lambda/create-lambda-version:
-          name: create-lambda-uat
+          context: my-uat-context
+
+      - versioned-lambda/node-test-and-package:
+          name: build-prod
           build-bucket: my-build-bucket
-          lambda-function-name: cool-lambda-uat
-          requires:
-            - test-and-package
-      - hold:
+          context: my-prod-context
           filters:
             branches:
               only: master
-          type: approval
-          requires:
-            - create-lambda-uat
+
       - versioned-lambda/create-lambda-version:
-          name: create-lambda-prod
+          name: deploy-uat
+          build-bucket: my-build-bucket
+          lambda-function-name: cool-lambda-uat
+          context: my-uat-context
+          requires:
+            - test-and-package
+
+      - hold:
+          type: approval
+          filters:
+            branches:
+              only: master
+          requires:
+            - deploy-uat
+            - build-prod
+
+      - versioned-lambda/create-lambda-version:
+          name: deploy-prod
           build-bucket: my-build-bucket
           lambda-function-name: cool-lambda-prod
+          context: my-prod-context
+          notify-shipit: true
           filters:
             branches:
               only: master
