@@ -8,3 +8,5 @@
 /with-git-deploy-key/     @ovotech/orion-sre
 /versioned-lambda/        @ovotech/orion-migration
 /set-current-environment/ @ovotech/jaws
+/oot-eks/                 @ovotech/orion-ops-tooling
+/clojure/                 @ovotech/orion-ops-tooling
