@@ -1,4 +1,5 @@
 version: 2.1
+description: "Opinionated commands for releasing projects on AWS EKS."
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.1
