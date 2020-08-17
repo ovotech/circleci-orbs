@@ -156,4 +156,6 @@ workflows:
                 - tools-install
                 - versioned-lambda
                 - with-git-deploy-key
+                - oot-eks
+                - clojure
 
