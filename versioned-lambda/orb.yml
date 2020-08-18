@@ -61,7 +61,7 @@ jobs:
                 command: yum install -y sudo
             - when:
                 condition:
-                  equal: [master, << pipeline.git.branch >>]
+                  equal: [master, $CIRCLE_BRANCH]
                 steps:
                   snyk/scan:
                     token-variable: SNYK_TOKEN
@@ -70,7 +70,7 @@ jobs:
                     project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
             - unless:
                 condition:
-                  equal: [master, << pipeline.git.branch >>]
+                  equal: [master, $CIRCLE_BRANCH]
                 steps:
                   snyk/scan:
                     token-variable: SNYK_TOKEN
