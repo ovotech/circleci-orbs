@@ -14,6 +14,10 @@ executors:
     description: "Terraform 0.12 executor"
     docker:
       - image: ovotech/terraform:0.12
+  terraform-0_13:
+    description: "Terraform 0.13 executor"
+    docker:
+      - image: ovotech/terraform:0.13
 
 aliases:
   parameters:
