@@ -36,7 +36,42 @@ If the AIVEN_PROVIDER environment variable is set, also has:
 
 [Dockerfile](executor/Dockerfile-0.12)
 
-This executor uses terraform 0.12.5 by default. However `tfswitch` is
+This executor uses terraform 0.12.29 by default. However `tfswitch` is
+installed to allow you to adjust at runtime.
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+to change this.
+
+It also contains:
+- Aiven's terraform-provider-aiven
+- google-cloud-sdk
+- Helm 2 available as `helm2` and `helm`
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- aws-cli
+- ovo's kafka user provider
+
+### terraform-0_12-slim
+
+[Dockerfile](executor/Dockerfile-0.12-slim)
+
+A much much slimmer image. Carries one version of each provider/tool.
+This executor uses terraform 0.12.29 by default. However `tfswitch` is
+installed to allow you to adjust at runtime.
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+to change this.
+
+It also contains:
+- Aiven's terraform-provider-aiven
+- google-cloud-sdk
+- Helm 2 available as `helm2` and `helm`
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- aws-cli
+- ovo's kafka user provider
+
+### terraform-0_13
+
+[Dockerfile](executor/Dockerfile-0.13)
+
+This executor uses terraform 0.13.0 by default. However `tfswitch` is
 installed to allow you to adjust at runtime.
 See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
 to change this.

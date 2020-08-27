@@ -3,6 +3,19 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.7.2
+### Changed
+- Updated 0.12 slim executor with Aiven's terraform-provider-aiven 2.0.1 
+
+## ovotech/terraform@1.7.1
+### Changed
+- Added slim Terraform 0.12 executor 
+  This image contains one version of each provider/tool
+
+## ovotech/terraform@1.7.0
+### Changed
+- Added Terraform 0.13 executor
+
 ## ovotech/terraform@1.6.10
 ### Changed
 - No changes to Orb, latest tfmask to be cloned, built and added to Docker image at build time.
