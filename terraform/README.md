@@ -122,6 +122,7 @@ Available commands:
 - version
 - in-workspace
 - publish-module
+- taint
 
 ### plan
 
@@ -277,6 +278,16 @@ Parameters:
 - module_name: The full module name, of the form "$NAMESPACE/$NAME/$PROVIDER"
 - version_file_path: Path to a file containing the semantic version to publish.
 
+### taint
+
+Marks a Terraform-managed resource as tainted, forcing it to be destroyed and
+recreated on the next apply.
+
+Parameters:
+
+- path: The address (in [resource syntax](https://www.terraform.io/docs/internals/resource-addressing.html))
+of the resource to mark as tainted.
+
 ## Jobs
 
 This orb contains the jobs:
@@ -286,6 +297,7 @@ This orb contains the jobs:
 - destroy
 - new-workspace
 - destroy-workspace
+- taint
 
 These jobs run their respective command in the default executor
 (which uses terraform 0.11). The jobs have the same parameters as the commands.
