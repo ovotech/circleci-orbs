@@ -1,1 +1,1 @@
-ovotech/terraform@1.7.2
+ovotech/terraform@1.7.3
