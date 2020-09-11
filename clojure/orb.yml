@@ -59,6 +59,10 @@ commands:
             - v1-dependencies-
 
       - run:
+          name: Ensure dependencies are present
+          command: lein deps
+
+      - run:
           name: Generate pom.xml for Snyk
           command: lein pom
 
