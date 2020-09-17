@@ -145,7 +145,7 @@ class TerraformComment:
         self._update_comment()
 
     def _update_comment(self):
-        comment = f'{self._comment_identifier}\n```\n{self.plan}\n```'
+        comment = f'{self._comment_identifier}\n```hcl\n{self.plan}\n```'
 
         if self.status:
             comment += '\n' + self.status
