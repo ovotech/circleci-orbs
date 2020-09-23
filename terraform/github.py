@@ -69,7 +69,7 @@ class TerraformComment:
         self._comment_url = None
         for comment in response.json():
             if comment['user']['login'] == github_username:
-                match = re.match(rf'{re.escape(self._comment_identifier)}\n```(.*?)```(.*)', comment['body'], re.DOTALL)
+                match = re.match(rf'{re.escape(self._comment_identifier)}\n```(?:hcl)(.*?)```(.*)', comment['body'], re.DOTALL)
 
                 if match:
                     self._comment_url = comment['url']
