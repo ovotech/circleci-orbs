@@ -3,6 +3,12 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.7.3
+## Changed
+- Updated `helm`, `helm2` and `awscli` packages for 0.12, 0.12-slim and 0.13 executors
+- Updated default Terraform version for 0.13 executor to use 0.13.2
+- Added newest Terraform versions to 0.13 executor
+
 ## ovotech/terraform@1.7.2
 ### Changed
 - Updated 0.12 slim executor with Aiven's terraform-provider-aiven 2.0.1 
