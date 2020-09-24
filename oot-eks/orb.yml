@@ -39,6 +39,10 @@ commands:
         description: "Environment string used for substitution in the kubernetes files."
         type: string
         default: ${ENVIRONMENT}
+      resource-type:
+        description: "The kubernetes resource type that will be deployed."
+        type: string
+        default: "deployment"
 
     steps:
       - attach_workspace:
@@ -76,9 +80,9 @@ commands:
 
       - run:
           command: |
-            sed -i "s/{{AWS_ACCOUNT_ID}}/<< parameters.account >>/g" ./kubernetes/deployment.yaml
-            sed -i "s/{{IMAGE_TAG}}/${CIRCLE_SHA1}/g" ./kubernetes/deployment.yaml
-            sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" ./kubernetes/deployment.yaml
+            sed -i "s/{{AWS_ACCOUNT_ID}}/<< parameters.account >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
+            sed -i "s/{{IMAGE_TAG}}/${CIRCLE_SHA1}/g" ./kubernetes/<< parameters.resource-type >>.yaml
+            sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
 
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.eks-cluster-name >>
@@ -87,8 +91,8 @@ commands:
 
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
-          resource-file-path: kubernetes/deployment.yaml
-          resource-name: deployment/<< parameters.service >>
+          resource-file-path: kubernetes/<< parameters.resource-type >>.yaml
+          resource-name: << parameters.resource-type >>/<< parameters.service >>
           show-kubectl-command: true
 
 jobs:
