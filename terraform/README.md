@@ -23,7 +23,6 @@ to change this.
 
 It also contains:
 - helm + terraform-provider-helm
-- terraform-provider-acme
 - google-cloud-sdk
 - aws-cli
 - ovo's terraform-provider-aiven as version 0.0.1
