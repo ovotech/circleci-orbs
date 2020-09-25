@@ -3,6 +3,11 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.6.9
+### Changed
+- Added aiven-kafka-users provider
+- Removed ovo-rotate-test provider
+
 ## ovotech/terraform@1.6.8
 ### Changed
 - Added ovo-rotate-test provider
