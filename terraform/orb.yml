@@ -17,7 +17,7 @@ executors:
   terraform-0_12_kafka_user_test:
     description: "Terraform 0.12 kafka-user-test executor"
     docker:
-      - image: ovotech/terraform:0.12_28-09-2020
+      - image: ovotech/terraform:0.12_29-09-2020
 
 aliases:
   parameters:
