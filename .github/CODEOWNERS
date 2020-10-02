@@ -10,3 +10,4 @@
 /set-current-environment/ @ovotech/jaws
 /oot-eks/                 @ovotech/orion-ops-tooling
 /clojure/                 @ovotech/orion-ops-tooling
+/jaws-journey-deploy      @ovotech/jaws
