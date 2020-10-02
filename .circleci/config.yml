@@ -158,4 +158,5 @@ workflows:
                 - with-git-deploy-key
                 - oot-eks
                 - clojure
+                - jaws-journey-deploy
 
