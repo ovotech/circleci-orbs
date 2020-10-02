@@ -23,7 +23,7 @@ RUN apk add --update --no-cache curl ca-certificates \
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
   && ESUM="9bb9212541176d6fcce7bd12e4cf8a9c9649f5b63f88b3aff474e0b02c7cfe58" \
-  && SBT_URL="https://piccolo.link/sbt-${SBT_VERSION}.tgz" \
+  && SBT_URL="https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" \
   && apk add shadow \
   && apk add bash \
   && apk add openssh \
