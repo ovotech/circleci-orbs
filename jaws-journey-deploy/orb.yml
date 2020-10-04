@@ -122,11 +122,13 @@ jobs:
       uploadschema:
         type: boolean
         default: false
+      <<: *environment
     steps:
       - attach_workspace:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}
+      - *set-environment-variables
       - *avro-setup
 
   build-and-test:
