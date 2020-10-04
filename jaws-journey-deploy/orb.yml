@@ -28,12 +28,6 @@ aliases:
     subproject: &subproject
       subproject:
         type: "string"
-    branch: &branch
-      branch:
-        type: "string"
-    tag: &tag
-      tag:
-        type: "string"
 
   avro-setup: &avro-setup
     run:
@@ -72,6 +66,15 @@ aliases:
         find . -type f -regex ".*/build/jacoco-reports/test/.*xml" -exec cp {} ~/reports/jacoco \;
         cp -r << parameters.subproject >>/build/jacoco-reports/html ~/reports/jacoco
 
+  calculate-build-version: &calculate-build-version
+    run:
+      name: calculate version
+      command: |
+        #!/bin/bash
+        set -eu
+        echo "export TF_VAR_release_version=${CIRCLE_TAG:-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:8}}" >> $BASH_ENV
+        echo "export TF_VAR_build_tag=${CIRCLE_SHA1}" >> $BASH_ENV
+
   run-integration-test: &run-integration-test
     run:
       name: Run Integration tests
@@ -82,7 +85,7 @@ aliases:
       name: Set Profile Variable
       command: |
         set -eu
-        echo 'export PROFILE='<< parameters.branch >>' >> $BASH_ENV
+        echo 'export PROFILE='<< parameters.environment >>'' >> $BASH_ENV
         echo "export VERSION=${CIRCLE_TAG:-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:8}}" >> $BASH_ENV
 
   tf-mask: &tf-mask
@@ -131,13 +134,10 @@ jobs:
   build-and-test:
     parameters:
       <<: *subproject
+      <<: *environment
       publish:
         type: boolean
         default: false
-      branch:
-        type: string
-      tag:
-        type: string
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -230,15 +230,15 @@ jobs:
       - checkout
       - run: terraform fmt -no-color -check -diff -recursive
 
-#  tf-plan:
-#    <<: *tf-common
-#    description: tf-plan << parameters.environment >>
-#    environment:
-#      <<: *tf-mask
-#    steps:
-#      - checkout
-#      - *calculate-build-version
-#      - terraform/plan: *tf-parameters
+  tf-plan:
+    <<: *tf-common
+    description: tf-plan << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - checkout
+      - *calculate-build-version
+      - terraform/plan: *tf-parameters
 #
 #  tf-apply:
 #    <<: *tf-common
