@@ -32,7 +32,17 @@ aliases:
   avro-setup: &avro-setup
     run:
       name: Upload Avro and run compatibility checks
-      command: bash circleci_avro.sh << parameters.uploadschema >>
+      command: |
+        set -eu
+        sudo chmod +x gradlew
+
+        if [[ << parameters.uploadschema >> == "true" ]]
+        then
+        ./gradlew avroUploadTask --full-stacktrace
+        ./gradlew avroCheckCompatibleTask -PallowNotFound=false --full-stacktrace
+        else
+        ./gradlew avroCheckCompatibleTask -PallowNotFound=true --full-stacktrace
+        fi
 
   build-project: &build-project
     run:

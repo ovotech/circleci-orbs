@@ -2,7 +2,6 @@
 set -eu
 CD_PUBLISH=$1
 sudo chmod +x gradlew
-export AWS_REGION=${AWS_DEFAULT_REGION}
 
 if [[ ${CD_PUBLISH} == "true" ]]
 then
