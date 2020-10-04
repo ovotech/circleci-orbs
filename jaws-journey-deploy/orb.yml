@@ -209,6 +209,7 @@ jobs:
   integration-test:
     parameters:
       <<: *subproject
+      <<: *environment
     machine:
       docker_layer_caching: false
     working_directory: ~/working
