@@ -11,7 +11,7 @@ orbs:
 executors:
   kotlin:
     docker:
-      - image: circleci/openjdk:11.0.7-jdk-bu
+      - image: circleci/openjdk:11.0.7-jdk-buster
 
 aliases:
   parameters:
