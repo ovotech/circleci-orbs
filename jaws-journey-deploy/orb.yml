@@ -40,9 +40,9 @@ aliases:
         if [[ << parameters.uploadschema >> == "true" ]]
         then
         ./gradlew avroUploadTask --full-stacktrace
-        ./gradlew avroCheckCompatibleTask -PallowNotFound=false --full-stacktrace
+        ./gradlew avroCheckCompatibleTask -PallowNotFound=false -Pprofile=$PROFILE --full-stacktrace
         else
-        ./gradlew avroCheckCompatibleTask -PallowNotFound=true --full-stacktrace
+        ./gradlew avroCheckCompatibleTask -PallowNotFound=true -Pprofile=$PROFILE --full-stacktrace
         fi
 
   build-project: &build-project
@@ -76,7 +76,11 @@ aliases:
   run-integration-test: &run-integration-test
     run:
       name: Run Integration tests
-      command: bash circleci_run_integration_test.sh << parameters.subproject >>
+      command: |
+        set -eu
+        sudo chmod +x gradlew
+        #export AWS_REGION=${AWS_DEFAULT_REGION}
+        ./gradlew :<< parameters.subproject >>:integrationTest -Pprofile=${PROFILE} --full-stacktrace
 
   set-environment-variables: &set-environment-variables
     run:
@@ -202,26 +206,26 @@ jobs:
       - shipit/shipit:
           team-name: Smart Journeys
 
-#  integration-test:
-#    parameters:
-#      <<: *integration-test-subproject-param
-#    machine:
-#      docker_layer_caching: false
-#    working_directory: ~/working
-#    steps:
-#      - attach_workspace:
-#          at: ~/working
-#      - when:
-#          condition: << pipeline.parameters.run_integration_tests >>
-#          steps:
-#            - openjdk-install/openjdk:
-#                version: 11
-#            - restore_cache:
-#                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
-#            - *set-environment-variables
-#            - *run-integration-test
-#            - store_test_results:
-#                path: << parameters.subproject >>/build/test-results/integrationTest
+  integration-test:
+    parameters:
+      <<: *subproject
+    machine:
+      docker_layer_caching: false
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - when:
+          condition: << pipeline.parameters.run_integration_tests >>
+          steps:
+            - openjdk-install/openjdk:
+                version: 11
+            - restore_cache:
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+            - *set-environment-variables
+            - *run-integration-test
+            - store_test_results:
+                path: << parameters.subproject >>/build/test-results/integrationTest
 
   lint: # lint locally on commit "pip install pre-commit && pre-commit install" and on-demand "pre-commit run --all"
     docker:
@@ -239,15 +243,15 @@ jobs:
       - checkout
       - *calculate-build-version
       - terraform/plan: *tf-parameters
-#
-#  tf-apply:
-#    <<: *tf-common
-#    description: tf-apply-<< parameters.environment >>
-#    environment:
-#      <<: *tf-mask
-#    steps:
-#      - checkout
-#      - *calculate-build-version
-#      - terraform/apply:
-#          auto_approve: true
-#          <<: *tf-parameters
+
+  tf-apply:
+    <<: *tf-common
+    description: tf-apply-<< parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - checkout
+      - *calculate-build-version
+      - terraform/apply:
+          auto_approve: true
+          <<: *tf-parameters
