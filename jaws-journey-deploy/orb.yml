@@ -32,27 +32,27 @@ aliases:
   avro-setup: &avro-setup
     run:
       name: Upload Avro and run compatibility checks
-      command: bash ./circleci_avro.sh << parameters.uploadschema >>
+      command: bash circleci_avro.sh << parameters.uploadschema >>
 
   build-project: &build-project
     run:
       name: Build project
-      command: bash ./circleci_build_project.sh << parameters.subproject >> $PROFILE
+      command: bash circleci_build_project.sh << parameters.subproject >> $PROFILE
 
   save-test-results: &save-test-results
     run:
       name: Save test results
-      command: bash ./circleci_save_test_results.sh << parameters.subproject >>
+      command: bash circleci_save_test_results.sh << parameters.subproject >>
 
   run-integration-test: &run-integration-test
     run:
       name: Run Integration tests
-      command: bash ./circleci_run_integration_test.sh << parameters.subproject >>
+      command: bash circleci_run_integration_test.sh << parameters.subproject >>
 
   set-environment-variables: &set-environment-variables
     run:
       name: Set Profile Variable
-      command: bash ./circleci_set_profile.sh "<< pipeline.git.branch >>" "<< pipeline.git.tag >>"
+      command: bash circleci_set_profile.sh "<< pipeline.git.branch >>" "<< pipeline.git.tag >>"
 
 jobs:
   checkout-code:
