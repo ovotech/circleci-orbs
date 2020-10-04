@@ -28,6 +28,12 @@ aliases:
     subproject: &subproject
       subproject:
         type: "string"
+    branch: &branch
+      branch:
+        type: "string"
+    tag: &tag
+      tag:
+        type: "string"
 
   avro-setup: &avro-setup
     run:
@@ -48,12 +54,23 @@ aliases:
   build-project: &build-project
     run:
       name: Build project
-      command: bash circleci_build_project.sh << parameters.subproject >> $PROFILE
+      command: |
+        set -eu
+        SERVICE_NAME=$1
+        PROFILE=$2
+        sudo chmod +x gradlew
+        ./gradlew :<< parameters.subproject >>:clean :<< parameters.subproject >>:buildNeeded -Pprofile=$PROFILE -x integrationTest --full-stacktrace
 
   save-test-results: &save-test-results
     run:
       name: Save test results
-      command: bash circleci_save_test_results.sh << parameters.subproject >>
+      command: |
+        set -eu
+        mkdir -p ~/test-results/junit/
+        find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+        mkdir -p ~/reports/jacoco/
+        find . -type f -regex ".*/build/jacoco-reports/test/.*xml" -exec cp {} ~/reports/jacoco \;
+        cp -r << parameters.subproject >>/build/jacoco-reports/html ~/reports/jacoco
 
   run-integration-test: &run-integration-test
     run:
@@ -63,7 +80,10 @@ aliases:
   set-environment-variables: &set-environment-variables
     run:
       name: Set Profile Variable
-      command: bash circleci_set_profile.sh "<< pipeline.git.branch >>" "<< pipeline.git.tag >>"
+      command: |
+        set -eu
+        echo 'export PROFILE='<< parameters.branch >>' >> $BASH_ENV
+        echo "export VERSION=${CIRCLE_TAG:-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:8}}" >> $BASH_ENV
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
@@ -114,6 +134,10 @@ jobs:
       publish:
         type: boolean
         default: false
+      branch:
+        type: string
+      tag:
+        type: string
     executor: kotlin
     working_directory: ~/working
     steps:
