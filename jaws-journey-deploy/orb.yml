@@ -220,7 +220,7 @@ jobs:
       - attach_workspace:
           at: ~/working
       - when:
-          condition: << pipeline.parameters.run_integration_tests >>
+          condition: << parameters.run_integration_tests >>
           steps:
             - openjdk-install/openjdk:
                 version: 11
