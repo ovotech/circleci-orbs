@@ -1,0 +1,72 @@
+version: 2.1
+description: An orb using sshuttle to establish a proxy to a remote network for performing deployments
+# Some of this Orb have been inspired by https://circleci.com/developer/orbs/orb/symbol/ssh-tunnel (MIT Licence)
+
+commands:
+  proxy_up:
+    description: "Establish a routed sshuttle proxy over an SSH tunnel to the remote network"
+    parameters:
+      hostname:
+        description: "The hostname of the SSH proxy server"
+        type: string
+      port:
+        description: "The port of the SSH proxy server"
+        type: integer
+      username:
+        description: "The username to connect to the SSH proxy server"
+        type: string
+      private_key_fingerprint:
+        description: "The private key for connecting to the SSH proxy server. The key must be added via CircleCI settings first: https://circleci.com/docs/2.0/add-ssh-key/"
+        type: string
+      routed_network_cidrs:
+        description: "A string of CIDR blocks requests for which should be proxied, separated by a space. For individual IP addresses, use x.x.x.x/32 to represent them"
+        type: string
+      connection_test_host:
+        description: "The destination IP or hostname in the private network which we want to reach via the proxy, for testing the connection"
+        type: string
+      connection_test_port:
+        description: "The port for the host in the private network which we want to reach via the proxy, for testing the connection"
+        type: integer
+
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - << parameters.private_key_fingerprint >>
+      - run:
+          name: Install additional packages required
+          shell: /bin/bash
+          command: |
+            sudo apt update && sudo apt install -y sshuttle
+      - run:
+          name: Spin up sshuttle tunnel
+          shell: /bin/bash
+          command: |
+            sudo sshuttle -r << parameters.username >>@<< parameters.hostname >>:<< parameters.port >> << parameters.routed_network_cidrs >> --python python3 --dns
+      - run: 
+          name: Wait for tunnel establishment
+          shell: /bin/bash
+          command: |
+            COUNT=0
+            until nc -z << parameters.connection_test_host >> << parameters.connection_test_port >>; do
+              if [ $COUNT -ge 10 ]; then
+                echo "ssh tunnel set up timeout";
+                exit 1;
+              fi;
+              ((COUNT++))
+              sleep 1
+            done
+
+  proxy_down:
+    steps:
+      - run:
+          name: Release all sshuttle sessions, which will kill forked ssh processes as well
+          command: ps u | grep -- 'sshuttle' | grep -v 'grep' | awk '{print $2}' | xargs kill
+
+# This orb must be executed on a VM rather than container, as sshuttle needs to add ip routes
+# Why is this necessary? We want TLS connections to work through the proxy without requiring
+# any special configurations on the client itself -- such as SOCKS proxy settings -- and the
+# easiest way to do this in an ephemeral environment is to tunnel DNS and specific remote IPs.
+executors:
+  aws:
+    machine:
+      image: ubuntu-1604:202007-01
