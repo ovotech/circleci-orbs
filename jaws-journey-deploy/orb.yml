@@ -51,7 +51,8 @@ aliases:
   save-test-results: &save-test-results
     run:
       name: Save test results
-      command: |
+      shell: /bin/bash -eo pipefail
+      command:
         include circleci_save_test_results.sh << parameters.subproject >>
 
   calculate-build-version: &calculate-build-version
