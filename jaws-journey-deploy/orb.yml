@@ -15,11 +15,6 @@ executors:
 
 aliases:
   parameters:
-    context: &context
-      context:
-        type: "string"
-        description: "context to be used on build"
-
     environment: &environment
       environment:
         type: "enum"
@@ -57,12 +52,7 @@ aliases:
     run:
       name: Save test results
       command: |
-        set -eu
-        mkdir -p ~/test-results/junit/
-        find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-        mkdir -p ~/reports/jacoco/
-        find . -type f -regex ".*/build/jacoco-reports/test/.*xml" -exec cp {} ~/reports/jacoco \;
-        cp -r << parameters.subproject >>/build/jacoco-reports/html ~/reports/jacoco
+        include circleci_save_test_results.sh << parameters.subproject >>
 
   calculate-build-version: &calculate-build-version
     run:
