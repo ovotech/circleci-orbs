@@ -3,17 +3,9 @@ description: "Terraform orb. See https://github.com/ovotech/circleci-orbs/tree/m
 
 executors:
   default:
-    description: "Terraform 0.11 executor"
+    description: "Terraform 0.13 executor"
     docker:
-      - image: ovotech/terraform:0.11
-  terraform-0_11:
-    description: "Terraform 0.11 executor"
-    docker:
-      - image: ovotech/terraform:0.11
-  terraform-0_12:
-    description: "Terraform 0.12 executor (contains all versions of TF 0.12)"
-    docker:
-      - image: ovotech/terraform:0.12
+      - image: ovotech/terraform:0.13
   terraform-0_12-slim:
     description: "Terraform 0.12 executor (only contains TF v0.12.29)"
     docker:
