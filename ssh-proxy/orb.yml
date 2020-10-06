@@ -62,8 +62,8 @@ commands:
   proxy_down:
     steps:
       - run:
-          name: Release all sshuttle sessions, which will kill forked ssh processes as well
-          command: ps u | grep -- 'sshuttle' | grep -v 'grep' | awk '{print $2}' | xargs kill
+          name: Release all sshuttle sessions, which will kill forked ssh sessions as well
+          command: sudo sh -c "ps a | grep -- 'sshuttle' | grep -v 'grep' | awk '{print $2}' | xargs kill"
 
 # This orb must be executed on a VM rather than container, as sshuttle needs to add ip routes
 # Why is this necessary? We want TLS connections to work through the proxy without requiring
