@@ -16,16 +16,24 @@ commands:
         description: "The username to connect to the SSH proxy server"
         type: string
       private_key_fingerprint:
-        description: "The private key for connecting to the SSH proxy server. The key must be added via CircleCI settings first: https://circleci.com/docs/2.0/add-ssh-key/"
+        description: |
+          The private key for connecting to the SSH proxy server. The key must be added via CircleCI settings 
+          first: https://circleci.com/docs/2.0/add-ssh-key/
         type: string
       routed_network_cidrs:
-        description: "A string of CIDR blocks requests for which should be proxied, separated by a space. For individual IP addresses, use x.x.x.x/32 to represent them"
+        description: |
+          A string of CIDR blocks requests for which should be proxied, separated by a space. For individual 
+          IP addresses, use x.x.x.x/32 to represent them
         type: string
       connection_test_host:
-        description: "The destination IP or hostname in the private network which we want to reach via the proxy, for testing the connection"
+        description: |
+          The destination IP or hostname in the private network which we want to reach via the proxy, for 
+          testing the connection
         type: string
       connection_test_port:
-        description: "The port for the host in the private network which we want to reach via the proxy, for testing the connection"
+        description: |
+          The port for the host in the private network which we want to reach via the proxy, for testing the 
+          connection
         type: integer
 
     steps:
@@ -37,20 +45,23 @@ commands:
           shell: /bin/bash
           command: |
             sudo apt update && sudo apt install -y sshuttle
-      # We must run sshuttle with sudo permissions to set ip routes, but we also need to apss
+      # We must run sshuttle with sudo permissions to set ip routes, but we also need pass
       # in SSH_AUTH_SOCK so that SSH agent is used to supply the private key added via CircleCI
       - run:
           name: Spin up sshuttle tunnel
           shell: /bin/bash
           background: true
           command: |
-            sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" sshuttle -r << parameters.username >>@<< parameters.hostname >>:<< parameters.port >> << parameters.routed_network_cidrs >> --python /usr/local/bin/python3 --dns
+            sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" \
+              sshuttle -r << parameters.username >>@<< parameters.hostname >>:<< parameters.port >> \
+              << parameters.routed_network_cidrs >> --python /usr/local/bin/python3 --dns
       - run: 
           name: Wait for tunnel establishment
           shell: /bin/bash
           command: |
             COUNT=0
-            until timeout 2 nc -z << parameters.connection_test_host >> << parameters.connection_test_port >>; do
+            until timeout 2 nc -z << parameters.connection_test_host >> << parameters.connection_test_port >>;
+            do
               if [ $COUNT -ge 10 ]; then
                 echo "ssh tunnel set up timeout";
                 exit 1;
