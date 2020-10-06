@@ -42,6 +42,7 @@ commands:
       - run:
           name: Spin up sshuttle tunnel
           shell: /bin/bash
+          background: true
           command: |
             sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" sshuttle -r << parameters.username >>@<< parameters.hostname >>:<< parameters.port >> << parameters.routed_network_cidrs >> --python /usr/local/bin/python3 --dns
       - run: 
