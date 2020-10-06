@@ -37,11 +37,13 @@ commands:
           shell: /bin/bash
           command: |
             sudo apt update && sudo apt install -y sshuttle
+      # We must run sshuttle with sudo permissions to set ip routes, but we also need to apss
+      # in SSH_AUTH_SOCK so that SSH agent is used to supply the private key added via CircleCI
       - run:
           name: Spin up sshuttle tunnel
           shell: /bin/bash
           command: |
-            sudo sshuttle -r << parameters.username >>@<< parameters.hostname >>:<< parameters.port >> << parameters.routed_network_cidrs >> --python python3 --dns
+            sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" sshuttle -r << parameters.username >>@<< parameters.hostname >>:<< parameters.port >> << parameters.routed_network_cidrs >> --python python3 --dns
       - run: 
           name: Wait for tunnel establishment
           shell: /bin/bash
