@@ -50,7 +50,7 @@ commands:
           shell: /bin/bash
           command: |
             COUNT=0
-            until nc -z << parameters.connection_test_host >> << parameters.connection_test_port >>; do
+            until timeout 2 nc -z << parameters.connection_test_host >> << parameters.connection_test_port >>; do
               if [ $COUNT -ge 10 ]; then
                 echo "ssh tunnel set up timeout";
                 exit 1;
@@ -63,7 +63,7 @@ commands:
     steps:
       - run:
           name: Release all sshuttle sessions, which will kill forked ssh sessions as well
-          command: sudo sh -c "ps au | grep -- 'sshuttle' | grep -v 'grep' | awk '{print $2}' | xargs kill"
+          command: sudo sh -c $'ps au | grep -- \'sshuttle\' | grep -v \'grep\' | awk \'{print $2}\' | xargs kill'
 
 # This orb must be executed on a VM rather than container, as sshuttle needs to add ip routes
 # Why is this necessary? We want TLS connections to work through the proxy without requiring
