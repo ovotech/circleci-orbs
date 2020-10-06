@@ -67,6 +67,6 @@ commands:
 # any special configurations on the client itself -- such as SOCKS proxy settings -- and the
 # easiest way to do this in an ephemeral environment is to tunnel DNS and specific remote IPs.
 executors:
-  aws:
+  default:
     machine:
       image: ubuntu-1604:202007-01
