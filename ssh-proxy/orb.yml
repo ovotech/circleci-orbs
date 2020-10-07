@@ -3,7 +3,7 @@ description: An orb using sshuttle to establish a proxy to a remote network for 
 # Some of this Orb have been inspired by https://circleci.com/developer/orbs/orb/symbol/ssh-tunnel (MIT Licence)
 
 commands:
-  proxy_up:
+  proxy-up:
     description: "Establish a routed sshuttle proxy over an SSH tunnel to the remote network"
 
     parameters:
@@ -71,13 +71,13 @@ commands:
               sleep 1
             done
 
-  proxy_down:
+  proxy-down:
     steps:
       - run:
           name: Release all sshuttle sessions, which will kill forked ssh sessions as well
           command: sudo pkill sshuttle
 
-  gke_configure_cluster_access:
+  configure-gke-cluster-access:
     description: |
       If the remote network is the control plane of a GKE cluster, this command provides a 
       short-cut for reconfiguring kubeconfig to use the private control plane IP. AWS EKS
@@ -97,8 +97,8 @@ commands:
       google-project-id:
         default: GOOGLE_PROJECT_ID
         description: |
-          Name of the environment variable name containing the name of the GCP project 
-          your cluster is in
+          Name of the environment variable name containing the ID of the GCP 
+          project your cluster is in
         type: env_var_name
       gcloud-service-key:
         default: GCLOUD_SERVICE_KEY
@@ -111,7 +111,6 @@ commands:
       - run:
           command: |
             gcloud container clusters get-credentials <<parameters.cluster>> \
-              --project <<parameters.google-project-id>> \
               --zone <<parameters.google-compute-zone>> \
               --internal-ip
           name: Reconfigure kubeconfig to use private control plane IP
