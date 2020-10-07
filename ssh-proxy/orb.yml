@@ -87,30 +87,22 @@ commands:
       cluster:
         description: "The name of the cluster to be connected to"
         type: string
-      google-compute-zone:
-        default: GOOGLE_COMPUTE_ZONE
+      compute_zone:
         description: |
-          Name of the environment variable containing th the compute zone of the cluster's  
-          control plane, if your cluster is regional rather than zonal, simply set the 
-          value as the region name (e.g. europe-west1)
-        type: env_var_name
-      google-project-id:
-        default: GOOGLE_PROJECT_ID
+          The GCP zone for the cluster's control plane, if your cluster is regional 
+          rather than zonal, simply set the value as the region name (e.g. europe-west1)
+        type: string
+      project_id:
         description: |
-          Name of the environment variable name containing the ID of the GCP 
-          project your cluster is in
-        type: env_var_name
-      gcloud-service-key:
-        default: GCLOUD_SERVICE_KEY
-        description: |
-          Name of the environment variable containing the service account key for 
-          interacting with the cluster
-        type: env_var_name
+          The ID of the GCP project your cluster is in, note that this may be different
+          from the human-readable name. Find both in the cloud console project list.
+        type: string
     
     steps:
       - run:
           command: |
             gcloud container clusters get-credentials <<parameters.cluster>> \
+              --project <<parameters.google-project-id>> \
               --zone <<parameters.google-compute-zone>> \
               --internal-ip
           name: Reconfigure kubeconfig to use private control plane IP
