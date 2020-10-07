@@ -102,8 +102,8 @@ commands:
       - run:
           command: |
             gcloud container clusters get-credentials <<parameters.cluster>> \
-              --project <<parameters.google-project-id>> \
-              --zone <<parameters.google-compute-zone>> \
+              --project <<parameters.project_id>> \
+              --zone <<parameters.compute_zone>> \
               --internal-ip
           name: Reconfigure kubeconfig to use private control plane IP
 
