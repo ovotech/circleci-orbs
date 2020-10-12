@@ -24,67 +24,6 @@ aliases:
       subproject:
         type: "string"
 
-  avro-setup: &avro-setup
-    run:
-      name: Upload Avro and run compatibility checks
-      command: |
-        set -eu
-        sudo chmod +x gradlew
-        export AWS_REGION=${AWS_DEFAULT_REGION}
-
-        if [[ << parameters.uploadschema >> == "true" ]]
-        then
-        ./gradlew avroUploadTask --full-stacktrace
-        ./gradlew avroCheckCompatibleTask -PallowNotFound=false -Pprofile=$PROFILE --full-stacktrace
-        else
-        ./gradlew avroCheckCompatibleTask -PallowNotFound=true -Pprofile=$PROFILE --full-stacktrace
-        fi
-
-  build-project: &build-project
-    run:
-      name: Build project
-      command: |
-        set -eu
-        sudo chmod +x gradlew
-        ./gradlew :<< parameters.subproject >>:clean :<< parameters.subproject >>:buildNeeded -Pprofile=$PROFILE -x integrationTest --full-stacktrace
-
-  save-test-results: &save-test-results
-    run:
-      name: Save test results
-      command: |
-        set -eu
-        mkdir -p ~/test-results/junit/
-        find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-        mkdir -p ~/reports/jacoco/
-        find . -type f -regex ".*/build/jacoco-reports/test/.*xml" -exec cp {} ~/reports/jacoco \;
-        cp -r << parameters.subproject >>/build/jacoco-reports/html ~/reports/jacoco
-
-  calculate-build-version: &calculate-build-version
-    run:
-      name: calculate version
-      command: |
-        #!/bin/bash
-        set -eu
-        echo "export TF_VAR_release_version=${CIRCLE_TAG:-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:8}}" >> $BASH_ENV
-        echo "export TF_VAR_build_tag=${CIRCLE_SHA1}" >> $BASH_ENV
-
-  run-integration-test: &run-integration-test
-    run:
-      name: Run Integration tests
-      command: |
-        set -eu
-        sudo chmod +x gradlew
-        #export AWS_REGION=${AWS_DEFAULT_REGION}
-        ./gradlew :<< parameters.subproject >>:integrationTest -Pprofile=${PROFILE} --full-stacktrace
-
-  set-environment-variables: &set-environment-variables
-    run:
-      name: Set Profile Variable
-      command: |
-        set -eu
-        echo 'export PROFILE='<< parameters.environment >>'' >> $BASH_ENV
-        echo "export VERSION=${CIRCLE_TAG:-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:8}}" >> $BASH_ENV
-
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
     TFMASK_RESOURCES_REGEX: "(?i)^(ovo_kafka_user|random_password|random_id|random_string).*$"
@@ -162,6 +101,43 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include circleci_save_test_results.sh
+
+  calculate-build-version:
+    description: "Run commands to calculate build version"
+      steps:
+        - run:
+            name: "Calculate build version"
+            shell: /bin/bash -eo pipefail
+            command: |
+              include circleci_calculate_build_version.sh
+
+  make-gradle-executable:
+    description: "Run commands to make gradle executable"
+      steps:
+        - run:
+            name: "make gradle executable"
+            shell: /bin/bash -eo pipefail
+            command: |
+              include make_gradle_executable.sh
+
+  run-automated-tests:
+    description: "Run commands to make gradle executable"
+      steps:
+        - run:
+            name: "make gradle executable"
+            shell: /bin/bash -eo pipefail
+            command: |
+              include automated_test_run.sh
+
+  save-automated-tests:
+    description: "Run commands to make gradle executable"
+      steps:
+        - run:
+            name: "make gradle executable"
+            shell: /bin/bash -eo pipefail
+            command: |
+              include circleci_set_profile.sh
+              include automated_test_save.sh
 
 jobs:
   checkout-code:
@@ -249,10 +225,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
-      - run:
-          name: Make Files Executable
-          command: |
-            sudo chmod +x gradlew
+      - make-gradle-executable
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
@@ -289,7 +262,7 @@ jobs:
             - store_test_results:
                 path: << parameters.subproject >>/build/test-results/integrationTest
 
-  lint: # lint locally on commit "pip install pre-commit && pre-commit install" and on-demand "pre-commit run --all"
+  lint:
     docker:
       - image: hashicorp/terraform:light
     steps:
@@ -303,7 +276,7 @@ jobs:
       <<: *tf-mask
     steps:
       - checkout
-      - *calculate-build-version
+      - calculate-build-version
       - terraform/plan: *tf-parameters
 
   tf-apply:
@@ -313,7 +286,23 @@ jobs:
       <<: *tf-mask
     steps:
       - checkout
-      - *calculate-build-version
+      - calculate-build-version
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
+
+  run-automation-test:
+    parameters:
+      <<: *environment
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - make-gradle-executable
+      - run-automated-test
+      - save-automated-test
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
