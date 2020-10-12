@@ -104,40 +104,40 @@ commands:
 
   calculate-build-version:
     description: "Run commands to calculate build version"
-      steps:
-        - run:
-            name: "Calculate build version"
-            shell: /bin/bash -eo pipefail
-            command: |
-              include circleci_calculate_build_version.sh
+    steps:
+      - run:
+          name: "Calculate build version"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include circleci_calculate_build_version.sh
 
   make-gradle-executable:
     description: "Run commands to make gradle executable"
-      steps:
-        - run:
-            name: "make gradle executable"
-            shell: /bin/bash -eo pipefail
-            command: |
-              include make_gradle_executable.sh
+    steps:
+      - run:
+          name: "make gradle executable"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include make_gradle_executable.sh
 
   run-automated-tests:
     description: "Run commands to make gradle executable"
-      steps:
-        - run:
-            name: "make gradle executable"
-            shell: /bin/bash -eo pipefail
-            command: |
-              include automated_test_run.sh
+    steps:
+      - run:
+          name: "make gradle executable"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include automated_test_run.sh
 
   save-automated-tests:
     description: "Run commands to make gradle executable"
-      steps:
-        - run:
-            name: "make gradle executable"
-            shell: /bin/bash -eo pipefail
-            command: |
-              include circleci_set_profile.sh
-              include automated_test_save.sh
+    steps:
+      - run:
+          name: "make gradle executable"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include circleci_set_profile.sh
+            include automated_test_save.sh
 
 jobs:
   checkout-code:
