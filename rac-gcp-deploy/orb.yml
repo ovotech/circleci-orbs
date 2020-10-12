@@ -189,7 +189,7 @@ jobs:
           api-key: <<parameters.bintray-api-key>>
       - run:
           name: "Compile"
-          command: sbt update compile test:compile
+          command: sbt update compile test:compile evicted
       - run:
           name: "avoid unnecessary cache updates"
           command: |

@@ -10,4 +10,5 @@
 /set-current-environment/ @ovotech/jaws
 /oot-eks/                 @ovotech/orion-ops-tooling
 /clojure/                 @ovotech/orion-ops-tooling
+/ssh-proxy/               @ovotech/orion-security-engineering
 /jaws-journey-deploy      @ovotech/jaws

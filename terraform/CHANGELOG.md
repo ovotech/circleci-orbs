@@ -3,6 +3,14 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.7.5
+## Changed
+- Added terraform-provider-aiven-kafka-users v0.0.1
+
+## ovotech/terraform@1.7.4
+## Changed
+- Add new TF 0.13.x vers and Aiven providers
+
 ## ovotech/terraform@1.7.3
 ## Changed
 - Updated `helm`, `helm2` and `awscli` packages for 0.12, 0.12-slim and 0.13 executors

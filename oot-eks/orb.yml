@@ -85,6 +85,7 @@ commands:
             sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
 
       - aws-eks/update-kubeconfig-with-authenticator:
+          authenticator-release-tag: v0.5.1
           cluster-name: << parameters.eks-cluster-name >>
           aws-region: << parameters.region >>
           install-kubectl: true
