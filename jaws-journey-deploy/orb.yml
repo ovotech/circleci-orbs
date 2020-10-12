@@ -259,12 +259,6 @@ jobs:
                 environment: << parameters.environment >>
             - store_test_results:
                 path: << parameters.subproject >>/build/test-results/integrationTest
-  lint:
-    docker:
-      - image: hashicorp/terraform:light
-    steps:
-      - checkout
-      - run: terraform fmt -no-color -check -diff -recursive
   tf-plan:
     <<: *tf-common
     description: tf-plan << parameters.environment >>
@@ -273,6 +267,8 @@ jobs:
     steps:
       - checkout
       - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
   tf-apply:
     <<: *tf-common
@@ -282,10 +278,11 @@ jobs:
     steps:
       - checkout
       - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
-
   run-automation-test:
     parameters:
       <<: *environment
