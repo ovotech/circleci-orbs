@@ -128,7 +128,7 @@ commands:
       <<: *environment
     steps:
       - run:
-          name: "Run  integration test commands"
+          name: "Run integration test commands"
           shell: /bin/bash -eo pipefail
           command: |
             include circleci_set_profile.sh
@@ -142,20 +142,20 @@ commands:
       <<: *environment
     steps:
       - run:
-          name: ""
+          name: "run build and test steps"
           shell: /bin/bash -eo pipefail
           command: |
             include circleci_set_profile.sh
             include circleci_build_project.sh
 
   save-test-result:
-    description: ""
+    description: "Run commands to save test results"
     parameters:
       serviceName:
         type: string
     steps:
       - run:
-          name: ""
+          name: "Save test results"
           shell: /bin/bash -eo pipefail
           command: |
             include circleci_save_test_results.sh
