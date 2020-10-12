@@ -129,6 +129,7 @@ commands:
           name: "make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
+            include circleci_set_profile.sh
             include automated_test_run.sh
 
   save-automated-tests:
@@ -138,7 +139,6 @@ commands:
           name: "make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_set_profile.sh
             include automated_test_save.sh
 
 jobs:
@@ -167,7 +167,6 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
-
   build-and-test:
     parameters:
       <<: *subproject
@@ -220,7 +219,6 @@ jobs:
                 project: << parameters.subproject >>
                 severity-threshold: high
                 target-file: ./<< parameters.subproject >>/Dockerfile
-
   snyk-scan:
     executor: kotlin
     working_directory: ~/working
@@ -231,13 +229,11 @@ jobs:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
-
   notify-shipit:
     executor: shipit/default
     steps:
       - shipit/shipit:
           team-name: Smart Journeys
-
   integration-test:
     parameters:
       <<: *subproject
@@ -263,14 +259,12 @@ jobs:
                 environment: << parameters.environment >>
             - store_test_results:
                 path: << parameters.subproject >>/build/test-results/integrationTest
-
   lint:
     docker:
       - image: hashicorp/terraform:light
     steps:
       - checkout
       - run: terraform fmt -no-color -check -diff -recursive
-
   tf-plan:
     <<: *tf-common
     description: tf-plan << parameters.environment >>
@@ -280,7 +274,6 @@ jobs:
       - checkout
       - calculate-build-version
       - terraform/plan: *tf-parameters
-
   tf-apply:
     <<: *tf-common
     description: tf-apply-<< parameters.environment >>
@@ -302,7 +295,8 @@ jobs:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
-      - run-automated-tests
+      - run-automated-tests:
+          environment: << parameters.environment >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
