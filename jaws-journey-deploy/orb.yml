@@ -118,7 +118,20 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include circleci_set_profile.sh
-            include circleci_acro.sh
+            include circleci_avro.sh
+
+  integration-test:
+    description: "Run integration tests"
+    parameters:
+      serviceName:
+        type: string
+    steps:
+      - run:
+          name: "Run  integration test commands"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include circleci_set_profile.sh
+            include circleci_run_integration_test.sh << parameters.serviceName >>
 
 
 jobs:
@@ -239,8 +252,8 @@ jobs:
                 version: 11
             - restore_cache:
                 key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
-            - *set-environment-variables
-            - *run-integration-test
+            - integration-test:
+                serviceName: << parameters.subproject >>
             - store_test_results:
                 path: << parameters.subproject >>/build/test-results/integrationTest
 
