@@ -122,6 +122,8 @@ commands:
 
   run-automated-tests:
     description: "Run commands to make gradle executable"
+    parameters:
+      <<: *environment
     steps:
       - run:
           name: "make gradle executable"
