@@ -119,7 +119,6 @@ commands:
           command: |
             include circleci_set_profile.sh
             include circleci_acro.sh
-      - steps: << parameters.steps >>
 
 
 jobs:
