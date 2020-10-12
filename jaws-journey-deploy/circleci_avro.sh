@@ -1,4 +1,3 @@
-sudo chmod +x gradlew
 export AWS_REGION=${AWS_DEFAULT_REGION}
 
 if [[ "<< parameters.uploadschema >>" == "true" ]]
