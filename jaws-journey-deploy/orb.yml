@@ -109,7 +109,7 @@ commands:
           name: "Calculate build version"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_calculate_build_version.sh
+            include circleci_calculate_version.sh
 
   make-gradle-executable:
     description: "Run commands to make gradle executable"
