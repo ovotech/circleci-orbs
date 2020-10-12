@@ -125,6 +125,7 @@ commands:
     parameters:
       serviceName:
         type: string
+      <<: *environment
     steps:
       - run:
           name: "Run  integration test commands"
@@ -254,6 +255,7 @@ jobs:
                 key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
             - integration-test:
                 serviceName: << parameters.subproject >>
+                environment: << parameters.environment >>
             - store_test_results:
                 path: << parameters.subproject >>/build/test-results/integrationTest
 
