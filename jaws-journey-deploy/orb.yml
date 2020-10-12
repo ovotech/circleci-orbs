@@ -1,0 +1,301 @@
+version: 2.1
+description: "Defines the core steps required for a smart journey deployment pipeline"
+
+orbs:
+  aws-ecr: circleci/aws-ecr@6.3.0
+  terraform: ovotech/terraform@1.6
+  openjdk-install: cloudesire/openjdk-install@1.2.3
+  snyk: snyk/snyk@0.0.10
+  shipit: ovotech/shipit@1
+
+executors:
+  kotlin:
+    docker:
+      - image: circleci/openjdk:11.0.7-jdk-buster
+
+aliases:
+  parameters:
+    environment: &environment
+      environment:
+        type: "enum"
+        enum: ["sandbox", "nonprod", "prod"]
+        default: "sandbox"
+    subproject: &subproject
+      subproject:
+        type: "string"
+
+  tf-mask: &tf-mask
+    TFMASK_CHAR: "#"
+    TFMASK_RESOURCES_REGEX: "(?i)^(ovo_kafka_user|random_password|random_id|random_string).*$"
+    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result).*$"
+
+  tf-common: &tf-common
+    executor: terraform/terraform-0_12
+    parameters:
+      path:
+        type: string
+        default: ""
+      <<: *environment
+
+  tf-parameters: &tf-parameters
+    path: terraform/<< parameters.path >>
+    backend_config_file: env/<< parameters.environment >>.tf
+    var_file: << parameters.environment >>.tfvars
+    label: << parameters.environment >>
+
+commands:
+  avro:
+    description: "Run commands for Avro check"
+    parameters:
+      uploadschema:
+        type: boolean
+        default: false
+      <<: *environment
+    steps:
+      - run:
+          name: "Run  Avro check commands"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include set_profile.sh
+            include make_gradle_executable.sh
+            include avro.sh
+
+  integration-test:
+    description: "Run integration tests"
+    parameters:
+      serviceName:
+        type: string
+      <<: *environment
+    steps:
+      - run:
+          name: "Run integration test commands"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include set_profile.sh
+            include make_gradle_executable.sh
+            include run_integration_test.sh
+
+  build-test:
+    description: "Run build and test commands"
+    parameters:
+      serviceName:
+        type: string
+      <<: *environment
+    steps:
+      - run:
+          name: "run build and test steps"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include set_profile.sh
+            include make_gradle_executable.sh
+            include build_project.sh
+
+  save-test-result:
+    description: "Run commands to save test results"
+    parameters:
+      serviceName:
+        type: string
+    steps:
+      - run:
+          name: "Save test results"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include save_test_results.sh
+
+  calculate-build-version:
+    description: "Run commands to calculate build version"
+    steps:
+      - run:
+          name: "Calculate build version"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include calculate_version.sh
+
+  make-gradle-executable:
+    description: "Run commands to make gradle executable"
+    steps:
+      - run:
+          name: "make gradle executable"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include make_gradle_executable.sh
+
+  run-automated-tests:
+    description: "Run commands to make gradle executable"
+    parameters:
+      <<: *environment
+    steps:
+      - run:
+          name: "make gradle executable"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include set_profile.sh
+            include automated_test_run.sh
+
+  save-automated-tests:
+    description: "Run commands to make gradle executable"
+    steps:
+      - run:
+          name: "make gradle executable"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include automated_test_save.sh
+
+jobs:
+  checkout-code:
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  avro:
+    executor: kotlin
+    working_directory: ~/working
+    parameters:
+      uploadschema:
+        type: boolean
+        default: false
+      <<: *environment
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}
+      - avro:
+          uploadschema: << parameters.uploadschema >>
+          environment: << parameters.environment >>
+  build-and-test:
+    parameters:
+      <<: *subproject
+      <<: *environment
+      publish:
+        type: boolean
+        default: false
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+      - build-test:
+          serviceName: << parameters.subproject >>
+          environment: << parameters.environment >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+      - save-test-result:
+          serviceName: << parameters.subproject >>
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+      - store_artifacts:
+          path: ~/reports/jacoco
+      - when:
+          condition: << parameters.publish >>
+          steps:
+            - aws-ecr/build-and-push-image:
+                setup-remote-docker: true
+                checkout: false
+                account-url: AWS_ACCOUNT_URL
+                aws-access-key-id: AWS_ACCESS_KEY_ID
+                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                dockerfile: ./<< parameters.subproject >>/Dockerfile
+                path: ./<< parameters.subproject >>
+                create-repo: false
+                region: AWS_DEFAULT_REGION
+                repo: << parameters.subproject >>
+                tag: "latest,$CIRCLE_SHA1"
+            - snyk/scan:
+                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.subproject >>:latest
+                fail-on-issues: true
+                monitor-on-build: true
+                project: << parameters.subproject >>
+                severity-threshold: high
+                target-file: ./<< parameters.subproject >>/Dockerfile
+  snyk-scan:
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - make-gradle-executable
+      - snyk/scan:
+          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+          severity-threshold: high
+  notify-shipit:
+    executor: shipit/default
+    steps:
+      - shipit/shipit:
+          team-name: Smart Journeys
+  integration-test:
+    parameters:
+      <<: *subproject
+      <<: *environment
+      run_integration_tests:
+        type: boolean
+        default: true
+    machine:
+      docker_layer_caching: false
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - when:
+          condition: << parameters.run_integration_tests >>
+          steps:
+            - openjdk-install/openjdk:
+                version: 11
+            - restore_cache:
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+            - integration-test:
+                serviceName: << parameters.subproject >>
+                environment: << parameters.environment >>
+            - store_test_results:
+                path: << parameters.subproject >>/build/test-results/integrationTest
+  tf-plan:
+    <<: *tf-common
+    description: tf-plan << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - checkout
+      - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
+      - terraform/plan: *tf-parameters
+  tf-apply:
+    <<: *tf-common
+    description: tf-apply-<< parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - checkout
+      - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
+      - terraform/apply:
+          auto_approve: true
+          <<: *tf-parameters
+  run-automation-test:
+    parameters:
+      <<: *environment
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - make-gradle-executable
+      - run-automated-tests:
+          environment: << parameters.environment >>
+      - save-automated-tests
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit

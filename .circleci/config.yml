@@ -159,4 +159,5 @@ workflows:
                 - oot-eks
                 - clojure
                 - ssh-proxy
+                - jaws-journey-deploy
 
