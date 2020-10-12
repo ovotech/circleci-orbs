@@ -131,7 +131,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include circleci_set_profile.sh
-            include circleci_run_integration_test.sh << parameters.serviceName >>
+            include circleci_run_integration_test.sh
 
 
 jobs:
