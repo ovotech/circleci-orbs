@@ -210,7 +210,7 @@ jobs:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
       - save-test-results:
-          serviceName: << parameter.subproject >>
+          serviceName: << parameters.subproject >>
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
