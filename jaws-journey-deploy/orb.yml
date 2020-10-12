@@ -56,9 +56,9 @@ commands:
           name: "Run  Avro check commands"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_set_profile.sh
+            include set_profile.sh
             include make_gradle_executable.sh
-            include circleci_avro.sh
+            include avro.sh
 
   integration-test:
     description: "Run integration tests"
@@ -71,9 +71,9 @@ commands:
           name: "Run integration test commands"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_set_profile.sh
+            include set_profile.sh
             include make_gradle_executable.sh
-            include circleci_run_integration_test.sh
+            include run_integration_test.sh
 
   build-test:
     description: "Run build and test commands"
@@ -86,9 +86,9 @@ commands:
           name: "run build and test steps"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_set_profile.sh
+            include set_profile.sh
             include make_gradle_executable.sh
-            include circleci_build_project.sh
+            include build_project.sh
 
   save-test-result:
     description: "Run commands to save test results"
@@ -100,7 +100,7 @@ commands:
           name: "Save test results"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_save_test_results.sh
+            include save_test_results.sh
 
   calculate-build-version:
     description: "Run commands to calculate build version"
@@ -109,7 +109,7 @@ commands:
           name: "Calculate build version"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_calculate_version.sh
+            include calculate_version.sh
 
   make-gradle-executable:
     description: "Run commands to make gradle executable"
@@ -129,7 +129,7 @@ commands:
           name: "make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
-            include circleci_set_profile.sh
+            include set_profile.sh
             include automated_test_run.sh
 
   save-automated-tests:
