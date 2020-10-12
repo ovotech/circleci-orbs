@@ -134,6 +134,31 @@ commands:
             include circleci_set_profile.sh
             include circleci_run_integration_test.sh
 
+  build-test:
+    description: "Run build and test commands"
+    parameters:
+      serviceName:
+        type: string
+      <<: *environment
+    steps:
+      - run:
+          name: ""
+          shell: /bin/bash -eo pipefail
+          command: |
+            include circleci_set_profile.sh
+            include circleci_build_project.sh
+
+  save-test-result:
+    description: ""
+    parameters:
+      serviceName:
+        type: string
+    steps:
+      - run:
+          name: ""
+          shell: /bin/bash -eo pipefail
+          command: |
+            include circleci_save_test_results.sh
 
 jobs:
   checkout-code:
@@ -176,14 +201,16 @@ jobs:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
-      - *set-environment-variables
-      - *build-project
+      - build-test:
+          serviceName: << parameters.subproject >>
+          environment: << parameters.environment >>
       - save_cache:
           paths:
             - .gradle
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
-      - *save-test-results
+      - save-test-results:
+          serviceName: << parameter.subproject >>
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
