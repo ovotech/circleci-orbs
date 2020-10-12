@@ -300,8 +300,8 @@ jobs:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
-      - run-automated-test
-      - save-automated-test
+      - run-automated-tests
+      - save-automated-tests
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
