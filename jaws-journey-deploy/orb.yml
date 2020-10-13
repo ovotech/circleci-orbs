@@ -186,6 +186,9 @@ jobs:
       publish:
         type: boolean
         default: false
+      save_libs:
+        type: boolean
+        default: true
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -203,6 +206,7 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
       - save-test-result:
           serviceName: << parameters.subproject >>
+          save_libs: << parameters.save_libs >>
       - store_test_results:
           path: ~/test-results
       - store_artifacts:

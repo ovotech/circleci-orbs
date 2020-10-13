@@ -1,5 +1,5 @@
 SERVICE_NAME="<< parameters.serviceName >>"
-IS_LIB=true
+IS_LIB="<< parameters.save_libs >>"
 mkdir -p ~/test-results/junit/
 find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
 
