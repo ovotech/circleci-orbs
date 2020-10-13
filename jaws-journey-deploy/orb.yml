@@ -234,7 +234,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - << parameters.service >>/*
+            - << parameters.subproject >>/*
             - ./reports/jacoco/*
   snyk-scan:
     executor: kotlin
