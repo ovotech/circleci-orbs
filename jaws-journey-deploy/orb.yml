@@ -149,8 +149,9 @@ commands:
     steps:
       - run:
           name: "Report code coverage"
+          shell: /bin/bash -eo pipefail
           command: |
-            python3 get_coverage.py ./reports/jacoco
+            include code_coverage.sh
 
 jobs:
   checkout-code:
