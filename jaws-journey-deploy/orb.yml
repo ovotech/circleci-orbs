@@ -231,6 +231,11 @@ jobs:
                 project: << parameters.subproject >>
                 severity-threshold: high
                 target-file: ./<< parameters.subproject >>/Dockerfile
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.service >>/*
+            - ./reports/jacoco/*
   snyk-scan:
     executor: kotlin
     working_directory: ~/working
