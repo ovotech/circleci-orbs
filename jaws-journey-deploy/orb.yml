@@ -12,6 +12,9 @@ executors:
   kotlin:
     docker:
       - image: circleci/openjdk:11.0.7-jdk-buster
+  python:
+    docker:
+      - image: circleci/python:3.8
 
 aliases:
   parameters:
@@ -140,6 +143,14 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include automated_test_save.sh
+
+  report-code-coverage:
+    description: "Add code coverage report"
+    steps:
+      - run:
+          name: "Report code coverage"
+          command: |
+            python3 get_coverage.py ./reports/jacoco
 
 jobs:
   checkout-code:
@@ -299,3 +310,12 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
+  report-code-coverage:
+    executor: python
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - report-code-coverage
+      - store_artifacts:
+          path: ./reports/jacoco

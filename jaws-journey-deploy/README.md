@@ -4,7 +4,7 @@ This orb provides a standard deployment process for all journey repositories to 
 
 ## Commands
 
-###checkout-code
+### checkout-code
 This circleci step checks out your repositories code, and persists it to a working directory
 **Parameters**
 Does not require any parameters to be provided
@@ -18,7 +18,7 @@ jobs:
   - deploy-orb/checkout-code:
       <<: *any-cd-pipeline
 ```
-###avro
+### avro
 This step performs two functions for the journey code bases.  Firstly it checks whether the version of the schema that the code would produce is compatible with the version of the schema currently in Aiven, and it uploads the schema to Aiven's schema registry
 
 **Parameters**
@@ -37,7 +37,7 @@ Below shows if you want to run the compatibility check and upload the avro schem
     environment: sandbox
     uploadschema: true
 ```
-###build-and-test
+### build-and-test
 
 **Parameters**
 `subproject` - which service within the repo are you wanting to build
@@ -60,7 +60,7 @@ The example below shows how to run the build and run unit tests steps as well as
     <<: *deploy-sandbox
     publish: true
 ```
-###integration-test
+### integration-test
 
 **Parameters**
 
@@ -75,7 +75,7 @@ The example below shows how to run the build and run unit tests steps as well as
       <<: *integration-test-services-matrix
     <<: *ci-build
 ```
-###synk-scan
+### synk-scan
 
 Performs a check to make sure your code dependencies do not introduce any new security vulnerabilities 
 
@@ -89,7 +89,7 @@ Does not require any parameters passed through.  However it does require that yo
       name: snyk-scan
       <<: *ci-build
 ```
-###tf-plan
+### tf-plan
 
 **Parameters**
 
@@ -106,7 +106,7 @@ Does not require any parameters passed through.  However it does require that yo
           environment:
             - sandbox
 ```
-###tf-apply
+### tf-apply
 
 **Parameters**
 
@@ -122,7 +122,7 @@ Does not require any parameters passed through.  However it does require that yo
       environment:
         - prod
 ```
-###run-automation-test
+### run-automation-test
 
 **Parameters**
 
@@ -136,7 +136,7 @@ Does not require any parameters passed through.  However it does require that yo
     parameters:
       environment: sandbox
 ```
-###notify-shipit
+### notify-shipit
 **Parameters**
 
 Does not require any parameters passed through.  However it does require that you provide a SHIPIT_API_KEY within the project environment variables or context
