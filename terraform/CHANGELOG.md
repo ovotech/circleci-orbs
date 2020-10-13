@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed.
 
+## ovotech/terraform@1.7.6
+## Changed
+- Added HCL syntax highlighting
+
 ## ovotech/terraform@1.7.5
 ## Changed
 - Added terraform-provider-aiven-kafka-users v0.0.1
