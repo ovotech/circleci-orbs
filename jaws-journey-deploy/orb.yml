@@ -23,8 +23,8 @@ aliases:
         type: "enum"
         enum: ["sandbox", "nonprod", "prod"]
         default: "sandbox"
-    subproject: &subproject
-      subproject:
+    serviceName: &serviceName
+      serviceName:
         type: "string"
 
   tf-mask: &tf-mask
@@ -184,7 +184,7 @@ jobs:
           environment: << parameters.environment >>
   build-and-test:
     parameters:
-      <<: *subproject
+      <<: *serviceName
       <<: *environment
       publish:
         type: boolean
@@ -198,17 +198,17 @@ jobs:
       - attach_workspace:
           at: ~/working
       - restore_cache:
-          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - build-test:
-          serviceName: << parameters.subproject >>
+          serviceName: << parameters.serviceName >>
           environment: << parameters.environment >>
       - save_cache:
           paths:
             - .gradle
             - ~/.gradle
-          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - save-test-result:
-          serviceName: << parameters.subproject >>
+          serviceName: << parameters.serviceName >>
           save_libs: << parameters.save_libs >>
       - store_test_results:
           path: ~/test-results
@@ -225,23 +225,23 @@ jobs:
                 account-url: AWS_ACCOUNT_URL
                 aws-access-key-id: AWS_ACCESS_KEY_ID
                 aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-                dockerfile: ./<< parameters.subproject >>/Dockerfile
-                path: ./<< parameters.subproject >>
+                dockerfile: ./<< parameters.serviceName >>/Dockerfile
+                path: ./<< parameters.serviceName >>
                 create-repo: false
                 region: AWS_DEFAULT_REGION
-                repo: << parameters.subproject >>
+                repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
-                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.subproject >>:latest
+                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
                 monitor-on-build: true
-                project: << parameters.subproject >>
+                project: << parameters.serviceName >>
                 severity-threshold: high
-                target-file: ./<< parameters.subproject >>/Dockerfile
+                target-file: ./<< parameters.serviceName >>/Dockerfile
       - persist_to_workspace:
           root: .
           paths:
-            - << parameters.subproject >>/*
+            - << parameters.serviceName >>/*
             - ./reports/jacoco/*
   snyk-scan:
     executor: kotlin
@@ -260,7 +260,7 @@ jobs:
           team-name: Smart Journeys
   integration-test:
     parameters:
-      <<: *subproject
+      <<: *serviceName
       <<: *environment
       run_integration_tests:
         type: boolean
@@ -277,12 +277,12 @@ jobs:
             - openjdk-install/openjdk:
                 version: 11
             - restore_cache:
-                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
             - integration-test:
-                serviceName: << parameters.subproject >>
+                serviceName: << parameters.serviceName >>
                 environment: << parameters.environment >>
             - store_test_results:
-                path: << parameters.subproject >>/build/test-results/integrationTest
+                path: << parameters.serviceName >>/build/test-results/integrationTest
   tf-plan:
     <<: *tf-common
     description: tf-plan << parameters.environment >>

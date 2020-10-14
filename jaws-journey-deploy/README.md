@@ -40,25 +40,26 @@ Below shows if you want to run the compatibility check and upload the avro schem
 ### build-and-test
 
 **Parameters**
-`subproject` - which service within the repo are you wanting to build
+`serviceName` - which service within the repo are you wanting to build
 
 `environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
 
 `publish` - indicates whether you want to upload the resulting Docker image to AWS ECR
+
+`save_libs` - used for code coverage to indicate whether you want to save the libs coverage report
 
 **Example**
 
 The example below shows how to run the build and run unit tests steps as well as publishing the image to AWS ECR
 ```yaml
 - deploy-orb/build-and-test:
-    name: build-and-test-publish-<< matrix.subproject >>
-    environment: sandbox
-    matrix:
-      alias:
-        build-and-test-publish-sandbox
-      <<: *all-services-matrix
-    <<: *deploy-sandbox
-    publish: true
+      <<: *ci-build
+      name: build-and-test-gain-service
+      environment: sandbox
+      subproject: gain-service
+      save_libs: true
+      requires:
+        - checkout-code
 ```
 ### integration-test
 
@@ -147,4 +148,15 @@ Does not require any parameters passed through.  However it does require that yo
     <<: *prod-job
     requires:
       - tf-apply-kubernetes-prod
+```
+
+### report-code-coverage
+**Parameters**
+
+**Example**
+
+```yaml
+- deploy-orb/report-code-coverage:
+      <<: *ci-build
+      name: report-code-coverage
 ```
