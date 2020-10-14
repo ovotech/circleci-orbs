@@ -146,6 +146,9 @@ commands:
 
   report-code-coverage:
     description: "Add code coverage report"
+    parameters:
+      save_libs:
+        type: boolean
     steps:
       - run:
           name: "Report code coverage"
