@@ -2,7 +2,18 @@
 
 This orb provides a standard deployment process for all journey repositories to ensure common code between them.
 
-## Commands
+### Steps
+
+Available Steps
+* [checkout-code](#checkout-code)
+* [build-and-test](#build-and-test)
+* [integration-test](#integration-test)
+* [avro](#avro)
+* [synk-scan](#synk-scan)
+* [tf-plan](#tf-plan)
+* [tf-apply](#tf-apply)
+* [notify-shipit](#notify-shipit)
+* [run-automation-test](#run-automation-test)
 
 ### checkout-code
 
@@ -10,7 +21,7 @@ This orb provides a standard deployment process for all journey repositories to 
 
 This circleci step checks out your repositories code, and persists it to a working directory
 
-**Parameters**
+Parameters
 
 Does not require any parameters to be provided
 
@@ -33,9 +44,8 @@ This step performs two functions for the journey code bases.  Firstly it checks 
 
 **Parameters**
 
-`uploadschema` - boolean value expected, which indicates whether you want to run the upload avro step.  Default value is false
-
-`environment` - indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
+* uploadschema: Boolean value expected, which indicates whether you want to run the upload avro step.  Default value is false
+* environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 
 **Example**
 
@@ -55,13 +65,10 @@ Below shows if you want to run the compatibility check and upload the avro schem
 
 **Parameters**
 
-`serviceName` - which service within the repo are you wanting to build
-
-`environment` - indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
-
-`publish` - indicates whether you want to upload the resulting Docker image to AWS ECR
-
-`save_libs` - used for code coverage to indicate whether you want to save the libs coverage report
+* serviceName: Which service within the repo are you wanting to build
+* environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
+* publish: Indicates whether you want to upload the resulting Docker image to AWS ECR
+* save_libs: Used for code coverage to indicate whether you want to save the libs coverage report
 
 **Example**
 
@@ -97,7 +104,10 @@ Performs a check to make sure your code dependencies do not introduce any new se
 
 **Parameters**
 
-Does not require any parameters passed through.  However it does require that you provide a SNYK_TOKEN within the project environment variables or context
+Does not require any parameters passed through.
+
+**CircleCI Environment Variables**
+* SNYK_TOKEN: API Token used to communicate with Snyk
 
 **Example**
 ```yaml
@@ -106,8 +116,28 @@ Does not require any parameters passed through.  However it does require that yo
       <<: *ci-build
 ```
 ### tf-plan
+**Description**
+
+This step performs a linting step to make sure the terraform styling is standardised, and then runs a terraform plan - based on the files provided in the path parameter.
 
 **Parameters**
+* path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
+* environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
+```
+terraform
+└───kubernetes
+│   │   kubernetes1.tf
+│   │   kubernetes2.tf
+│   │
+│   └───modules
+│       │   exmaple3.tf
+│       │   example4.tf
+│       │   ...
+│   
+└───main
+    │   service1.tf
+    │   service2.tf
+```
 
 **Example**
 ```yaml
@@ -124,7 +154,13 @@ Does not require any parameters passed through.  However it does require that yo
 ```
 ### tf-apply
 
+**Description**
+
+This step performs a linting step to make sure the terraform styling is standardised, and then runs a terraform apply - based on the files provided in the path parameter.
+
 **Parameters**
+* path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
+* environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
 
 **Example**
 ```yaml
