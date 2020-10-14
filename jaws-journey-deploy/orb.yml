@@ -98,6 +98,9 @@ commands:
     parameters:
       serviceName:
         type: string
+      save_libs:
+        type: boolean
+        default: true
     steps:
       - run:
           name: "Save test results"
@@ -146,9 +149,6 @@ commands:
 
   report-code-coverage:
     description: "Add code coverage report"
-    parameters:
-      save_libs:
-        type: boolean
     steps:
       - run:
           name: "Report code coverage"
@@ -325,15 +325,10 @@ jobs:
           path: ~/test-results/junit
   report-code-coverage:
     executor: python
-    parameters:
-      save_libs:
-        type: boolean
-        default: true
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
-      - report-code-coverage:
-          save_libs: << parameters.save_libs >>
+      - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
