@@ -325,10 +325,15 @@ jobs:
           path: ~/test-results/junit
   report-code-coverage:
     executor: python
+    parameters:
+      save_libs:
+        type: boolean
+        default: true
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
-      - report-code-coverage
+      - report-code-coverage:
+          save_libs: << parameters.save_libs >>
       - store_artifacts:
           path: ./reports/jacoco
