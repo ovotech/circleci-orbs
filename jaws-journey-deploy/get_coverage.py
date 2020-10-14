@@ -68,7 +68,10 @@ class CoverageComment:
         return file.split("/")[-1].replace(extension, "")
 
     def calc_percentage(self, x, total):
-        return round((x / total) * 100, 2)
+        if(total > 0):
+            return round((x / total) * 100, 2)
+        else:
+            return round(0 * 100, 2)
 
     def create_url(self, project):
         return f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/{project}'
