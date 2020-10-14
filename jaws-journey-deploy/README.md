@@ -5,10 +5,17 @@ This orb provides a standard deployment process for all journey repositories to 
 ## Commands
 
 ### checkout-code
+
+**Description**
+
 This circleci step checks out your repositories code, and persists it to a working directory
+
 **Parameters**
+
 Does not require any parameters to be provided
+
 **Example**
+
 The following snippet shows you what you need to set as your job to implement this step
 ```yaml
 orbs:
@@ -19,13 +26,16 @@ jobs:
       <<: *any-cd-pipeline
 ```
 ### avro
+
+**Description**
+
 This step performs two functions for the journey code bases.  Firstly it checks whether the version of the schema that the code would produce is compatible with the version of the schema currently in Aiven, and it uploads the schema to Aiven's schema registry
 
 **Parameters**
 
 `uploadschema` - boolean value expected, which indicates whether you want to run the upload avro step.  Default value is false
 
-`environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
+`environment` - indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 
 **Example**
 
@@ -39,10 +49,15 @@ Below shows if you want to run the compatibility check and upload the avro schem
 ```
 ### build-and-test
 
+**Description**
+
+
+
 **Parameters**
+
 `serviceName` - which service within the repo are you wanting to build
 
-`environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
+`environment` - indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 
 `publish` - indicates whether you want to upload the resulting Docker image to AWS ECR
 
@@ -151,7 +166,13 @@ Does not require any parameters passed through.  However it does require that yo
 ```
 
 ### report-code-coverage
+**Description**
+
+This step generates a code coverage report and adds to your GitHub PR as comments.  To generate the report, the step [build-and-test](#build-and-test) need to of already completed.
+ 
 **Parameters**
+
+Does not require any parameters to be passed.  It does however need the following environment variables to be set `GITHUB_BOT_USERNAME` and `GITHUB_BOT_PACKAGE_MANAGER_TOKEN`
 
 **Example**
 
