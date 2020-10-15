@@ -2,9 +2,9 @@
 
 This orb provides a standard deployment process for all journey repositories to ensure common code between them.
 
-### Steps
+### Jobs
 
-Available Steps
+Available Jobs
 * [checkout-code](#checkout-code)
 * [build-and-test](#build-and-test)
 * [integration-test](#integration-test)
@@ -19,9 +19,9 @@ Available Steps
 
 **Description**
 
-This circleci step checks out your repositories code, and persists it to a working directory
+This circleci job checks out your repositories code, and persists it to a working directory
 
-Parameters
+**Parameters**
 
 Does not require any parameters to be provided
 
@@ -29,7 +29,11 @@ Does not require any parameters to be provided
 
 **Description**
 
-This step performs two functions for the journey code bases.  Firstly it checks whether the version of the schema that the code would produce is compatible with the version of the schema currently in Aiven, and it uploads the schema to Aiven's schema registry
+This job performs two steps for the journey code bases.  
+ 1. Firstly it checks whether the version of the schema that the code would produce is compatible with the version of the schema currently in Aiven, 
+ 2. Uploads the schema to Aiven's schema registry. This feature is optional and can be switched off with `uploadschema` parameter
+
+**Note** If you are not uploading the schema then the compatibility check will handle instances of the schema not being found in the schema registry.  This is to allow for testing without having to commit the schema 
 
 **Parameters**
 
@@ -40,6 +44,12 @@ This step performs two functions for the journey code bases.  Firstly it checks 
 
 **Description**
 
+This job performs a few steps
+1. Runs a gradle build on the service provided in `serviceName` parameter
+2. Run unit tests
+3. Saves the results of the unit tests to be used for code coverage
+4. Publishes docker image to AWS ECR - if `publish` parameter is set to true
+
 **Parameters**
 
 * serviceName: Which service within the repo are you wanting to build
@@ -49,7 +59,25 @@ This step performs two functions for the journey code bases.  Firstly it checks 
 
 ### integration-test
 
+**Description**
+
+This job executes integration tests for the supplied service
+
 **Parameters**
+
+* serviceName: Which service within the repo are you wanting to build
+* environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
+
+### run-automation-test
+
+**Description**
+
+
+
+**Parameters**
+
+`environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
+
 
 ### synk-scan
 
@@ -96,13 +124,13 @@ This step performs a linting step to make sure the terraform styling is standard
 * path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
 * environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
 
-### run-automation-test
-
-**Parameters**
-
-`environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
 
 ### notify-shipit
+
+**Description**
+
+Send a message to shipit API to indicate when a deployment has occurred
+
 **Parameters**
 
 Does not require any parameters passed through.  However it does require that you provide a SHIPIT_API_KEY within the project environment variables or context
