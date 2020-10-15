@@ -25,17 +25,6 @@ Parameters
 
 Does not require any parameters to be provided
 
-**Example**
-
-The following snippet shows you what you need to set as your job to implement this step
-```yaml
-orbs:
-  deploy-orb: ovotech/jaws-journey-deploy@1.0.0
-
-jobs:
-  - deploy-orb/checkout-code:
-      <<: *any-cd-pipeline
-```
 ### avro
 
 **Description**
@@ -47,21 +36,9 @@ This step performs two functions for the journey code bases.  Firstly it checks 
 * uploadschema: Boolean value expected, which indicates whether you want to run the upload avro step.  Default value is false
 * environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 
-**Example**
-
-Below shows if you want to run the compatibility check and upload the avro schema
-```yaml
-- deploy-orb/avro:
-    <<: *deploy-sandbox
-    name: avro-cd-sandbox
-    environment: sandbox
-    uploadschema: true
-```
 ### build-and-test
 
 **Description**
-
-
 
 **Parameters**
 
@@ -70,34 +47,10 @@ Below shows if you want to run the compatibility check and upload the avro schem
 * publish: Indicates whether you want to upload the resulting Docker image to AWS ECR
 * save_libs: Used for code coverage to indicate whether you want to save the libs coverage report
 
-**Example**
-
-The example below shows how to run the build and run unit tests steps as well as publishing the image to AWS ECR
-```yaml
-- deploy-orb/build-and-test:
-      <<: *ci-build
-      name: build-and-test-gain-service
-      environment: sandbox
-      subproject: gain-service
-      save_libs: true
-      requires:
-        - checkout-code
-```
 ### integration-test
 
 **Parameters**
 
-**Example**
-```yaml
-- deploy-orb/integration-test:
-    name: integration-test-<< matrix.subproject >>
-    environment: sandbox
-    matrix:
-      alias:
-        integration-test
-      <<: *integration-test-services-matrix
-    <<: *ci-build
-```
 ### synk-scan
 
 Performs a check to make sure your code dependencies do not introduce any new security vulnerabilities 
@@ -109,12 +62,6 @@ Does not require any parameters passed through.
 **CircleCI Environment Variables**
 * SNYK_TOKEN: API Token used to communicate with Snyk
 
-**Example**
-```yaml
-  - deploy-orb/snyk-scan:
-      name: snyk-scan
-      <<: *ci-build
-```
 ### tf-plan
 **Description**
 
@@ -139,19 +86,6 @@ terraform
     │   service2.tf
 ```
 
-**Example**
-```yaml
-- deploy-orb/tf-plan:
-    <<: *ci-build
-    name: tf-plan-<< matrix.path >>-<< matrix.environment >>
-      matrix:
-        parameters:
-          path:
-            - main
-            - kubernetes
-          environment:
-            - sandbox
-```
 ### tf-apply
 
 **Description**
@@ -162,44 +96,16 @@ This step performs a linting step to make sure the terraform styling is standard
 * path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
 * environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
 
-**Example**
-```yaml
-- deploy-orb/tf-apply:
-    <<: *prod-job
-    name: tf-apply-<< matrix.path >>-<< matrix.environment >>
-    matrix:
-    parameters:
-      path:
-        - main
-      environment:
-        - prod
-```
 ### run-automation-test
 
 **Parameters**
 
 `environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
 
-**Example**
-```yaml
-- deploy-orb/run-automation-test:
-    <<: *deploy-sandbox
-    name: run-automation-test
-    parameters:
-      environment: sandbox
-```
 ### notify-shipit
 **Parameters**
 
 Does not require any parameters passed through.  However it does require that you provide a SHIPIT_API_KEY within the project environment variables or context
-
-**Example**
-```yaml
-- deploy-orb/notify-shipit:
-    <<: *prod-job
-    requires:
-      - tf-apply-kubernetes-prod
-```
 
 ### report-code-coverage
 **Description**
@@ -210,10 +116,70 @@ This step generates a code coverage report and adds to your GitHub PR as comment
 
 Does not require any parameters to be passed.  It does however need the following environment variables to be set `GITHUB_BOT_USERNAME` and `GITHUB_BOT_PACKAGE_MANAGER_TOKEN`
 
-**Example**
-
+## Example Usage
 ```yaml
-- deploy-orb/report-code-coverage:
-      <<: *ci-build
-      name: report-code-coverage
+workflows:
+  ci:
+    jobs:
+      - deploy-orb/checkout-code:
+          filters: *ignore-master-branch
+          name: checkout-code
+      - deploy-orb/snyk-scan:
+          name: snyk-scan
+          <<: *ci-build
+          requires:
+            - checkout-code
+      - deploy-orb/avro:
+          name: avro-ci
+          <<: *ci-build
+          environment: sandbox
+          requires:
+            - checkout-code
+
+      - deploy-orb/build-and-test:
+          <<: *ci-build
+          name: build-and-test-gain-service
+          environment: sandbox
+          serviceName: gain-service
+          save_libs: true
+          requires:
+            - checkout-code
+
+      - deploy-orb/build-and-test:
+          <<: *ci-build
+          name: build-and-test-gain-replay-service
+          environment: sandbox
+          serviceName: gain-replay-service
+          save_libs: false
+          requires:
+            - checkout-code
+      - deploy-orb/integration-test:
+          name: integration-test-<< matrix.serviceName >>
+          environment: sandbox
+          matrix:
+            alias:
+              integration-test
+            <<: *integration-test-services-matrix
+          <<: *ci-build
+          requires:
+            - checkout-code
+      - deploy-orb/tf-plan:
+          <<: *ci-build
+          name: tf-plan-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - main
+                - kubernetes
+              environment:
+                - sandbox
+          requires:
+            - checkout-code
+
+      - deploy-orb/report-code-coverage:
+          <<: *ci-build
+          name: report-code-coverage
+          requires:
+            - build-and-test-gain-service
+            - build-and-test-gain-replay-service
 ```
