@@ -84,6 +84,32 @@ aliases:
     var_file: << parameters.environment >>.tfvars
     label: << parameters.environment >>
 
+  integration-test: &integration-test
+    parameters:
+      <<: *serviceName
+      <<: *environment
+      run_integration_tests:
+        type: boolean
+        default: true
+    machine:
+      docker_layer_caching: false
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - when:
+          condition: << parameters.run_integration_tests >>
+          steps:
+            - openjdk-install/openjdk:
+                version: 11
+            - restore_cache:
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+            - integration-test:
+                serviceName: << parameters.serviceName >>
+                environment: << parameters.environment >>
+            - store_test_results:
+                path: << parameters.serviceName >>/build/test-results/integrationTest
+
 commands:
   avro:
     description: "Run commands for Avro check"
@@ -230,6 +256,9 @@ jobs:
       save_libs:
         type: boolean
         default: true
+      run_integration_tests:
+        type: boolean
+        default: true
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -254,6 +283,9 @@ jobs:
           path: ~/test-results/junit
       - store_artifacts:
           path: ~/reports/jacoco
+      - *integration-test:
+          serviceName: << parameters.serviceName >>
+          environment: << parameters.environment >>
       - when:
           condition: << parameters.publish >>
           steps:
@@ -296,31 +328,7 @@ jobs:
     steps:
       - shipit/shipit:
           team-name: Smart Journeys
-  integration-test:
-    parameters:
-      <<: *serviceName
-      <<: *environment
-      run_integration_tests:
-        type: boolean
-        default: true
-    machine:
-      docker_layer_caching: false
-    working_directory: ~/working
-    steps:
-      - attach_workspace:
-          at: ~/working
-      - when:
-          condition: << parameters.run_integration_tests >>
-          steps:
-            - openjdk-install/openjdk:
-                version: 11
-            - restore_cache:
-                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
-            - integration-test:
-                serviceName: << parameters.serviceName >>
-                environment: << parameters.environment >>
-            - store_test_results:
-                path: << parameters.serviceName >>/build/test-results/integrationTest
+
   tf-plan:
     <<: *tf-common
     description: tf-plan << parameters.environment >>
