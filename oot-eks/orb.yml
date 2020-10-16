@@ -106,6 +106,6 @@ jobs:
 executors:
   aws:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202010-01
 
 
