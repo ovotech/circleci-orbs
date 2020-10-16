@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import re
+import comment_util
 import sys
 from typing import Optional, Dict, Iterable
 
@@ -69,7 +69,8 @@ class TerraformComment:
         self._comment_url = None
         for comment in response.json():
             if comment['user']['login'] == github_username:
-                match = re.match(rf'{re.escape(self._comment_identifier)}\n```(.*?)```(.*)', comment['body'], re.DOTALL)
+                match = comment_util.re_comment_match(self._comment_identifier,
+                                                      comment['body'])
                 if match:
                     self._comment_url = comment['url']
                     self._plan = match.group(1).strip()
@@ -144,7 +145,8 @@ class TerraformComment:
         self._update_comment()
 
     def _update_comment(self):
-        comment = f'{self._comment_identifier}\n```\n{self.plan}\n```'
+        comment = comment_util.comment_for_pr(self._comment_identifier,
+                                              self.plan)
 
         if self.status:
             comment += '\n' + self.status
