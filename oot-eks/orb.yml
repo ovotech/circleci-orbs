@@ -1,5 +1,5 @@
 version: 2.1
-description: "Opinionated commands for releasing projects on AWS EKS."
+description: "Opinionated commands for releasing OOT projects on AWS EKS via k8s-proxy."
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.1
@@ -7,6 +7,7 @@ orbs:
   aws-eks: circleci/aws-eks@1.0.0
   kubernetes: circleci/kubernetes@0.11.1
   snyk: snyk/snyk@0.0.10
+  ssh-proxy: ovotech/ssh-proxy@1.0.0
   shipit: ovotech/shipit@1
 
 commands:
@@ -43,10 +44,35 @@ commands:
         description: "The kubernetes resource type that will be deployed."
         type: string
         default: "deployment"
+      k8s-api-host:
+        description: "The hostname of the kubernetes API to be pushed to."
+        type: string
+        default: ${K8S_API_HOST}
+      k8s-proxy-fingerprint:
+        description: "The fingerprint of the private key used by the k8s-proxy running in your cluster."
+        type: string
+        default: ${K8S_PROXY_FINGERPRINT}
+      k8s-endpoint1:
+        description: "Kubernetes private endpoint 1."
+        type: string
+        default: ${K8S_ENDPOINT1}
+      k8s-endpoint2:
+        description: "Kubernetes private endpoint 2."
+        type: string
+        default: ${K8S_ENDPOINT2}
 
     steps:
       - attach_workspace:
           at: .
+
+      - ssh-proxy/proxy-up:
+          hostname: << parameters.k8s-api-host >>
+          port: 443
+          username: proxy
+          private_key_fingerprint: << parameters.k8s-proxy-fingerprint >>
+          routed_network_cidrs: << parameters.k8s-endpoint1 >>/32 << parameters.k8s-endpoint2 >>/32
+          connection_test_host: << parameters.k8s-endpoint1 >>
+          connection_test_port: 443
 
       - run:
           command: |
@@ -95,6 +121,8 @@ commands:
           resource-file-path: kubernetes/<< parameters.resource-type >>.yaml
           resource-name: << parameters.resource-type >>/<< parameters.service >>
           show-kubectl-command: true
+
+      - ssh-proxy/proxy-down
 
 jobs:
   shipit:
