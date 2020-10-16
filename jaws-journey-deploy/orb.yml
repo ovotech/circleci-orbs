@@ -283,7 +283,7 @@ jobs:
           path: ~/test-results/junit
       - store_artifacts:
           path: ~/reports/jacoco
-      - *integration-test:
+      - integration-test:
           serviceName: << parameters.serviceName >>
           environment: << parameters.environment >>
       - when:
