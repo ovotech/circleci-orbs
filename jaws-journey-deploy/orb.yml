@@ -27,43 +27,50 @@ aliases:
       serviceName:
         type: "string"
 
-  ignore-master-branch: &ignore-master-branch
-    branches:
-      ignore:
-        - master
-
-  any-cd-pipeline: &any-cd-pipeline
+  - &all-environments
     filters:
-      branches:
-        only:
-          - master
-          - << pipeline.parameters.sandbox_build_branch >>
       tags:
         only: /^\d+\.\d+\.\d+$/
 
-  nonprod-job: &nonprod-job
+  - &sandbox-all
+    environment: sandbox
+    context: jaws-sandbox
+    filters:
+      branches:
+        ignore:
+          - master
+
+  - &sandbox-not-deploy
+    environment: sandbox
+    context: jaws-sandbox
+    filters:
+      branches:
+        ignore:
+          - << pipeline.parameters.sandbox_build_branch >>
+          - master
+
+  - &sandbox-deploy
+    environment: sandbox
+    context: jaws-sandbox
+    filters:
+      branches:
+        only: << pipeline.parameters.sandbox_build_branch >>
+
+  - &nonprod-deploy
+    environment: nonprod
     context: jaws-nonprod
     filters:
       branches:
         only: master
 
-  prod-job: &prod-job
+  - &prod-deploy
+    environment: prod
     context: jaws-prod
     filters:
       branches:
         ignore: /.*/
       tags:
-        only: /^\d+\.\d+\.\d+$/
-
-  ci-build: &ci-build
-    context: jaws-sandbox
-    filters: *ignore-master-branch
-
-  deploy-sandbox: &deploy-sandbox
-    context: jaws-sandbox
-    filters:
-      branches:
-        only: << pipeline.parameters.sandbox_build_branch >>
+        only: /^\d+\.\d+\.\d+$<< pipeline.parameters.sandbox_build_branch >>
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
