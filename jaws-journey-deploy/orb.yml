@@ -27,50 +27,50 @@ aliases:
       serviceName:
         type: "string"
 
-  - &all-environments
-    filters:
-      tags:
-        only: /^\d+\.\d+\.\d+$/
+- &all-environments
+  filters:
+    tags:
+      only: /^\d+\.\d+\.\d+$/
 
-  - &sandbox-all
-    environment: sandbox
-    context: jaws-sandbox
-    filters:
-      branches:
-        ignore:
-          - master
+- &sandbox-all
+  environment: sandbox
+  context: jaws-sandbox
+  filters:
+    branches:
+      ignore:
+        - master
 
-  - &sandbox-not-deploy
-    environment: sandbox
-    context: jaws-sandbox
-    filters:
-      branches:
-        ignore:
-          - << pipeline.parameters.sandbox_build_branch >>
-          - master
+- &sandbox-not-deploy
+  environment: sandbox
+  context: jaws-sandbox
+  filters:
+    branches:
+      ignore:
+        - << pipeline.parameters.sandbox_build_branch >>
+        - master
 
-  - &sandbox-deploy
-    environment: sandbox
-    context: jaws-sandbox
-    filters:
-      branches:
-        only: << pipeline.parameters.sandbox_build_branch >>
+- &sandbox-deploy
+  environment: sandbox
+  context: jaws-sandbox
+  filters:
+    branches:
+      only: << pipeline.parameters.sandbox_build_branch >>
 
-  - &nonprod-deploy
-    environment: nonprod
-    context: jaws-nonprod
-    filters:
-      branches:
-        only: master
+- &nonprod-deploy
+  environment: nonprod
+  context: jaws-nonprod
+  filters:
+    branches:
+      only: master
 
-  - &prod-deploy
-    environment: prod
-    context: jaws-prod
-    filters:
-      branches:
-        ignore: /.*/
-      tags:
-        only: /^\d+\.\d+\.\d+$<< pipeline.parameters.sandbox_build_branch >>
+- &prod-deploy
+  environment: prod
+  context: jaws-prod
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^\d+\.\d+\.\d+$<< pipeline.parameters.sandbox_build_branch >>
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
