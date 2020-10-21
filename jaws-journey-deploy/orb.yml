@@ -94,18 +94,19 @@ commands:
             include build_project.sh
 
   build-test-lib:
-    description: "Run build and test on libs"
+    description: "Run build and test lib commands"
     parameters:
       lib:
         type: string
-      steps:
-        - run:
-            name: "run build and test lib steps"
-            shell: /bin/bash -eo pipefail
-            command: |
-              include set_profile.sh
-              include make_gradle_executable.sh
-              include build_project.sh libs: << parameters.lib >>
+      <<: *environment
+    steps:
+      - run:
+          name: "run build and test lib steps"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include set_profile.sh
+            include make_gradle_executable.sh
+            include build_project.sh lib: << parameters.lib >>
 
 
   save-test-result:
@@ -213,6 +214,40 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
+
+  lib-build-and-test:
+    parameters:
+      lib:
+        description: lib to be built
+        type: string
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - build-test-lib:
+          lib: << parameters.lib >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - save-lib-test-result:
+          lib: << parameters.lib >>
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+      - store_artifacts:
+          path: ./reports/jacoco
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.lib >>/*
+            - ./reports/jacoco/*
+
 
   build-and-test:
     parameters:
