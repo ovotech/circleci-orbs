@@ -98,6 +98,7 @@ commands:
     parameters:
       lib:
         type: string
+      <<: *environment
     steps:
       - run:
           name: "run build and test lib steps"
