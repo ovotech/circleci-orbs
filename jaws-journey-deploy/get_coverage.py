@@ -71,7 +71,7 @@ class CoverageComment:
         if(total > 0):
             return round((x / total) * 100, 2)
         else:
-            return round(0 * 100, 2)
+            return round(1 * 100, 2)
 
     def create_url(self, project):
         return f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/{project}'
