@@ -146,6 +146,47 @@ Does not require any parameters to be passed.  It does however need the followin
 
 ## Example Usage
 ```yaml
+orbs:
+  deploy-orb: ovotech/jaws-journey-deploy@1.x.x
+
+aliases:
+  - &ignore-master-branch
+    branches:
+      ignore:
+        - master
+
+  - &any-cd-pipeline
+    filters:
+      branches:
+        only:
+          - master
+          - << pipeline.parameters.sandbox_build_branch >>
+      tags:
+        only: /^\d+\.\d+\.\d+$/
+
+  - &nonprod-job
+    context: jaws-nonprod
+    filters:
+      branches:
+        only: master
+
+  - &prod-job
+    context: jaws-prod
+    filters:
+      branches:
+        ignore: /.*/
+      tags:
+        only: /^\d+\.\d+\.\d+$/
+
+  - &ci-build
+    context: jaws-sandbox
+    filters: *ignore-master-branch
+
+  - &deploy-sandbox
+    context: jaws-sandbox
+    filters:
+      branches:
+        only: << pipeline.parameters.sandbox_build_branch >>
 workflows:
   ci:
     jobs:
