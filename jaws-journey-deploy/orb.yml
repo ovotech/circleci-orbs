@@ -122,21 +122,6 @@ commands:
           name: "Save test results"
           shell: /bin/bash -eo pipefail
           command: |
-            include save_test_results.sh false
-
-  save-lib-test-result:
-    description: "Run commands to save test results"
-    parameters:
-      serviceName:
-        type: string
-      save_libs:
-        type: boolean
-        default: true
-    steps:
-      - run:
-          name: "Save test results"
-          shell: /bin/bash -eo pipefail
-          command: |
             include save_test_results.sh
 
   calculate-build-version:
@@ -234,8 +219,9 @@ jobs:
             - .gradle
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
-      - save-lib-test-result:
+      - save-test-result:
           serviceName: << parameters.lib >>
+          save_libs: true
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
@@ -256,9 +242,6 @@ jobs:
       publish:
         type: boolean
         default: false
-      save_libs:
-        type: boolean
-        default: true
       run_integration_tests:
         type: boolean
         default: true
@@ -279,7 +262,7 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - save-test-result:
           serviceName: << parameters.serviceName >>
-          save_libs: << parameters.save_libs >>
+          save_libs: false
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
