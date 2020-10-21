@@ -12,6 +12,9 @@ executors:
   kotlin:
     docker:
       - image: circleci/openjdk:11.0.7-jdk-buster
+  python:
+    docker:
+      - image: circleci/python:3.8
 
 aliases:
   parameters:
@@ -20,8 +23,8 @@ aliases:
         type: "enum"
         enum: ["sandbox", "nonprod", "prod"]
         default: "sandbox"
-    subproject: &subproject
-      subproject:
+    serviceName: &serviceName
+      serviceName:
         type: "string"
 
   tf-mask: &tf-mask
@@ -95,6 +98,9 @@ commands:
     parameters:
       serviceName:
         type: string
+      save_libs:
+        type: boolean
+        default: true
     steps:
       - run:
           name: "Save test results"
@@ -141,6 +147,15 @@ commands:
           command: |
             include automated_test_save.sh
 
+  report-code-coverage:
+    description: "Add code coverage report"
+    steps:
+      - run:
+          name: "Report code coverage"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include code_coverage.sh
+
 jobs:
   checkout-code:
     executor: kotlin
@@ -151,6 +166,7 @@ jobs:
           root: .
           paths:
             - .
+
   avro:
     executor: kotlin
     working_directory: ~/working
@@ -167,30 +183,38 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
+
   build-and-test:
     parameters:
-      <<: *subproject
+      <<: *serviceName
       <<: *environment
       publish:
         type: boolean
         default: false
+      save_libs:
+        type: boolean
+        default: true
+      run_integration_tests:
+        type: boolean
+        default: true
     executor: kotlin
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
       - restore_cache:
-          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - build-test:
-          serviceName: << parameters.subproject >>
+          serviceName: << parameters.serviceName >>
           environment: << parameters.environment >>
       - save_cache:
           paths:
             - .gradle
             - ~/.gradle
-          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - save-test-result:
-          serviceName: << parameters.subproject >>
+          serviceName: << parameters.serviceName >>
+          save_libs: << parameters.save_libs >>
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
@@ -206,37 +230,28 @@ jobs:
                 account-url: AWS_ACCOUNT_URL
                 aws-access-key-id: AWS_ACCESS_KEY_ID
                 aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-                dockerfile: ./<< parameters.subproject >>/Dockerfile
-                path: ./<< parameters.subproject >>
+                dockerfile: ./<< parameters.serviceName >>/Dockerfile
+                path: ./<< parameters.serviceName >>
                 create-repo: false
                 region: AWS_DEFAULT_REGION
-                repo: << parameters.subproject >>
+                repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
-                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.subproject >>:latest
+                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
                 monitor-on-build: true
-                project: << parameters.subproject >>
+                project: << parameters.serviceName >>
                 severity-threshold: high
-                target-file: ./<< parameters.subproject >>/Dockerfile
-  snyk-scan:
-    executor: kotlin
-    working_directory: ~/working
-    steps:
-      - attach_workspace:
-          at: ~/working
-      - make-gradle-executable
-      - snyk/scan:
-          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
-          severity-threshold: high
-  notify-shipit:
-    executor: shipit/default
-    steps:
-      - shipit/shipit:
-          team-name: Smart Journeys
+                target-file: ./<< parameters.serviceName >>/Dockerfile
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.serviceName >>/*
+            - ./reports/jacoco/*
+
   integration-test:
     parameters:
-      <<: *subproject
+      <<: *serviceName
       <<: *environment
       run_integration_tests:
         type: boolean
@@ -253,12 +268,30 @@ jobs:
             - openjdk-install/openjdk:
                 version: 11
             - restore_cache:
-                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.subproject >>/build.gradle" }}
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
             - integration-test:
-                serviceName: << parameters.subproject >>
+                serviceName: << parameters.serviceName >>
                 environment: << parameters.environment >>
             - store_test_results:
-                path: << parameters.subproject >>/build/test-results/integrationTest
+                path: << parameters.serviceName >>/build/test-results/integrationTest
+
+  snyk-scan:
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - make-gradle-executable
+      - snyk/scan:
+          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+          severity-threshold: high
+
+  notify-shipit:
+    executor: shipit/default
+    steps:
+      - shipit/shipit:
+          team-name: Smart Journeys
+
   tf-plan:
     <<: *tf-common
     description: tf-plan << parameters.environment >>
@@ -270,6 +303,7 @@ jobs:
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
+
   tf-apply:
     <<: *tf-common
     description: tf-apply-<< parameters.environment >>
@@ -283,6 +317,7 @@ jobs:
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
+
   run-automation-test:
     parameters:
       <<: *environment
@@ -299,3 +334,13 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
+
+  report-code-coverage:
+    executor: python
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - report-code-coverage
+      - store_artifacts:
+          path: ./reports/jacoco
