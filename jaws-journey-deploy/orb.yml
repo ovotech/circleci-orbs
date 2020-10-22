@@ -93,6 +93,22 @@ commands:
             include make_gradle_executable.sh
             include build_project.sh
 
+  build-test-lib:
+    description: "Run build and test lib commands"
+    parameters:
+      lib:
+        type: string
+      <<: *environment
+    steps:
+      - run:
+          name: "run build and test lib steps"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include set_profile.sh
+            include make_gradle_executable.sh
+            include build_lib.sh
+
+
   save-test-result:
     description: "Run commands to save test results"
     parameters:
@@ -100,7 +116,7 @@ commands:
         type: string
       save_libs:
         type: boolean
-        default: true
+        default: false
     steps:
       - run:
           name: "Save test results"
@@ -184,6 +200,41 @@ jobs:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
 
+  lib-build-and-test:
+    parameters:
+      lib:
+        description: lib to be built
+        type: string
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - build-test-lib:
+          lib: << parameters.lib >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - save-test-result:
+          serviceName: << parameters.lib >>
+          save_libs: true
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+      - store_artifacts:
+          path: ./reports/jacoco
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.lib >>/*
+            - ./reports/jacoco/*
+
+
   build-and-test:
     parameters:
       <<: *serviceName
@@ -191,9 +242,6 @@ jobs:
       publish:
         type: boolean
         default: false
-      save_libs:
-        type: boolean
-        default: true
       run_integration_tests:
         type: boolean
         default: true
@@ -214,7 +262,7 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - save-test-result:
           serviceName: << parameters.serviceName >>
-          save_libs: << parameters.save_libs >>
+          save_libs: false
       - store_test_results:
           path: ~/test-results
       - store_artifacts:
