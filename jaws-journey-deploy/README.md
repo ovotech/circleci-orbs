@@ -57,6 +57,16 @@ This job performs a few steps
 * publish: Indicates whether you want to upload the resulting Docker image to AWS ECR
 * save_libs: Used for code coverage to indicate whether you want to save the libs coverage report
 
+### lib-build-and-test
+
+**Description**
+
+This job will build the provided lib project, the reason for this step is to allow Code Coverage to report on tests within libs
+
+**Parameters**
+* lib: The name of the lib project to be built
+
+
 ### integration-test
 
 **Description**
@@ -146,8 +156,17 @@ Does not require any parameters to be passed.  It does however need the followin
 
 ## Example Usage
 ```yaml
+version: 2.1
 orbs:
-  deploy-orb: ovotech/jaws-journey-deploy@1.x.x
+  deploy-orb: ovotech/jaws-journey-deploy@dev:change_save_test_results
+
+parameters:
+  sandbox_build_branch:
+    type: string
+    default: feat/test
+  run_integration_tests:
+    type: boolean
+    default: true
 
 aliases:
   - &ignore-master-branch
@@ -180,13 +199,58 @@ aliases:
 
   - &ci-build
     context: jaws-sandbox
-    filters: *ignore-master-branch
+    filters:
+      branches:
+        ignore:
+          - master
+          - << pipeline.parameters.sandbox_build_branch >>
 
   - &deploy-sandbox
     context: jaws-sandbox
     filters:
       branches:
         only: << pipeline.parameters.sandbox_build_branch >>
+
+  - &all-services-matrix
+    parameters:
+      serviceName:
+        - meter-appointment-preference-service
+        - meter-bol-request-result-service
+        - meter-commission-service
+        - meter-install-default-tariff-service
+        - meter-receive-installed-service
+        - meter-receive-tariff-configuration-service
+        - meter-send-billing-service
+        - meter-send-install-service
+        - meter-tariff-service-v2
+        - receive-billing-schedule-service
+        - replay-service
+        - e2e-test-data-generator-service
+
+  - &all-lib-matrix
+    matrix:
+      alias:
+        build-and-test-lib
+      parameters:
+        lib:
+          - avro-common
+          - bol-stash-lib
+          - journey-tracker-lib
+          - meter-tariff-lib
+
+  - &integration-test-services-matrix
+    matrix:
+      alias:
+        integration-test
+      parameters:
+        serviceName:
+          - meter-appointment-preference-service
+          - meter-bol-request-result-service
+          - meter-commission-service
+          - meter-install-default-tariff-service
+          - meter-receive-tariff-configuration-service
+          - receive-billing-schedule-service
+
 workflows:
   ci:
     jobs:
@@ -204,41 +268,41 @@ workflows:
           environment: sandbox
           requires:
             - checkout-code
-
       - deploy-orb/build-and-test:
           <<: *ci-build
-          name: build-and-test-gain-service
+          name: << matrix.serviceName >>-build-and-test
+          matrix:
+            alias:
+              build-and-test-sandbox
+            <<: *all-services-matrix
           environment: sandbox
-          serviceName: gain-service
-          save_libs: true
+          serviceName: << matrix.serviceName >>
           requires:
             - checkout-code
 
-      - deploy-orb/build-and-test:
+      - deploy-orb/lib-build-and-test:
           <<: *ci-build
-          name: build-and-test-gain-replay-service
-          environment: sandbox
-          serviceName: gain-replay-service
-          save_libs: false
+          <<: *all-lib-matrix
+          name: << matrix.lib >>-build-and-test-lib
+          lib: << matrix.lib >>
           requires:
             - checkout-code
+
       - deploy-orb/integration-test:
           name: integration-test-<< matrix.serviceName >>
           environment: sandbox
-          matrix:
-            alias:
-              integration-test
-            <<: *integration-test-services-matrix
+          <<: *integration-test-services-matrix
           <<: *ci-build
           requires:
             - checkout-code
+
       - deploy-orb/tf-plan:
           <<: *ci-build
           name: tf-plan-<< matrix.path >>-<< matrix.environment >>
           matrix:
             parameters:
               path:
-                - main
+                - ''
                 - kubernetes
               environment:
                 - sandbox
@@ -249,6 +313,156 @@ workflows:
           <<: *ci-build
           name: report-code-coverage
           requires:
-            - build-and-test-gain-service
-            - build-and-test-gain-replay-service
+            - build-and-test-sandbox
+            - build-and-test-lib
+
+  cd:
+    jobs:
+      - deploy-orb/checkout-code:
+          name: checkout-code
+          <<: *any-cd-pipeline
+
+      - deploy-orb/tf-apply:
+          <<: *deploy-sandbox
+          name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - main
+              environment:
+                - sandbox
+          requires:
+            - checkout-code
+
+      - deploy-orb/build-and-test:
+          name: build-and-test-publish-<< matrix.serviceName >>
+          environment: sandbox
+          matrix:
+            alias:
+              build-and-test-publish-sandbox
+            <<: *all-services-matrix
+          <<: *deploy-sandbox
+          publish: true
+          requires:
+            - checkout-code
+      - deploy-orb/avro:
+          <<: *deploy-sandbox
+          name: avro-cd-sandbox
+          environment: sandbox
+          uploadschema: true
+          requires:
+            - checkout-code
+      - deploy-orb/tf-apply:
+          <<: *deploy-sandbox
+          name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - kubernetes
+              environment:
+                - sandbox
+          requires:
+            - avro-cd-sandbox
+            - build-and-test-publish-sandbox
+            - tf-apply-main-sandbox
+
+      - deploy-orb/run-automation-test:
+          name: run-automation-test
+          <<: *deploy-sandbox
+          requires:
+            - tf-apply-kubernetes-sandbox
+
+      - deploy-orb/tf-apply:
+          <<: *nonprod-job
+          name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - main
+              environment:
+                - nonprod
+          requires:
+            - checkout-code
+
+      - deploy-orb/build-and-test:
+          name: build-and-test-publish-<< matrix.serviceName >>
+          environment: nonprod
+          matrix:
+            alias:
+              build-and-test-publish-nonprod
+            <<: *all-services-matrix
+          <<: *nonprod-job
+          publish: true
+          requires:
+            - checkout-code
+      - deploy-orb/avro:
+          <<: *nonprod-job
+          name: avro-cd-nonprod
+          uploadschema: true
+          environment: nonprod
+          requires:
+            - checkout-code
+
+      - deploy-orb/tf-apply:
+          <<: *nonprod-job
+          name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - kubernetes
+              environment:
+                - nonprod
+          requires:
+            - avro-cd-nonprod
+            - build-and-test-publish-nonprod
+            - tf-apply-main-nonprod
+
+      - deploy-orb/tf-apply:
+          <<: *prod-job
+          name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - main
+              environment:
+                - prod
+          requires:
+            - checkout-code
+      - deploy-orb/build-and-test:
+          name: build-and-test-publish-<< matrix.serviceName >>
+          environment: prod
+          matrix:
+            alias:
+              build-and-test-publish-prod
+            <<: *all-services-matrix
+          <<: *prod-job
+          publish: true
+          requires:
+            - checkout-code
+      - deploy-orb/avro:
+          <<: *prod-job
+          name: avro-upload-prod
+          environment: prod
+          uploadschema: true
+          requires:
+            - checkout-code
+      - deploy-orb/tf-apply:
+          <<: *prod-job
+          name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+          matrix:
+            parameters:
+              path:
+                - kubernetes
+              environment:
+                - prod
+          requires:
+            - avro-upload-prod
+            - build-and-test-publish-prod
+            - tf-apply-main-prod
+
+      - deploy-orb/notify-shipit:
+          name: notify-shipit
+          <<: *prod-job
+          requires:
+            - tf-apply-kubernetes-prod
 ```
