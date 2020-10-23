@@ -3,6 +3,11 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.7.9
+## Changed
+- Updated executors to include:
+    - gcloud 314.0.0
+
 ## ovotech/terraform@1.7.8
 ## Changed
 - Added HCL syntax highlighting
