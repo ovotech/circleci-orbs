@@ -365,6 +365,7 @@ jobs:
       - terraform/plan: *tf-parameters
 
   tf-apply:
+    working_directory: ~/working
     <<: *tf-common
     description: tf-apply-<< parameters.environment >>
     environment:
