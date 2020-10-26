@@ -355,7 +355,7 @@ jobs:
             - attach_workspace:
                 at: ~/working
       - when:
-          condition: !<< parameters.attach_workspace >>
+          condition: << parameters.attach_workspace >> != true
           steps:
             - checkout
       - calculate-build-version
@@ -375,7 +375,7 @@ jobs:
             - attach_workspace:
                 at: ~/working
       - when:
-          condition: !<< parameters.attach_workspace >>
+          condition: << parameters.attach_workspace >> != true
           steps:
             - checkout
       - calculate-build-version
