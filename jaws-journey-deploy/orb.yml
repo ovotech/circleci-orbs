@@ -344,6 +344,7 @@ jobs:
           team-name: Smart Journeys
 
   tf-plan:
+    working_directory: ~/working
     <<: *tf-common
     description: tf-plan << parameters.environment >>
     environment:
