@@ -38,6 +38,9 @@ aliases:
       path:
         type: string
         default: ""
+      attach_workspace:
+        type: boolean
+        default: false
       <<: *environment
 
   tf-parameters: &tf-parameters
@@ -346,7 +349,15 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
-      - checkout
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/working
+      - when:
+          condition: << parameters.attach_workspace >> != true
+          steps:
+            - checkout
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -358,7 +369,15 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
-      - checkout
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/working
+      - when:
+          condition: << parameters.attach_workspace >> != true
+          steps:
+            - checkout
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
