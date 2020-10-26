@@ -346,6 +346,8 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
+      - attach_workspace:
+          at: ~/working
       - checkout
       - calculate-build-version
       - terraform/fmt-check:
@@ -358,6 +360,8 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
+      - attach_workspace:
+          at: ~/working
       - checkout
       - calculate-build-version
       - terraform/fmt-check:
