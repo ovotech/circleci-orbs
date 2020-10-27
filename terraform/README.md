@@ -82,7 +82,8 @@ It also contains:
 - Helm 2 available as `helm2` and `helm`
 - Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
-- ovo's kafka user provider
+- stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
+- beta "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
 
 
 ## Commands
