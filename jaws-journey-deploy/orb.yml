@@ -344,6 +344,7 @@ jobs:
           team-name: Smart Journeys
 
   tf-plan:
+    working_directory: ~/working
     <<: *tf-common
     description: tf-plan << parameters.environment >>
     environment:
@@ -354,8 +355,8 @@ jobs:
           steps:
             - attach_workspace:
                 at: ~/working
-      - when:
-          condition: << parameters.attach_workspace >> != true
+      - unless:
+          condition: << parameters.attach_workspace >>
           steps:
             - checkout
       - calculate-build-version
@@ -364,6 +365,7 @@ jobs:
       - terraform/plan: *tf-parameters
 
   tf-apply:
+    working_directory: ~/working
     <<: *tf-common
     description: tf-apply-<< parameters.environment >>
     environment:
@@ -374,8 +376,8 @@ jobs:
           steps:
             - attach_workspace:
                 at: ~/working
-      - when:
-          condition: << parameters.attach_workspace >> != true
+      - unless:
+          condition: << parameters.attach_workspace >>
           steps:
             - checkout
       - calculate-build-version

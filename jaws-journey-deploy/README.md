@@ -2,6 +2,9 @@
 
 This orb provides a standard deployment process for all journey repositories to ensure common code between them.
 
+### Making Updates
+To update this orb, simply make the required changes, and then increment the version number in the orb_version.txt file
+
 ### Jobs
 
 Available Jobs
@@ -106,6 +109,7 @@ Does not require any parameters passed through.
 This step performs a linting step to make sure the terraform styling is standardised, and then runs a terraform plan - based on the files provided in the path parameter.
 
 **Parameters**
+* attach_workspace: Boolean field to indicate whether you want to attach to the workspace 'working'.  This is defaulted to false, and is only used for the template build.
 * path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
 * environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
 ```
