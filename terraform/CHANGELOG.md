@@ -3,6 +3,12 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.0
+## Changed
+- Updated terraform-0.13 executor to include:
+    - in-house ovo provider location compatible with required_providers syntax in 0.13
+    - in-house aiven-kafka-users provider location compatible with required_providers syntax in 0.13
+
 ## ovotech/terraform@1.7.9
 ## Changed
 - Updated executors to include:
