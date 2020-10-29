@@ -107,6 +107,7 @@ commands:
       - run:
           command: |
             sed -i "s/{{AWS_ACCOUNT_ID}}/<< parameters.account >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
+            sed -i "s/{{AWS_REGION}}/<< parameters.region >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
             sed -i "s/{{IMAGE_TAG}}/${CIRCLE_SHA1}/g" ./kubernetes/<< parameters.resource-type >>.yaml
             sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
 
