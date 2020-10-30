@@ -151,7 +151,7 @@ commands:
       <<: *environment
     steps:
       - run:
-          name: "make gradle executable"
+          name: "run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
             include set_profile.sh
