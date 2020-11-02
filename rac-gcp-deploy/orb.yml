@@ -400,6 +400,10 @@ jobs:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
       - run:
+          name: "Configure dockerhub auth"
+          command: |
+            docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
+      - run:
           name: "Release"
           command: sbt "release with-defaults"
       - gcloud_auth: *gcloud_auth_nonprod
