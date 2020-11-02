@@ -277,6 +277,9 @@ jobs:
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
       - run:
+          name: Update SBT launcher
+          command: cd /tmp && curl  -L -O https://dl.bintray.com/sbt/debian/sbt-1.4.1.deb && sudo apt-get update; sudo dpkg -i  ./sbt-1.4.1.deb
+      - run:
           name: Service Tests
           command: sbt service-test:test
           no_output_timeout: 20m
