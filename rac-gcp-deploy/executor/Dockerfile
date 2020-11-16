@@ -4,7 +4,7 @@ FROM google/cloud-sdk:${GCLOUD_SDK_VERSION:-304.0.0-alpine}
 ARG SBT_VERSION
 ENV SBT_VERSION ${SBT_VERSION:-1.4.2}
 
-RUN apk --update add openjdk8
+RUN apk --update add openjdk8 jq
 
 RUN gcloud components install kubectl
 
