@@ -360,7 +360,7 @@ jobs:
             -u $GITHUB_USERNAME:$GITHUB_TOKEN \
             --header 'Content-Type: application/json' \
             --data-raw '{
-            "body": "$snyk_report"
+            "body": "$(echo snyk_report)"
             }'
 
   notify_shipit:
