@@ -2,7 +2,7 @@ ARG GCLOUD_SDK_VERSION
 FROM google/cloud-sdk:${GCLOUD_SDK_VERSION:-304.0.0-alpine}
 
 ARG SBT_VERSION
-ENV SBT_VERSION ${SBT_VERSION:-1.3.13}
+ENV SBT_VERSION ${SBT_VERSION:-1.4.2}
 
 RUN apk --update add openjdk8
 
@@ -22,7 +22,7 @@ RUN apk add --update --no-cache curl ca-certificates \
 
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
-  && ESUM="854154de27a7d8c13b5a0f9a297cd1f254cc13b44588dae507e5d4fb2741bd22" \
+  && ESUM="acd6a104a27d979ab25eb9b95c105d45cd31b2591a861665c7cb13ae43a284b7" \
   && SBT_URL="https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" \
   && apk add shadow \
   && apk add bash \
