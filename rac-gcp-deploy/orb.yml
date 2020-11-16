@@ -1,6 +1,10 @@
 version: 2.1
 description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
+aliases:
+  # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
+  - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
+
 .gcloud_auth_nonprod: &gcloud_auth_nonprod
   gcloud-service-key: <<parameters.nonprod-gcloud-service-key>>
   project-id: <<parameters.nonprod-project-id>>
@@ -15,6 +19,9 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
   gcloud-service-key: <<parameters.prd-gcloud-service-key>>
   project-id: <<parameters.prd-project-id>>
   google-compute-zone: <<parameters.google-compute-zone>>
+
+orbs:
+  snyk: snyk/snyk@0.0.10
 
 executors:
   machine:
@@ -71,20 +78,6 @@ commands:
       - run:
           name: "Create Bintray credentials file"
           command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
-
-  snyk_monitor:
-    description: "Runs snyk monitor"
-    parameters:
-      api-key:
-        description: "Name of the environment variable storing the snyk api key"
-        type: env_var_name
-    steps:
-      - run:
-          name: "Run snyk monitor"
-          command: |
-            echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
-            snyk auth $<<parameters.api-key>>
-            snyk monitor --project-name="${CIRCLE_PROJECT_REPONAME}"
 
   gcloud_auth:
     description: "Initialize the `gcloud` CLI"
@@ -288,6 +281,88 @@ jobs:
           command: sbt service-test:test
           no_output_timeout: 20m
 
+  snyk_test:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to machine executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - attach_workspace:
+          at: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
+      - run: *sbt-dependency-graph
+      - snyk/scan:
+          project: $CIRCLE_PROJECT_REPONAME
+          fail-on-issues: true
+          monitor-on-build: false
+          severity-threshold: high
+
+  snyk_monitor:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to machine executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - attach_workspace:
+          at: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
+      - run: *sbt-dependency-graph
+      - snyk/scan:
+          project: $CIRCLE_PROJECT_REPONAME
+          fail-on-issues: false
+          monitor-on-build: true
+
+  pr_comment_snyk:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to machine executor"
+        type: executor
+        default: docker
+    executor: <<parameters.executor>>
+    steps:
+      - run:
+          name: Post Snyk report to GitHub PR
+          command: |
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u $GITHUB_USERNAME:$GITHUB_TOKEN)
+
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+              echo "No PR found to update"
+            else
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            fi
+
+            snyk auth $SNYK_TOKEN
+            snyk_report = $(snyk test)
+            curl --location --request POST "$pr_comment_url" \
+            -u $GITHUB_USERNAME:$GITHUB_TOKEN \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+            "body": "$snyk_report"
+            }'
+
   notify_shipit:
     parameters:
       executor:
@@ -381,10 +456,6 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
-      snyk-api-key:
-        description: "Name of the environment variable storing the snyk api key"
-        default: SNYK_TOKEN
-        type: env_var_name
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -453,8 +524,6 @@ jobs:
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${PRD_IMAGE_ROOT}"
-      - snyk_monitor:
-          api-key: <<parameters.snyk-api-key>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
