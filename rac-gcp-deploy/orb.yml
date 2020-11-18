@@ -310,37 +310,15 @@ jobs:
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
       - run: *sbt-dependency-graph
+      - run:
+          name: Post Snyk report to GitHub PR
+          command: |
+            include github_comment_pr.sh
       - snyk/scan:
           project: $CIRCLE_PROJECT_REPONAME
           fail-on-issues: true
           monitor-on-build: false
           severity-threshold: high
-
-  pr_comment_snyk:
-    parameters:
-      executor:
-        description: "Name of executor to use for this job. Defaults to machine executor"
-        type: executor
-        default: docker
-      workspace-dir:
-        description: "Path to restore the workspace"
-        type: string
-        default: ~/project
-      cache-suffix:
-        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
-        default: ""
-        type: string
-    executor: <<parameters.executor>>
-    steps:
-      - attach_workspace:
-          at: <<parameters.workspace-dir>>
-      - load_cache:
-          cache-suffix: <<parameters.cache-suffix>>
-      - run: *sbt-dependency-graph
-      - run:
-          name: Post Snyk report to GitHub PR
-          command: |
-            include github_comment_pr.sh
 
   notify_shipit:
     parameters:
