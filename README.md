@@ -18,6 +18,10 @@ Orbs follow the conventions:
 
 * An `orb_version.txt` file may exist in an orb directory containing the version of the orb. (A new version is only published when the version changes)
 
+* An entry in [CODEOWNERS](./.github/CODEOWNERS) indicating which team maintains the orb - they will be responsible for reviewing
+any changes to the orb.
+
+* The orb will need to be added to the list published by Circle at the bottom of the [Circle config](./.circleci/config.yml)
 
 ## Published Orbs
 
