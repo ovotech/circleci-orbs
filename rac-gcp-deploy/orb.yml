@@ -143,6 +143,14 @@ commands:
               -d "links[1].url=https://github.com/ovotech/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}" \
               -d "note=${COMMIT_MESSAGE}"
 
+  snyk_monitor:
+    steps:
+      - run: *sbt-dependency-graph
+      - snyk/scan:
+          project: $CIRCLE_PROJECT_REPONAME
+          fail-on-issues: false
+          monitor-on-build: true
+
 jobs:
   compile:
     parameters:
@@ -307,32 +315,6 @@ jobs:
           fail-on-issues: true
           monitor-on-build: false
           severity-threshold: high
-
-  snyk_monitor:
-    parameters:
-      executor:
-        description: "Name of executor to use for this job. Defaults to machine executor"
-        type: executor
-        default: docker
-      workspace-dir:
-        description: "Path to restore the workspace"
-        type: string
-        default: ~/project
-      cache-suffix:
-        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
-        default: ""
-        type: string
-    executor: <<parameters.executor>>
-    steps:
-      - attach_workspace:
-          at: <<parameters.workspace-dir>>
-      - load_cache:
-          cache-suffix: <<parameters.cache-suffix>>
-      - run: *sbt-dependency-graph
-      - snyk/scan:
-          project: $CIRCLE_PROJECT_REPONAME
-          fail-on-issues: false
-          monitor-on-build: true
 
   pr_comment_snyk:
     parameters:
@@ -551,6 +533,7 @@ jobs:
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${PRD_IMAGE_ROOT}"
+      - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
