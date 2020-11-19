@@ -1,7 +1,8 @@
 OOT Deploy Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/oot-eks)](https://circleci.com/orbs/registry/orb/ovotech/oot-deploy)
 =====================
 
-Provides commands for packaging and deploying OOT images via [ArgoCD](https://argoproj.github.io/argo-cd/) and our gitops repo.
+Provides commands for packaging and deploying OOT images via our gitops repo. We use it with [ArgoCD](https://argoproj.github.io/argo-cd/) although
+there is no hard dependency on that application. 
 
 The gitops repo is expected to have the structure:
 
@@ -19,15 +20,14 @@ The gitops repo is expected to have the structure:
 
 What it does:
 
-1. Builds a new image based on the current project and pushes to an ECR registry named after the `service` parameter within the AWS account indicated by the `account` parameter.
-2. Clones the specified gitops repo. Then from within that cloned folder:
-3. Copies `./templates/<service>/manifest.yaml` to the `./<environment>/<service>/manifest.yaml`
+1. Clones the specified gitops repo. Then from within that cloned folder:
+2. Copies `./templates/<service>/manifest.yaml` to the `./<environment>/<service>/manifest.yaml`
     - The `./<environment>/<service>` folder will be created if it does not already exist.
-4. Interpolates placeholders within  `./<environment>/<service>/manifest.yaml` as:
+3. Interpolates placeholders within  `./<environment>/<service>/manifest.yaml` as:
     - `{{AWS_ACCOUNT_ID}}` will be swapped for the value of the `account` parameter.
     - `{{ENVIRONMENT}}` will be swapped for the value of `environment` parameter.
     - `{{IMAGE_TAG}}` will be swapped for the core CircleCI environment variable `${CIRCLE_SHA1}`
-5. Pushes the changes to the gitops repo as the github user `<gitops-username>`.
+4. Pushes the changes to the gitops repo as the github user `<gitops-username>`.
 
 From there, as long as the prerequisites below are configured properly, Argo should take over and pull the changes from `./<environment>/<service>/manifest.yaml`
 and deploy them to your kubernetes cluster.
@@ -44,13 +44,13 @@ Example
 
 ```yaml
 orbs:
-  oot-deploy: ovotech/oot-deploy@1.0.0
+  oot-deploy: ovotech/oot-deploy@2.0.0
 
 jobs:
-  push-nonprod:
+  update-gitops-nonprod:
     executor: oot-deploy/aws
     steps:
-      - oot-deploy/push:
+      - oot-deploy/update-gitops:
           service: my-service
           environment: nonprod
           account: "1234567890"
@@ -60,7 +60,7 @@ jobs:
           gitops-email: my-bot@myco.co.uk
 ```
 
-This is what will happen upon running the `oot-deploy/push` command:
+This is what will happen upon running the `update-gitops-nonprod` job:
 
 1. A new image based on the current project source being deployed to an ECR registry called "my-service" within the AWS account 1234567890
 2. The gitops repo `git@github.com:ovotech/my-gitops.git` will be cloned; and then from within that folder...

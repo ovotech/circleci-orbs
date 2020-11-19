@@ -1,39 +1,26 @@
 version: 2.1
-description: "Opinionated commands for releasing OOT projects on AWS EKS via k8s-proxy."
+description: "Update OOT deployments with gitops."
 
 orbs:
-  aws-cli: circleci/aws-cli@1.2.1
-  aws-ecr: circleci/aws-ecr@6.12.2
-  aws-eks: circleci/aws-eks@1.0.0
-  kubernetes: circleci/kubernetes@0.11.1
-  snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
 
 commands:
-  push:
-    description: "Builds and pushes a new service to ECR and then deploys that image to EKS."
+  update-gitops:
+    description: "Updates the appropriate manifest in the given gitops repo with a new image tag."
     parameters:
       service:
-        description: "The name of the service that will be deployed. This will be used to build up the image name."
+        description: "The name of the service that will be updated. This should match with the path in the gitops repo."
         type: string
-      access-key-name:
-        description: "The name of the environment variable that will be used to provide the AWS access key id."
+      image-tag:
+        description: "The tag of the image to update the manifest with."
         type: string
-        default: ACCESS_KEY_ID
-      secret-access-key-name:
-        description: "The name of the environment variable that will be used to provide the AWS secret access key."
-        type: string
-        default: SECRET_ACCESS_KEY
+        default: ${CIRCLE_SHA1}
       account:
-        description: "The numeric identifier for the AWS account on which the operation will be run."
+        description: "The numeric identifier for the AWS account which will be interpolated into the manifest."
         type: string
         default: ${AWS_ACCOUNT}
-      region:
-        description: "The AWS region on which the operation will be run."
-        type: string
-        default: eu-west-1
       environment:
-        description: "Environment string used for substitution in the kubernetes files."
+        description: "Environment string used for substitution in the manifest and matching the appropriate path in the gitops repo."
         type: string
         default: ${ENVIRONMENT}
       gitops-repo:
@@ -43,7 +30,7 @@ commands:
         description: "The github SSH key that will be used to update the gitops repo."
         type: string
       gitops-username:
-        description: "The username of the git usere to push gitops changes as."
+        description: "The username of the git user to push gitops changes as."
         type: string
       gitops-email:
         description: "The email address of the git user to push gitops changes as."
@@ -52,36 +39,6 @@ commands:
     steps:
       - attach_workspace:
           at: .
-
-      - run:
-          command: |
-            echo "export AWS_DEFAULT_REGION=<< parameters.region >>" >> $BASH_ENV
-            echo "export AWS_REGION=eu-west-1" >> $BASH_ENV
-            echo "export AWS_ECR_ACCOUNT_URL=<< parameters.account >>.dkr.ecr.<< parameters.region >>.amazonaws.com" >> $BASH_ENV
-
-      - aws-cli/install
-      - aws-cli/setup:
-          aws-access-key-id: << parameters.access-key-name >>
-          aws-secret-access-key: << parameters.secret-access-key-name >>
-
-      - aws-ecr/build-image:
-          account-url: AWS_ECR_ACCOUNT_URL
-          aws-access-key-id: << parameters.access-key-name >>
-          aws-secret-access-key: << parameters.secret-access-key-name >>
-          repo: << parameters.service >>
-          tag: ${CIRCLE_SHA1},latest
-          ecr-login: true
-
-      - snyk/scan:
-          monitor-on-build: true
-          severity-threshold: high
-          fail-on-issues: false
-          target-file: Dockerfile
-          docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:${CIRCLE_SHA1}
-
-      - aws-ecr/push-image:
-          repo: << parameters.service >>
-          tag: ${CIRCLE_SHA1},latest
 
       - add_ssh_keys:
           fingerprints:
@@ -101,7 +58,7 @@ commands:
           command: |
             cd /tmp/gitops/<< parameters.environment >>/<< parameters.service >>
             sed -i "s/{{AWS_ACCOUNT_ID}}/<< parameters.account >>/g" manifest.yaml
-            sed -i "s/{{IMAGE_TAG}}/${CIRCLE_SHA1}/g" manifest.yaml
+            sed -i "s/{{IMAGE_TAG}}/<< parameters.image-tag >>/g" manifest.yaml
             sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" manifest.yaml
 
       - run:
@@ -111,7 +68,7 @@ commands:
             git config user.email "<< parameters.gitops-email >>"
             git config user.name "<< parameters.gitops-username >>"
             git add --all
-            git commit -m "Bumped << parameters.service >> in << parameters.environment >> to ${CIRCLE_SHA1}"
+            git commit -m "Bumped << parameters.service >> in << parameters.environment >> to << parameters.image-tag >>"
             git push origin master
 
 jobs:
@@ -120,10 +77,5 @@ jobs:
     executor: shipit/default
     steps:
       - shipit/shipit
-
-executors:
-  aws:
-    machine:
-      image: ubuntu-1604:202010-01
 
 
