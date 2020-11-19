@@ -303,6 +303,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      enable-pr-comment:
+        description: "Flag that enables/disables to add a comment on the PR with the result of Snyk test"
+        default: false
+        type: boolean
     executor: <<parameters.executor>>
     steps:
       - attach_workspace:
@@ -310,10 +314,13 @@ jobs:
       - load_cache:
           cache-suffix: <<parameters.cache-suffix>>
       - run: *sbt-dependency-graph
-      - run:
-          name: Post Snyk report to GitHub PR
-          command: |
-            include github_comment_pr.sh
+      - when:
+          condition: <<parameters.enable-pr-comment>>
+          steps:
+            - run:
+                name: Post Snyk report to GitHub PR
+                command: |
+                  include github_comment_pr.sh
       - snyk/scan:
           project: $CIRCLE_PROJECT_REPONAME
           fail-on-issues: true
