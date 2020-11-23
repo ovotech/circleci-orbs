@@ -1,24 +1,17 @@
 version: 2.1
-description: "Opinionated commands for releasing OOT projects on AWS EKS via k8s-proxy."
+description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR."
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.1
   aws-ecr: circleci/aws-ecr@6.12.2
-  aws-eks: circleci/aws-eks@1.0.0
-  kubernetes: circleci/kubernetes@0.11.1
   snyk: snyk/snyk@0.0.10
-  ssh-proxy: ovotech/ssh-proxy@1.0.0
-  shipit: ovotech/shipit@1
 
 commands:
-  push:
-    description: "Builds and pushes a new service to ECR and then deploys that image to EKS."
+  push-image:
+    description: "Builds, scans and pushes a new service to ECR."
     parameters:
       service:
         description: "The name of the service that will be deployed. This will be used to build up the image name."
-        type: string
-      eks-cluster-name:
-        description: "The name of the AWS EKS cluster to be deployed to."
         type: string
       access-key-name:
         description: "The name of the environment variable that will be used to provide the AWS access key id."
@@ -36,43 +29,10 @@ commands:
         description: "The AWS region on which the operation will be run."
         type: string
         default: eu-west-1
-      environment:
-        description: "Environment string used for substitution in the kubernetes files."
-        type: string
-        default: ${ENVIRONMENT}
-      resource-type:
-        description: "The kubernetes resource type that will be deployed."
-        type: string
-        default: "deployment"
-      k8s-api-host:
-        description: "The hostname of the kubernetes API to be pushed to."
-        type: string
-        default: ${K8S_API_HOST}
-      k8s-proxy-fingerprint:
-        description: "The fingerprint of the private key used by the k8s-proxy running in your cluster."
-        type: string
-        default: ${K8S_PROXY_FINGERPRINT}
-      k8s-endpoint1:
-        description: "Kubernetes private endpoint 1."
-        type: string
-        default: ${K8S_ENDPOINT1}
-      k8s-endpoint2:
-        description: "Kubernetes private endpoint 2."
-        type: string
-        default: ${K8S_ENDPOINT2}
 
     steps:
       - attach_workspace:
           at: .
-
-      - ssh-proxy/proxy-up:
-          hostname: << parameters.k8s-api-host >>
-          port: 443
-          username: proxy
-          private_key_fingerprint: << parameters.k8s-proxy-fingerprint >>
-          routed_network_cidrs: << parameters.k8s-endpoint1 >>/32 << parameters.k8s-endpoint2 >>/32
-          connection_test_host: << parameters.k8s-endpoint1 >>
-          connection_test_port: 443
 
       - run:
           command: |
@@ -103,34 +63,6 @@ commands:
       - aws-ecr/push-image:
           repo: << parameters.service >>
           tag: ${CIRCLE_SHA1},latest
-
-      - run:
-          command: |
-            sed -i "s/{{AWS_ACCOUNT_ID}}/<< parameters.account >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
-            sed -i "s/{{AWS_REGION}}/<< parameters.region >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
-            sed -i "s/{{IMAGE_TAG}}/${CIRCLE_SHA1}/g" ./kubernetes/<< parameters.resource-type >>.yaml
-            sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" ./kubernetes/<< parameters.resource-type >>.yaml
-
-      - aws-eks/update-kubeconfig-with-authenticator:
-          authenticator-release-tag: v0.5.1
-          cluster-name: << parameters.eks-cluster-name >>
-          aws-region: << parameters.region >>
-          install-kubectl: true
-
-      - kubernetes/create-or-update-resource:
-          get-rollout-status: true
-          resource-file-path: kubernetes/<< parameters.resource-type >>.yaml
-          resource-name: << parameters.resource-type >>/<< parameters.service >>
-          show-kubectl-command: true
-
-      - ssh-proxy/proxy-down
-
-jobs:
-  shipit:
-    description: "Alerts ShipIt to the fact that the service has been deployed."
-    executor: shipit/default
-    steps:
-      - shipit/shipit
 
 executors:
   aws:
