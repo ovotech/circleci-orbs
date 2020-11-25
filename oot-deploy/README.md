@@ -9,6 +9,8 @@ The gitops repo is expected to have the structure:
 ```
 <root>
     - templates
+        - argo-applications
+            - manifest.yaml
         - <service1>
             - manifest.yaml
         - <service2>
@@ -18,16 +20,33 @@ The gitops repo is expected to have the structure:
             - manifest.yaml
 ```
 
-What it does:
+* Each `manifest.yaml` template in the `./templates/<serviceX>` directories represents all the kubernetes resources deployed
+to the cluster for "serviceX". So, typically it will just be a single kubernetes "deployment" but could potentially have multiple resources.
+The template will be interpolated by the orb as described in the next section. 
+* The `./templates/argo-applications/manifest.yaml` is the template that will be used to define "applications" within Argo itself. See 
+the Argo documentation on [declaritive setup](https://argoproj.github.io/argo-cd/operator-manual/declarative-setup) for more information. Specifically,
+the template must be of the form described in the [application.yaml](https://argoproj.github.io/argo-cd/operator-manual/application.yaml). The
+template will be interpolated by the orb as described in the next section.
 
-1. Clones the specified gitops repo. Then from within that cloned folder:
-2. Copies `./templates/<service>/manifest.yaml` to the `./<environment>/<service>/manifest.yaml`
+> IMPORTANT: This does imply that a "argo-applications" application is setup by hand in the Argo console to listen to the
+> content of the `./<environment>/argo-applications` folder. By syncing that application from within Argo, Argo will add
+> the new applications defined in the manifests in the folder.
+
+What does the orb do?
+---------------------
+
+1. Clone the specified gitops repo. Then from within that cloned folder:
+2. Copies the service manifest template `./templates/<service>/manifest.yaml` to the service manifest `./<environment>/<service>/manifest.yaml`
     - The `./<environment>/<service>` folder will be created if it does not already exist.
-3. Interpolates placeholders within  `./<environment>/<service>/manifest.yaml` as:
+3. Interpolates placeholders within the service manifest as:
     - `{{AWS_ACCOUNT_ID}}` will be swapped for the value of the `account` parameter.
     - `{{ENVIRONMENT}}` will be swapped for the value of `environment` parameter.
     - `{{IMAGE_TAG}}` will be swapped for the core CircleCI environment variable `${CIRCLE_SHA1}`
-4. Pushes the changes to the gitops repo as the github user `<gitops-username>`.
+4. Copies the argo application manifest template `./templates/argo-applications/manifest.yaml` to the argo application manifest `./<environment>/argo-applications/<service>.yaml`
+5. Interpolates placeholders within the argo application manifest as:
+    - `{{ENVIRONMENT}}` will be swapped for the value of `environment` parameter.
+    - `{{SERVICE}}` will be swapped for the value of `service` parameter.    
+6. Pushes the changes to the gitops repo as the github user `<gitops-username>`.
 
 From there, as long as the prerequisites below are configured properly, Argo should take over and pull the changes from `./<environment>/<service>/manifest.yaml`
 and deploy them to your kubernetes cluster.
@@ -59,13 +78,3 @@ jobs:
           gitops-username: my-bot
           gitops-email: my-bot@myco.co.uk
 ```
-
-This is what will happen upon running the `update-gitops-nonprod` job:
-
-1. A new image based on the current project source being deployed to an ECR registry called "my-service" within the AWS account 1234567890
-2. The gitops repo `git@github.com:ovotech/my-gitops.git` will be cloned; and then from within that folder...
-3. The `./templates/my-service/manifest.yaml` will be copied to `./nonprod/my-service/manifest.yaml` (the folder will be created if it does not already exist)
-4. `./nonprod/my-service/manifest.yaml` will be interpolated as described above.
-5. The changes to the gitops repo will be pushed as the github user `my-bot`.
-
-From there, Argo will take over. 

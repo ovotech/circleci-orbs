@@ -62,9 +62,23 @@ commands:
             sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" manifest.yaml
 
       - run:
+          name: Prepare argo application manifest
+          command: |
+            mkdir -p /tmp/gitops/<< parameters.environment >>/argo-applications
+            cd /tmp/gitops/<< parameters.environment >>/argo-applications
+            cp /tmp/gitops/templates/argo-applications/manifest.yaml /tmp/gitops/<< parameters.environment >>/argo-applications/<< parameters.service >>.yaml
+
+      - run:
+          name: Interpolate argo application definition
+          command: |
+            cd /tmp/gitops/<< parameters.environment >>/argo-applications
+            sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" << parameters.service >>.yaml
+            sed -i "s/{{SERVICE}}/<< parameters.service >>/g" << parameters.service >>.yaml
+
+      - run:
           name: Push gitops manifest
           command: |
-            cd /tmp/gitops/<< parameters.environment >>/<< parameters.service >>
+            cd /tmp/gitops
             git config user.email "<< parameters.gitops-email >>"
             git config user.name "<< parameters.gitops-username >>"
             git add --all
