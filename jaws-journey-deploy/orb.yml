@@ -86,7 +86,7 @@ commands:
     parameters:
       serviceName:
         type: string
-      skipUnitTest:
+      skipUnitTests:
         type: boolean
         default: false
       <<: *environment
