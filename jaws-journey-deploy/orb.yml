@@ -264,7 +264,7 @@ jobs:
             - build-test:
                 serviceName: << parameters.serviceName >>
                 environment: << parameters.environment >>
-                gradleParams: "-x test"
+                gradleParams: -x test
       - unless:
           condition: << parameters.skip_unit_tests >>
           steps:
