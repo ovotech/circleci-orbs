@@ -86,9 +86,9 @@ commands:
     parameters:
       serviceName:
         type: string
-      gradleParams:
-        type: string
-        default: null
+      skipUnitTest:
+        type: boolean
+        default: false
       <<: *environment
     steps:
       - run:
@@ -248,7 +248,7 @@ jobs:
       publish:
         type: boolean
         default: false
-      skip_unit_tests:
+      skipUnitTests:
         type: boolean
         default: false
     executor: kotlin
@@ -258,26 +258,17 @@ jobs:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
-      - when:
-          condition: << parameters.skip_unit_tests >>
-          steps:
-            - build-test:
-                serviceName: << parameters.serviceName >>
-                environment: << parameters.environment >>
-                gradleParams: -x test
-      - unless:
-          condition: << parameters.skip_unit_tests >>
-          steps:
-            - build-test:
-                serviceName: << parameters.serviceName >>
-                environment: << parameters.environment >>
+      - build-test:
+          serviceName: << parameters.serviceName >>
+          environment: << parameters.environment >>
+          skipUnitTests: << parameters.skipUnitTests >>
       - save_cache:
           paths:
             - .gradle
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - unless:
-          condition: << parameters.skip_unit_tests >>
+          condition: << parameters.skipUnitTests >>
           steps:
             - save-test-result:
                 serviceName: << parameters.serviceName >>
