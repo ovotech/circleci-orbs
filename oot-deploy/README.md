@@ -42,6 +42,7 @@ What does the orb do?
     - `{{AWS_ACCOUNT_ID}}` will be swapped for the value of the `account` parameter.
     - `{{ENVIRONMENT}}` will be swapped for the value of `environment` parameter.
     - `{{IMAGE_TAG}}` will be swapped for the core CircleCI environment variable `${CIRCLE_SHA1}`
+    - The sed expression (if any) given by the `extra-interpolation` parameter like so: `sed -i <extra-interpolation> manifest.yaml`
 4. Copies the argo application manifest template `./templates/argo-applications/manifest.yaml` to the argo application manifest `./<environment>/argo-applications/<service>.yaml`
 5. Interpolates placeholders within the argo application manifest as:
     - `{{ENVIRONMENT}}` will be swapped for the value of `environment` parameter.
@@ -63,7 +64,7 @@ Example
 
 ```yaml
 orbs:
-  oot-deploy: ovotech/oot-deploy@2.0.0
+  oot-deploy: ovotech/oot-deploy@2.2.0
 
 jobs:
   update-gitops-nonprod:
@@ -73,6 +74,7 @@ jobs:
           service: my-service
           environment: nonprod
           account: "1234567890"
+          extra-interpolation: "s/{{MY_PLACEHOLDER}}/value1/g;s/{{MY_OTHER_PLACEHOLDER}}/value2/g"
           gitops-repo: git@github.com:ovotech/my-gitops.git
           gitops-ssh-key-fingerprint: "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
           gitops-username: my-bot
