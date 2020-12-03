@@ -86,6 +86,9 @@ commands:
     parameters:
       serviceName:
         type: string
+      gradleParams:
+        type: string
+        default: ""
       <<: *environment
     steps:
       - run:
@@ -245,9 +248,9 @@ jobs:
       publish:
         type: boolean
         default: false
-      run_integration_tests:
+      skip_unit_tests:
         type: boolean
-        default: true
+        default: false
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -255,23 +258,36 @@ jobs:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
-      - build-test:
-          serviceName: << parameters.serviceName >>
-          environment: << parameters.environment >>
+      - when:
+          condition: << parameters.skip_unit_tests >>
+          steps:
+            - build-test:
+                serviceName: << parameters.serviceName >>
+                environment: << parameters.environment >>
+                gradleParams: "-x test"
+      - unless:
+          condition: << parameters.skip_unit_tests >>
+          steps:
+            - build-test:
+                serviceName: << parameters.serviceName >>
+                environment: << parameters.environment >>
       - save_cache:
           paths:
             - .gradle
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
-      - save-test-result:
-          serviceName: << parameters.serviceName >>
-          save_libs: false
-      - store_test_results:
-          path: ~/test-results
-      - store_artifacts:
-          path: ~/test-results/junit
-      - store_artifacts:
-          path: ~/reports/jacoco
+      - unless:
+          condition: << parameters.skip_unit_tests >>
+          steps:
+            - save-test-result:
+                serviceName: << parameters.serviceName >>
+                save_libs: false
+            - store_test_results:
+                path: ~/test-results
+            - store_artifacts:
+                path: ~/test-results/junit
+            - store_artifacts:
+                path: ~/reports/jacoco
       - when:
           condition: << parameters.publish >>
           steps:
