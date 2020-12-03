@@ -58,7 +58,7 @@ This job performs a few steps
 * serviceName: Which service within the repo are you wanting to build
 * environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 * publish: Indicates whether you want to upload the resulting Docker image to AWS ECR
-* save_libs: Used for code coverage to indicate whether you want to save the libs coverage report
+* skipUnitTests: If set to true, will run gradle with `-x test`. Default is false.
 
 ### lib-build-and-test
 
