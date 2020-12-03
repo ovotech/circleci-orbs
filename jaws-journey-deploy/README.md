@@ -58,7 +58,7 @@ This job performs a few steps
 * serviceName: Which service within the repo are you wanting to build
 * environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 * publish: Indicates whether you want to upload the resulting Docker image to AWS ECR
-* skipUnitTests: If set to true, will run gradle with `-x test`. Default is false.
+* skipUnitTests: If set to true, will run gradle with `-x test`
 
 ### lib-build-and-test
 
@@ -319,6 +319,67 @@ workflows:
           requires:
             - build-and-test-sandbox
             - build-and-test-lib
+  
+  e2e-test:
+      jobs:
+        - hold-e2e-tests:
+            type: approval
+  
+        - deploy-orb/checkout-code:
+            <<: *e2e-test-job
+            name: checkout-code-e2e-tests
+            requires:
+              - hold-e2e-tests
+  
+        - deploy-orb/build-and-test:
+            <<: *e2e-test-job
+            name: << matrix.serviceName >>-build-and-publish
+            matrix:
+              alias:
+                build-and-publish-e2e-test
+              <<: *all-services-matrix
+            environment: test
+            serviceName: << matrix.serviceName >>
+            publish: true
+            skipUnitTests: true
+            requires:
+              - checkout-code-e2e-tests
+              - tf-apply--test
+  
+        - deploy-orb/avro:
+            <<: *e2e-test-job
+            name: avro-cd-test
+            environment: test
+            uploadschema: true
+            requires:
+              - checkout-code-e2e-tests
+              - tf-apply--test
+  
+        - deploy-orb/tf-apply:
+            <<: *e2e-test-job
+            name: tf-apply-<< matrix.path >>-test
+            matrix:
+              parameters:
+                path:
+                  - ''
+                environment:
+                  - test
+            requires:
+              - checkout-code-e2e-tests
+  
+        - deploy-orb/tf-apply:
+            <<: *e2e-test-job
+            name: tf-apply-<< matrix.path >>-<< matrix.environment >>
+            matrix:
+              parameters:
+                path:
+                  - kubernetes
+                environment:
+                  - test
+            requires:
+              - avro-cd-test
+              - build-and-publish-e2e-test
+              - tf-apply--test
 
   cd:
     jobs:
