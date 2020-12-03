@@ -88,7 +88,7 @@ commands:
         type: string
       gradleParams:
         type: string
-        default: ""
+        default:
       <<: *environment
     steps:
       - run:
