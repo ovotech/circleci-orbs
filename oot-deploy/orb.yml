@@ -23,6 +23,10 @@ commands:
         description: "Environment string used for substitution in the manifest and matching the appropriate path in the gitops repo."
         type: string
         default: ${ENVIRONMENT}
+      extra-interpolation:
+        description: "Extra interpolations to do in the manifest expressed as a semi-colon-delimited sed expression. E.g. s/{{MY_PLACEHOLDER}}/12345678/g;s/{{ANOTHER}}/test/g"
+        type: string
+        default: ""
       gitops-repo:
         description: "git URL to the gitops github repo."
         type: string
@@ -60,6 +64,7 @@ commands:
             sed -i "s/{{AWS_ACCOUNT_ID}}/<< parameters.account >>/g" manifest.yaml
             sed -i "s/{{IMAGE_TAG}}/<< parameters.image-tag >>/g" manifest.yaml
             sed -i "s/{{ENVIRONMENT}}/<< parameters.environment >>/g" manifest.yaml
+            sed -i '<< parameters.extra-interpolation >>' manifest.yaml
 
       - run:
           name: Prepare argo application manifest
