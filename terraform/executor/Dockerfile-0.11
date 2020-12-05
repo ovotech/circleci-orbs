@@ -113,4 +113,6 @@ COPY --from=tfmask /go/tfmask/release/tfmask /usr/local/bin/tfmask
 ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"
 ENV TFENV="0.11"
 
+COPY compact_plan.py /usr/local/bin/compact_plan
+
 ENTRYPOINT ["/usr/local/bin/terraform"]
