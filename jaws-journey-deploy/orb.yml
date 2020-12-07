@@ -211,6 +211,8 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
+      - slack/notify:
+          <<: *slack-notification
 
   lib-build-and-test:
     parameters:
@@ -311,9 +313,8 @@ jobs:
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
       - slack/notify:
-          event: fail
-          mentions: '@jaws_support'
-          template: basic_fail_1
+          <<: *slack-notification
+
       - persist_to_workspace:
           root: .
           paths:
@@ -346,6 +347,9 @@ jobs:
             - store_test_results:
                 path: << parameters.serviceName >>/build/test-results/integrationTest
 
+      - slack/notify:
+          <<: *slack-notification
+
   snyk-scan:
     executor: kotlin
     working_directory: ~/working
@@ -356,6 +360,8 @@ jobs:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
+      - slack/notify:
+          <<: *slack-notification
 
   notify-shipit:
     executor: shipit/default
@@ -383,6 +389,8 @@ jobs:
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
+      - slack/notify:
+          <<: *slack-notification
 
   tf-apply:
     working_directory: ~/working
@@ -406,6 +414,8 @@ jobs:
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
+      - slack/notify:
+          <<: *slack-notification
 
   run-automation-test:
     parameters:
@@ -423,7 +433,8 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
-
+      - slack/notify:
+          <<: *slack-notification
   report-code-coverage:
     executor: python
     working_directory: ~/working
@@ -433,3 +444,5 @@ jobs:
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
+      - slack/notify:
+          <<: *slack-notification
