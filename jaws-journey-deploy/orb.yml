@@ -309,7 +309,7 @@ jobs:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
-      <<: *slack-notification
+    <<: *slack-notification
       - persist_to_workspace:
           root: .
           paths:
