@@ -7,6 +7,7 @@ orbs:
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
+  slack: circleci/slack@4.1.3
 
 executors:
   kotlin:
@@ -178,6 +179,16 @@ commands:
           command: |
             include code_coverage.sh
 
+
+  notify-slack:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          event: fail
+          mentions: '@jaws_support'
+          template: basic_fail_1
+
 jobs:
   checkout-code:
     executor: kotlin
@@ -234,6 +245,7 @@ jobs:
           path: ~/test-results/junit
       - store_artifacts:
           path: ./reports/jacoco
+      - notify-slack
       - persist_to_workspace:
           root: .
           paths:
@@ -301,6 +313,7 @@ jobs:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
+      - notify-slack
       - persist_to_workspace:
           root: .
           paths:
