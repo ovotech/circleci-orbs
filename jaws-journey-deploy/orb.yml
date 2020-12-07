@@ -36,6 +36,9 @@ aliases:
   tf-common: &tf-common
     executor: terraform/terraform-0_12
     parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
       path:
         type: string
         default: ""
@@ -199,6 +202,9 @@ jobs:
     executor: kotlin
     working_directory: ~/working
     parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
       uploadschema:
         type: boolean
         default: false
@@ -211,11 +217,17 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   lib-build-and-test:
     parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
       lib:
         description: lib to be built
         type: string
@@ -242,8 +254,11 @@ jobs:
           path: ~/test-results/junit
       - store_artifacts:
           path: ./reports/jacoco
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
       - persist_to_workspace:
           root: .
@@ -256,6 +271,9 @@ jobs:
     parameters:
       <<: *serviceName
       <<: *environment
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
       publish:
         type: boolean
         default: false
@@ -312,8 +330,11 @@ jobs:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
       - persist_to_workspace:
           root: .
@@ -323,6 +344,9 @@ jobs:
 
   integration-test:
     parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
       <<: *serviceName
       <<: *environment
       run_integration_tests:
@@ -347,10 +371,17 @@ jobs:
             - store_test_results:
                 path: << parameters.serviceName >>/build/test-results/integrationTest
 
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   snyk-scan:
+    parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -360,8 +391,11 @@ jobs:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   notify-shipit:
     executor: shipit/default
@@ -389,8 +423,11 @@ jobs:
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   tf-apply:
     working_directory: ~/working
@@ -414,11 +451,17 @@ jobs:
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   run-automation-test:
     parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
       <<: *environment
     executor: kotlin
     working_directory: ~/working
@@ -433,9 +476,16 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
   report-code-coverage:
+    parameters:
+      send_slack_notification_on_fail:
+        type: boolean
+        default: true
     executor: python
     working_directory: ~/working
     steps:
@@ -444,5 +494,8 @@ jobs:
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
-      - slack/notify:
-          <<: *slack-notification
+      - when:
+          condition: << parameters.send_slack_notification_on_fail >>
+          steps:
+            - slack/notify:
+                <<: *slack-notification
