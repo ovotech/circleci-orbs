@@ -236,7 +236,10 @@ jobs:
           path: ~/test-results/junit
       - store_artifacts:
           path: ./reports/jacoco
-      - notify-slack
+      - slack/notify:
+          event: fail
+          mentions: '@jaws_support'
+          template: basic_fail_1
       - persist_to_workspace:
           root: .
           paths:
