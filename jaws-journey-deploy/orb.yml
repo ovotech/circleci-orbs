@@ -179,16 +179,6 @@ commands:
           command: |
             include code_coverage.sh
 
-
-  notify-slack:
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
-      - slack/notify:
-          event: fail
-          mentions: '@jaws_support'
-          template: basic_fail_1
-
 jobs:
   checkout-code:
     executor: kotlin
@@ -199,6 +189,15 @@ jobs:
           root: .
           paths:
             - .
+
+  notify-slack:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          event: fail
+          mentions: '@jaws_support'
+          template: basic_fail_1
 
   avro:
     executor: kotlin
