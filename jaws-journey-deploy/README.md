@@ -18,6 +18,8 @@ Available Jobs
 * [notify-shipit](#notify-shipit)
 * [run-automation-test](#run-automation-test)
 
+All the available jobs apart from checkout-code will notify of failure via a slack message.  For more info go to [slack-notification](#slack-notification) section
+
 ### checkout-code
 
 **Description**
@@ -32,10 +34,9 @@ Does not require any parameters to be provided
 
 **Description**
 
-This job performs two steps for the journey code bases.  
+This job performs three steps for the journey code bases.  
  1. Firstly it checks whether the version of the schema that the code would produce is compatible with the version of the schema currently in Aiven, 
  2. Uploads the schema to Aiven's schema registry. This feature is optional and can be switched off with `uploadschema` parameter
-
 **Note** If you are not uploading the schema then the compatibility check will handle instances of the schema not being found in the schema registry.  This is to allow for testing without having to commit the schema 
 
 **Parameters**
@@ -64,8 +65,7 @@ This job performs a few steps
 
 **Description**
 
-This job will build the provided lib project, the reason for this step is to allow Code Coverage to report on tests within libs
-
+This job will build the provided lib project, the reason for this step is to allow Code Coverage to report on tests within libs.  It runs exactly the same steps as [build-and-test](#build-and-test)
 **Parameters**
 * lib: The name of the lib project to be built
 
@@ -106,7 +106,7 @@ Does not require any parameters passed through.
 ### tf-plan
 **Description**
 
-This step performs a linting step to make sure the terraform styling is standardised, and then runs a terraform plan - based on the files provided in the path parameter.
+This step performs a linting step to make sure the terraform styling is in a standardised format, and then runs a terraform plan - based on the files provided in the path parameter.
 
 **Parameters**
 * attach_workspace: Boolean field to indicate whether you want to attach to the workspace 'working'.  This is defaulted to false, and is only used for the template build.
@@ -157,6 +157,14 @@ This step generates a code coverage report and adds to your GitHub PR as comment
 **Parameters**
 
 Does not require any parameters to be passed.  It does however need the following environment variables to be set `GITHUB_BOT_USERNAME` and `GITHUB_BOT_PACKAGE_MANAGER_TOKEN`
+
+### Slack Notification
+**Description**
+This step will send a slack notification when a build step fails.  This is to increase visibility of failures to the development team.
+
+To run the slack notification we implemented the steps in the [developers setup guide](https://github.com/CircleCI-Public/slack-orb/wiki/Setup#4-create-a-context-on-circleci).  For CircleCi you just need to make sure you are passing the following environment variables
+- SLACK_ACCESS_TOKEN
+- SLACK_DEFAULT_CHANNEL - to get the channel Id it is easier to open slack in a web browser as you can see the channel Id in the url  
 
 ## Example Usage
 ```yaml
