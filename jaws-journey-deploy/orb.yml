@@ -50,6 +50,10 @@ aliases:
     var_file: << parameters.environment >>.tfvars
     label: << parameters.environment >>
 
+  slack-notification: &slack-notification
+    event: fail
+    mentions: '@jaws_support'
+    template: basic_fail_1
 
 commands:
   avro:
@@ -237,9 +241,8 @@ jobs:
       - store_artifacts:
           path: ./reports/jacoco
       - slack/notify:
-          event: fail
-          mentions: '@jaws_support'
-          template: basic_fail_1
+          <<: *slack-notification
+
       - persist_to_workspace:
           root: .
           paths:
