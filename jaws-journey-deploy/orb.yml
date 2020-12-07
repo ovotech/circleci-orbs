@@ -50,6 +50,12 @@ aliases:
     var_file: << parameters.environment >>.tfvars
     label: << parameters.environment >>
 
+  slack-notification: &slack-notification
+    - slack/notify:
+        event: fail
+        mentions: '@jaws_support'
+        template: basic_fail_1
+
 commands:
   avro:
     description: "Run commands for Avro check"
@@ -190,15 +196,6 @@ jobs:
           paths:
             - .
 
-  notify-slack:
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
-      - slack/notify:
-          event: fail
-          mentions: '@jaws_support'
-          template: basic_fail_1
-
   avro:
     executor: kotlin
     working_directory: ~/working
@@ -312,7 +309,7 @@ jobs:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
-      - notify-slack
+      <<: *slack-notification
       - persist_to_workspace:
           root: .
           paths:
