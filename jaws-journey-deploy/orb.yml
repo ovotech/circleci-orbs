@@ -247,7 +247,8 @@ jobs:
       - store_artifacts:
           path: ./reports/jacoco
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -320,7 +321,8 @@ jobs:
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -358,7 +360,8 @@ jobs:
                 path: << parameters.serviceName >>/build/test-results/integrationTest
 
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -374,7 +377,8 @@ jobs:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -406,7 +410,8 @@ jobs:
           path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -434,7 +439,8 @@ jobs:
           auto_approve: true
           <<: *tf-parameters
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -456,7 +462,8 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -470,7 +477,8 @@ jobs:
       - store_artifacts:
           path: ./reports/jacoco
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
           steps:
             - slack/notify:
                 <<: *slack-notification
