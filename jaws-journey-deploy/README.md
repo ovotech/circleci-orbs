@@ -175,6 +175,9 @@ To run the slack notification we implemented the steps in the [developers setup 
 - SLACK_ACCESS_TOKEN
 - SLACK_DEFAULT_CHANNEL - to get the channel Id it is easier to open slack in a web browser as you can see the channel Id in the url  
 
+#### Example notification
+![Notification Sample](./images/notification_sample.PNG)
+
 ## Example Usage
 ```yaml
 version: 2.1
