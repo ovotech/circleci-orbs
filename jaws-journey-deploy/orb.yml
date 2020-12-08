@@ -55,7 +55,7 @@ aliases:
 
   slack-notification: &slack-notification
     event: fail
-    mentions: '@jaws_support'
+    mentions: 'jaws-support'
     template: basic_fail_1
 
 commands:
