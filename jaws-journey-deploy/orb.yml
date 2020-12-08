@@ -212,7 +212,8 @@ jobs:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
       - when:
-          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          condition:
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
