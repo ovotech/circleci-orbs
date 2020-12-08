@@ -135,6 +135,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include save_test_results.sh
+          when: always
 
   calculate-build-version:
     description: "Run commands to calculate build version"
