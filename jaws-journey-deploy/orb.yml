@@ -36,9 +36,6 @@ aliases:
   tf-common: &tf-common
     executor: terraform/terraform-0_12
     parameters:
-      send_slack_notification_on_fail:
-        type: boolean
-        default: true
       path:
         type: string
         default: ""
@@ -215,7 +212,7 @@ jobs:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -249,7 +246,7 @@ jobs:
       - store_artifacts:
           path: ./reports/jacoco
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -322,7 +319,7 @@ jobs:
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -360,14 +357,12 @@ jobs:
                 path: << parameters.serviceName >>/build/test-results/integrationTest
 
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
 
   snyk-scan:
-    parameters:
-      <<: *environment
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -378,7 +373,7 @@ jobs:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -410,7 +405,7 @@ jobs:
           path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -438,7 +433,7 @@ jobs:
           auto_approve: true
           <<: *tf-parameters
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -460,11 +455,10 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
       - when:
-          condition: << parameters.environment >> != "sandbox"
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
           steps:
             - slack/notify:
                 <<: *slack-notification
-
   report-code-coverage:
     executor: python
     working_directory: ~/working
@@ -474,3 +468,8 @@ jobs:
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
+      - when:
+          condition: $SLACK_INTEGRATION_ENABLED == "true"
+          steps:
+            - slack/notify:
+                <<: *slack-notification
