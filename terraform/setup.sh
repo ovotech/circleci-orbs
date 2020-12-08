@@ -62,3 +62,9 @@ TFMASK=tfmask
 if ! hash $TFMASK 2>/dev/null; then
     TFMASK=cat
 fi
+
+# Detect compact_plan
+COMPACT_PLAN=compact_plan
+if ! hash $COMPACT_PLAN 2>/dev/null; then
+    COMPACT_PLAN=cat
+fi

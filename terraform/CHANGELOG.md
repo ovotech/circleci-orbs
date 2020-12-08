@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.1
+## Fixed
+- PR comment plan is empty with Terraform 0.14.0
+
 ## ovotech/terraform@1.8.0
 ## Changed
 - Updated terraform-0.13 executor to include:
