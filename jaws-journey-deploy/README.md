@@ -43,7 +43,6 @@ This job performs three steps for the journey code bases.
 
 * uploadschema: Boolean value expected, which indicates whether you want to run the upload avro step.  Default value is false
 * environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
 
 ### build-and-test
 
@@ -61,7 +60,6 @@ This job performs a few steps
 * environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
 * publish: Indicates whether you want to upload the resulting Docker image to AWS ECR
 * skipUnitTests: If set to true, will run gradle with `-x test`
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
 
 ### lib-build-and-test
 
@@ -70,8 +68,6 @@ This job performs a few steps
 This job will build the provided lib project, the reason for this step is to allow Code Coverage to report on tests within libs.  It runs exactly the same steps as [build-and-test](#build-and-test)
 **Parameters**
 * lib: The name of the lib project to be built
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
-
 
 ### integration-test
 
@@ -83,19 +79,15 @@ This job executes integration tests for the supplied service
 
 * serviceName: Which service within the repo are you wanting to build
 * environment: Indicates to the build step which properties file to run against.  Expected values are `[sandbox, nonprod, prod]`
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
 
 ### run-automation-test
 
 **Description**
 
 
-
 **Parameters**
 
 * `environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
-
 
 ### synk-scan
 
@@ -107,7 +99,6 @@ Does not require any parameters passed through.
 
 **CircleCI Environment Variables**
 * SNYK_TOKEN: API Token used to communicate with Snyk
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
 
 ### tf-plan
 **Description**
@@ -118,7 +109,7 @@ This step performs a linting step to make sure the terraform styling is in a sta
 * attach_workspace: Boolean field to indicate whether you want to attach to the workspace 'working'.  This is defaulted to false, and is only used for the template build.
 * path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
 * environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
+
 ```
 terraform
 └───kubernetes
@@ -144,8 +135,6 @@ This step performs a linting step to make sure the terraform styling is standard
 **Parameters**
 * path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
 * environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
-
 
 ### notify-shipit
 
@@ -163,7 +152,6 @@ Does not require any parameters passed through.  However it does require that yo
 This step generates a code coverage report and adds to your GitHub PR as comments.  To generate the report, the step [build-and-test](#build-and-test) need to of already completed.
  
 **Parameters**
-* send_slack_notification_on_fail: flag to indicate whether to send a slack notification when build fails (default true)
 
 Does not require any parameters to be passed.  It does however need the following environment variables to be set `GITHUB_BOT_USERNAME` and `GITHUB_BOT_PACKAGE_MANAGER_TOKEN`
 
@@ -171,9 +159,12 @@ Does not require any parameters to be passed.  It does however need the followin
 **Description**
 This step will send a slack notification when a build step fails.  This is to increase visibility of failures to the development team.
 
+These are configured in CircleCI contexts - described below.
+
 To run the slack notification we implemented the steps in the [developers setup guide](https://github.com/CircleCI-Public/slack-orb/wiki/Setup#4-create-a-context-on-circleci).  For CircleCi you just need to make sure you are passing the following environment variables
 - SLACK_ACCESS_TOKEN
 - SLACK_DEFAULT_CHANNEL - to get the channel Id it is easier to open slack in a web browser as you can see the channel Id in the url  
+- SLACK_INTEGRATION_ENABLED - toggle whether to run slack notification steps (true/false)
 
 #### Example notification
 ![Notification Sample](./images/notification_sample.PNG)
