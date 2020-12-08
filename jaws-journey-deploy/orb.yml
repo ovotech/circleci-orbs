@@ -7,6 +7,7 @@ orbs:
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
+  slack: circleci/slack@4.1.3
 
 executors:
   kotlin:
@@ -48,6 +49,11 @@ aliases:
     backend_config_file: env/<< parameters.environment >>.tf
     var_file: << parameters.environment >>.tfvars
     label: << parameters.environment >>
+
+  slack-notification: &slack-notification
+    event: fail
+    mentions: '@jaws-support'
+    template: basic_fail_1
 
 commands:
   avro:
@@ -129,6 +135,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include save_test_results.sh
+          when: always
 
   calculate-build-version:
     description: "Run commands to calculate build version"
@@ -205,6 +212,12 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
+      - when:
+          condition:
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   lib-build-and-test:
     parameters:
@@ -234,6 +247,13 @@ jobs:
           path: ~/test-results/junit
       - store_artifacts:
           path: ./reports/jacoco
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
       - persist_to_workspace:
           root: .
           paths:
@@ -301,6 +321,13 @@ jobs:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
       - persist_to_workspace:
           root: .
           paths:
@@ -333,6 +360,13 @@ jobs:
             - store_test_results:
                 path: << parameters.serviceName >>/build/test-results/integrationTest
 
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
   snyk-scan:
     executor: kotlin
     working_directory: ~/working
@@ -343,6 +377,12 @@ jobs:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   notify-shipit:
     executor: shipit/default
@@ -370,6 +410,12 @@ jobs:
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
       - terraform/plan: *tf-parameters
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   tf-apply:
     working_directory: ~/working
@@ -393,6 +439,12 @@ jobs:
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   run-automation-test:
     parameters:
@@ -410,7 +462,12 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
-
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
   report-code-coverage:
     executor: python
     working_directory: ~/working
@@ -420,3 +477,9 @@ jobs:
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
