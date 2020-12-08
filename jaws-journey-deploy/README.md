@@ -18,7 +18,7 @@ Available Jobs
 * [notify-shipit](#notify-shipit)
 * [run-automation-test](#run-automation-test)
 
-All the available jobs apart from checkout-code will notify of failure via a slack message.  For more info go to [slack-notification](#slack-notification) section
+All the available jobs apart from checkout-code will notify of failure via a slack message.  For more info go to [slack-notification](#slack-notification) section.
 
 ### checkout-code
 
@@ -34,9 +34,10 @@ Does not require any parameters to be provided
 
 **Description**
 
-This job performs three steps for the journey code bases.  
+This job performs two steps for the journey code bases.  
  1. Firstly it checks whether the version of the schema that the code would produce is compatible with the version of the schema currently in Aiven, 
  2. Uploads the schema to Aiven's schema registry. This feature is optional and can be switched off with `uploadschema` parameter
+
 **Note** If you are not uploading the schema then the compatibility check will handle instances of the schema not being found in the schema registry.  This is to allow for testing without having to commit the schema 
 
 **Parameters**
