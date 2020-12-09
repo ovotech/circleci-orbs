@@ -5,11 +5,6 @@ aliases:
   # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
   - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
 
-.gcloud_auth_nonprod: &gcloud_auth_nonprod
-  gcloud-service-key: <<parameters.nonprod-gcloud-service-key>>
-  project-id: <<parameters.nonprod-project-id>>
-  google-compute-zone: <<parameters.google-compute-zone>>
-
 .gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
   project-id: <<parameters.uat-project-id>>
@@ -396,14 +391,6 @@ jobs:
         description: "The GCR registry URL. Defaults to eu.gcr.io"
         default: eu.gcr.io
         type: string
-      nonprod-gcloud-service-key:
-        description: "Name of environment variable storing the full service key JSON file for the NONPROD Google project"
-        type: env_var_name
-        default: NONPROD_GCLOUD_ACCOUNT_AUTH
-      nonprod-project-id:
-        description: "The NONPROD Google project ID to connect with via the gcloud CLI"
-        type: env_var_name
-        default: NONPROD_PROJECT_ID
       uat-gcloud-service-key:
         description: "Name of environment variable storing the full service key JSON file for the UAT Google project"
         type: env_var_name
@@ -448,18 +435,9 @@ jobs:
       - run:
           name: "Release"
           command: sbt "release with-defaults"
-      - gcloud_auth: *gcloud_auth_nonprod
-      - run:
-          name: "Configure Docker to use gcloud as a credential helper"
-          command: |
-            mkdir -p "$HOME/.docker"
-            gcloud auth configure-docker --quiet --project $<<parameters.nonprod-project-id>>
-      - run:
-          name: "Tag and push container to GCR NONPROD"
-          command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
-            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${NONPROD_IMAGE_ROOT}:$(cat version.txt)"
-            docker push "${NONPROD_IMAGE_ROOT}"
+      - run: |
+          # sbt unconditionally builds image tagges as nonprod
+          echo "export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>" >> "$BASH_ENV"
       - gcloud_auth: *gcloud_auth_uat
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
@@ -469,7 +447,6 @@ jobs:
       - run:
           name: "Tag and push container to GCR UAT"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
@@ -483,7 +460,6 @@ jobs:
       - run:
           name: "Tag and push container to GCR PRD"
           command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
             PRD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.prd-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${PRD_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
@@ -491,65 +467,6 @@ jobs:
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
-
-  uat-deploy:
-    parameters:
-      executor:
-        description: "Name of executor to use for this job. Defaults to docker executor"
-        type: executor
-        default: docker
-      workspace-dir:
-        description: "Path to restore the workspace"
-        type: string
-        default: ~/project
-      google-compute-zone:
-        description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
-        type: string
-        default: europe-west1-b
-      cluster-name:
-        description: "Name of the environment variable storing the Kubernetes cluster name"
-        type: env_var_name
-        default: K8S_CLUSTER_NAME
-      helm-release-name:
-        description: "Name of environment variable storing the helm release name"
-        type: env_var_name
-        default: CIRCLE_PROJECT_REPONAME
-      nonprod-gcloud-service-key:
-        description: "Name of environment variable storing the full service key JSON file for the NONPROD Google project"
-        type: env_var_name
-        default: NONPROD_GCLOUD_ACCOUNT_AUTH
-      nonprod-project-id:
-        description: "The NONPROD Google project ID to connect with via the gcloud CLI"
-        type: env_var_name
-        default: NONPROD_PROJECT_ID
-      container-name:
-        description: "Name of environment variable storing the name of the container we are publishing"
-        type: env_var_name
-        default: CIRCLE_PROJECT_REPONAME
-      registry-url:
-        description: "The GCR registry URL. Defaults to eu.gcr.io"
-        default: eu.gcr.io
-        type: string
-      cache-suffix:
-        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
-        default: ""
-        type: string
-    executor: <<parameters.executor>>
-    steps:
-      - restore_workspace:
-          to: <<parameters.workspace-dir>>
-      - load_cache:
-          cache-suffix: <<parameters.cache-suffix>>
-      - gcloud_auth: *gcloud_auth_nonprod
-      - k8s_auth:
-          cluster-name: <<parameters.cluster-name>>
-      - run:
-          name: "NONPROD Helm deploy"
-          command: |
-            NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.nonprod-project-id>>/$<<parameters.container-name>>
-            helm upgrade $<<parameters.helm-release-name>> ./helm/$CIRCLE_PROJECT_REPONAME -f ./helm/environments/nonprod.yaml --install --wait \
-              --set "image.repository=${NONPROD_IMAGE_ROOT}" \
-              --set "image.tag=$(cat version.txt)"
 
   prd-deploy:
     parameters:
