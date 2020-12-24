@@ -17,6 +17,7 @@ Available Jobs
 * [tf-apply](#tf-apply)
 * [notify-shipit](#notify-shipit)
 * [run-automation-test](#run-automation-test)
+* [create-release](#create-release)
 
 All the available jobs apart from checkout-code will notify of failure via a slack message.  For more info go to [slack-notification](#slack-notification) section.
 
@@ -166,6 +167,9 @@ To run the slack notification we implemented the steps in the [developers setup 
 - SLACK_ACCESS_TOKEN
 - SLACK_DEFAULT_CHANNEL - to get the channel Id it is easier to open slack in a web browser as you can see the channel Id in the url  
 - SLACK_INTEGRATION_ENABLED - toggle whether to run slack notification steps (true/false)
+
+### create-release
+
 
 #### Example notification
 ![Notification Sample](./images/notification_sample.PNG)
