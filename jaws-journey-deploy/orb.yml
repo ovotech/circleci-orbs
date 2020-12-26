@@ -193,7 +193,7 @@ commands:
     steps:
       - run:
           command: |
-            npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' 'feat/auto_release_tag' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+            npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
           name: Run semantic versioning
 
 jobs:
