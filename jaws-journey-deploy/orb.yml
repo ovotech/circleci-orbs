@@ -190,16 +190,11 @@ commands:
 
   create-release:
     description: "Create release and changelog"
-    parameters:
-      githubToken:
-        type: string
     steps:
       - run:
           command: |
-            npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+            npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
           name: Run semantic versioning
-          environment:
-            GH_TOKEN: << parameters.githubToken >>
 
 jobs:
   checkout-code:
@@ -409,14 +404,10 @@ jobs:
   create-release:
     executor: node
     working_directory: ~/working
-    parameters:
-      githubToken:
-        type: string
     steps:
       - attach_workspace:
           at: ~/working
-      - create-release:
-          githubToken: << parameters.githubToken >>
+      - create-release
 
   tf-plan:
     working_directory: ~/working
