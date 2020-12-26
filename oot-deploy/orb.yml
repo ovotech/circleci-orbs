@@ -87,8 +87,12 @@ commands:
             git config user.email "<< parameters.gitops-email >>"
             git config user.name "<< parameters.gitops-username >>"
             git add --all
-            git commit -m "Bumped << parameters.service >> in << parameters.environment >> to << parameters.image-tag >>"
-            git push origin master
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "No changes detected."
+            else
+              git commit -m "Bumped << parameters.service >> in << parameters.environment >> to << parameters.image-tag >>"
+              git push origin master
+            fi
 
 jobs:
   shipit:
