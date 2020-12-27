@@ -169,7 +169,12 @@ To run the slack notification we implemented the steps in the [developers setup 
 - SLACK_INTEGRATION_ENABLED - toggle whether to run slack notification steps (true/false)
 
 ### create-release
-
+**Description**
+This step implements [semantic release](https://semantic-release.gitbook.io/semantic-release/) to automatically create the following
+* Github Release tag
+* Release notes
+* ChangeLog
+To automatically create these you need to follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 #### Example notification
 ![Notification Sample](./images/notification_sample.PNG)
@@ -488,6 +493,8 @@ workflows:
           <<: *nonprod-job
           name: tf-apply-<< matrix.path >>-<< matrix.environment >>
           matrix:
+            alias:
+              kubernetes-deployment-nonprod
             parameters:
               path:
                 - kubernetes
@@ -497,6 +504,12 @@ workflows:
             - avro-cd-nonprod
             - build-and-test-publish-nonprod
             - tf-apply-main-nonprod
+
+    - deploy-orb/create-release:
+          <<: *nonprod-job
+          name: create-release
+          requires:
+            - kubernetes-deployment-nonprod
 
       - deploy-orb/tf-apply:
           <<: *prod-job
