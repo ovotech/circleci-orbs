@@ -16,6 +16,9 @@ executors:
   python:
     docker:
       - image: circleci/python:3.8
+  node:
+    docker:
+      - image: circleci/node:14.15.3
 
 aliases:
   parameters:
@@ -184,6 +187,14 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include code_coverage.sh
+
+  create-release:
+    description: "Create release and changelog"
+    steps:
+      - run:
+          command: |
+            npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+          name: Run semantic versioning
 
 jobs:
   checkout-code:
@@ -390,6 +401,14 @@ jobs:
       - shipit/shipit:
           team-name: Smart Journeys
 
+  create-release:
+    executor: node
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - create-release
+
   tf-plan:
     working_directory: ~/working
     <<: *tf-common
@@ -468,6 +487,7 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
+
   report-code-coverage:
     executor: python
     working_directory: ~/working
