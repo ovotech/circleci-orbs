@@ -503,3 +503,46 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
+
+  install-npm-dependencies:
+    executor: node
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - run:
+          name: Install node packages
+          command: npm i --ci
+      - save_cache:
+          paths:
+            - node_modules
+          key: npm-build-dependencies-cache-({checksum "package-lock.json"})
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+  bundle-swagger-doc:
+    executor: node
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - restore_cache:
+          keys:
+            - npm-build-dependencies-cache-({checksum "package-lock.json"})
+      - run:
+          name: Build docs
+          command: npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docs/*
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
