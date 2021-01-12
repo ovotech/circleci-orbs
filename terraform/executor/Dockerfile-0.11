@@ -70,7 +70,7 @@ RUN mkdir -p /root/aiven \
 RUN curl -fsL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | tar -xzvf- \
  && mv linux-amd64/helm /usr/local/bin/helm \
  && rm -rf helm*.tar.gz linux-amd64/ \
- && helm init --client-only
+ && helm init --stable-repo-url=https://charts.helm.sh/stable --client-only
 ENV HELM_HOME /root/.helm
 
 # This is extremely slow for some reason

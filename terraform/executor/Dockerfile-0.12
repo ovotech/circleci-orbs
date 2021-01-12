@@ -74,7 +74,7 @@ RUN curl -fsL "https://get.helm.sh/helm-v${HELM2_VERSION}-linux-amd64.tar.gz" | 
  && mv linux-amd64/helm /usr/local/bin/helm2 \
  && rm -rf helm*.tar.gz linux-amd64/ \
  && ln -s /usr/local/bin/helm2 /usr/local/bin/helm \
- && helm init --client-only
+ && helm init --stable-repo-url=https://charts.helm.sh/stable --client-only
 ENV HELM_HOME /root/.helm
 
 # helm 3
