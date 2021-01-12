@@ -18,6 +18,8 @@ Available Jobs
 * [notify-shipit](#notify-shipit)
 * [run-automation-test](#run-automation-test)
 * [create-release](#create-release)
+* [install-npm-dependencies](#install-npm-dependencies)
+* [bundle-swagger-doc](#bundle-swagger-doc)
 
 All the available jobs apart from checkout-code will notify of failure via a slack message.  For more info go to [slack-notification](#slack-notification) section.
 
@@ -175,6 +177,16 @@ This step implements [semantic release](https://semantic-release.gitbook.io/sema
 * Release notes
 * ChangeLog
 To automatically create these you need to follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
+
+### install-npm-dependencies
+**Description**
+
+Installs node packages and stores the node_modules in the cache under npm-build-dependencies-cache-({checksum "package-lock.json"}) key.
+
+### bundle-swagger-doc
+**Description**
+
+Restores the node_modules from the cache and runs build to store the generated docs.
 
 #### Example notification
 ![Notification Sample](./images/notification_sample.PNG)

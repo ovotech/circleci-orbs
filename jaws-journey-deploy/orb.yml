@@ -517,6 +517,12 @@ jobs:
           paths:
             - node_modules
           key: npm-build-dependencies-cache-({checksum "package-lock.json"})
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   bundle-swagger-doc:
     executor: node
@@ -534,3 +540,9 @@ jobs:
           root: .
           paths:
             - docs/*
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
