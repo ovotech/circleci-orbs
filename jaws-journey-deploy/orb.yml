@@ -118,7 +118,8 @@ commands:
         type: boolean
       command:
         description: indicate whether to build or publish
-        type: string
+        type: "enum"
+        enum: [ build, publish ]
       <<: *environment
     steps:
       - run:
@@ -256,7 +257,8 @@ jobs:
         default: true
       command:
         description: indicate whether to build or publish
-        type: string
+        type: "enum"
+        enum: [ build, publish ]
         default: build
     machine:
       docker_layer_caching: false
