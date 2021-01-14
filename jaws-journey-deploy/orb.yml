@@ -245,6 +245,8 @@ jobs:
     executor: kotlin
     working_directory: ~/working
     steps:
+      - openjdk-install/openjdk:
+          version: 11
       - attach_workspace:
           at: ~/working
       - restore_cache:
