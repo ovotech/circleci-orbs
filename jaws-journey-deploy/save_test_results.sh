@@ -14,7 +14,8 @@ else
   REPORT_FOLDER="$SERVICE_NAME/build/jacoco-reports/test"
 fi
 
-if [ -x "$REPORT_FOLDER"/jacocoTestReport.csv ]; then
+
+if [ -e "$REPORT_FOLDER"/jacocoTestReport.csv ]; then
   mv "$REPORT_FOLDER"/jacocoTestReport.csv ./reports/jacoco/"$SERVICE_NAME".csv
   mv "$REPORT_FOLDER"/* ./reports/jacoco/"$SERVICE_NAME"
 else
