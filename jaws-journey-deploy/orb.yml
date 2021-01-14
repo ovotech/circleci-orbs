@@ -264,8 +264,7 @@ jobs:
       docker_layer_caching: false
     working_directory: ~/working
     steps:
-      - openjdk-install/openjdk:
-          version: 11
+      - install-adoptopenjdk
       - attach_workspace:
           at: ~/working
       - restore_cache:
