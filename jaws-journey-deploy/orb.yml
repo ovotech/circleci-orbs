@@ -191,6 +191,15 @@ commands:
           command: |
             include code_coverage.sh
 
+  install-adoptopenjdk:
+    description: "Install adoptopenjdk"
+    steps:
+      - run:
+          name: "Install adoptopenjdk"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include install_adoptopenjdk.sh
+
   create-release:
     description: "Create release and changelog"
     steps:
@@ -246,8 +255,7 @@ jobs:
       docker_layer_caching: true
     working_directory: ~/working
     steps:
-      - openjdk-install/openjdk:
-          version: 11
+      - install-adoptopenjdk
       - attach_workspace:
           at: ~/working
       - restore_cache:
