@@ -72,6 +72,8 @@ This job performs a few steps
 This job will build the provided lib project, the reason for this step is to allow Code Coverage to report on tests within libs.  It runs exactly the same steps as [build-and-test](#build-and-test)
 **Parameters**
 * lib: The name of the lib project to be built
+* contains_integration_tests: flag indicating whether the lib contains a gradle integration test task (defaulted to true)
+* command: determine whether you want to run gradle build or publish commands (default is build)
 
 ### integration-test
 

@@ -1,1 +1,0 @@
-./gradlew :libs:"<< parameters.lib >>":clean :libs:"<< parameters.lib >>":buildNeeded  -Pprofile=${PROFILE} -x integrationTest --full-stacktrace

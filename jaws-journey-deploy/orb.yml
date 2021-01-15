@@ -3,7 +3,7 @@ description: "Defines the core steps required for a smart journey deployment pip
 
 orbs:
   aws-ecr: circleci/aws-ecr@6.3.0
-  terraform: ovotech/terraform@1.6
+  terraform: ovotech/terraform@1.8.2
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
@@ -71,9 +71,9 @@ commands:
           name: "Run  Avro check commands"
           shell: /bin/bash -eo pipefail
           command: |
-            include set_profile.sh
-            include make_gradle_executable.sh
-            include avro.sh
+            include ./scripts/set_profile.sh
+            include ./scripts/make_gradle_executable.sh
+            include ./scripts/avro.sh
 
   integration-test:
     description: "Run integration tests"
@@ -86,9 +86,9 @@ commands:
           name: "Run integration test commands"
           shell: /bin/bash -eo pipefail
           command: |
-            include set_profile.sh
-            include make_gradle_executable.sh
-            include run_integration_test.sh
+            include ./scripts/set_profile.sh
+            include ./scripts/make_gradle_executable.sh
+            include ./scripts/run_integration_test.sh
 
   build-test:
     description: "Run build and test commands"
@@ -104,24 +104,31 @@ commands:
           name: "run build and test steps"
           shell: /bin/bash -eo pipefail
           command: |
-            include set_profile.sh
-            include make_gradle_executable.sh
-            include build_project.sh
+            include ./scripts/set_profile.sh
+            include ./scripts/make_gradle_executable.sh
+            include ./scripts/build_project.sh
 
   build-test-lib:
     description: "Run build and test lib commands"
     parameters:
       lib:
         type: string
+      contains_integration_tests:
+        description: indicate whether integration tests exist
+        type: boolean
+      command:
+        description: indicate whether to build or publish
+        type: "enum"
+        enum: [ build, publish ]
       <<: *environment
     steps:
       - run:
           name: "run build and test lib steps"
           shell: /bin/bash -eo pipefail
           command: |
-            include set_profile.sh
-            include make_gradle_executable.sh
-            include build_lib.sh
+            include ./scripts/set_profile.sh
+            include ./scripts/make_gradle_executable.sh
+            include ./scripts/build_lib.sh
 
 
   save-test-result:
@@ -137,7 +144,7 @@ commands:
           name: "Save test results"
           shell: /bin/bash -eo pipefail
           command: |
-            include save_test_results.sh
+            include ./scripts/save_test_results.sh
           when: always
 
   calculate-build-version:
@@ -147,7 +154,7 @@ commands:
           name: "Calculate build version"
           shell: /bin/bash -eo pipefail
           command: |
-            include calculate_version.sh
+            include ./scripts/calculate_version.sh
 
   make-gradle-executable:
     description: "Run commands to make gradle executable"
@@ -156,7 +163,7 @@ commands:
           name: "make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
-            include make_gradle_executable.sh
+            include ./scripts/make_gradle_executable.sh
 
   run-automated-tests:
     description: "Run commands to make gradle executable"
@@ -167,8 +174,8 @@ commands:
           name: "make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
-            include set_profile.sh
-            include automated_test_run.sh
+            include ./scripts/set_profile.sh
+            include ./scripts/automated_test_run.sh
 
   save-automated-tests:
     description: "Run commands to make gradle executable"
@@ -177,7 +184,7 @@ commands:
           name: "make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
-            include automated_test_save.sh
+            include ./scripts/automated_test_save.sh
 
   report-code-coverage:
     description: "Add code coverage report"
@@ -186,7 +193,16 @@ commands:
           name: "Report code coverage"
           shell: /bin/bash -eo pipefail
           command: |
-            include code_coverage.sh
+            include ./scripts/code_coverage.sh
+
+  install-adoptopenjdk:
+    description: "Install adoptopenjdk"
+    steps:
+      - run:
+          name: "Install adoptopenjdk"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/install_adoptopenjdk.sh
 
   create-release:
     description: "Create release and changelog"
@@ -235,15 +251,28 @@ jobs:
       lib:
         description: lib to be built
         type: string
-    executor: kotlin
+      contains_integration_tests:
+        description: indicate whether integration tests exist
+        type: boolean
+        default: true
+      command:
+        description: indicate whether to build or publish
+        type: "enum"
+        enum: [ build, publish ]
+        default: build
+    machine:
+      docker_layer_caching: false
     working_directory: ~/working
     steps:
+      - install-adoptopenjdk
       - attach_workspace:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
       - build-test-lib:
           lib: << parameters.lib >>
+          contains_integration_tests: << parameters.contains_integration_tests >>
+          command: << parameters.command >>
       - save_cache:
           paths:
             - .gradle

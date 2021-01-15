@@ -14,5 +14,11 @@ else
   REPORT_FOLDER="$SERVICE_NAME/build/jacoco-reports/test"
 fi
 
-mv "$REPORT_FOLDER"/jacocoTestReport.csv ./reports/jacoco/"$SERVICE_NAME".csv
-mv "$REPORT_FOLDER"/* ./reports/jacoco/"$SERVICE_NAME"
+
+if [ -e "$REPORT_FOLDER"/jacocoTestReport.csv ]; then
+  mv "$REPORT_FOLDER"/jacocoTestReport.csv ./reports/jacoco/"$SERVICE_NAME".csv
+  mv "$REPORT_FOLDER"/* ./reports/jacoco/"$SERVICE_NAME"
+else
+   echo file does not exist or is not executable
+fi
+
