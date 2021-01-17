@@ -268,7 +268,7 @@ jobs:
       - attach_workspace:
           at: ~/working
       - restore_cache:
-          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+          key: v1-gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
       - build-test-lib:
           lib: << parameters.lib >>
           contains_integration_tests: << parameters.contains_integration_tests >>
