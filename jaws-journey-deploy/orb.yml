@@ -277,7 +277,7 @@ jobs:
           paths:
             - .gradle
             - ~/.gradle
-          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+          key: v1-gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
       - save-test-result:
           serviceName: << parameters.lib >>
           save_libs: true
