@@ -7,6 +7,9 @@ if terraform fmt -help | grep -e "-recursive" >/dev/null; then
 
     for dir in $(find "$module_path" -type d);
     do
+      # Not using chdir here as the terraform provider lock behaviour
+      # doesn't affect terraform fmt and otherwise we would need to check
+      # the terraform version is >= 0.14
       if ! terraform fmt -no-color -check -diff "$dir"; then
         EXIT_CODE=1
       fi
@@ -15,5 +18,5 @@ if terraform fmt -help | grep -e "-recursive" >/dev/null; then
     exit $EXIT_CODE
 
 else
-    terraform fmt -no-color -check -diff "$module_path"
+    terraform "$chdir" fmt -no-color -check -diff "$config_path"
 fi

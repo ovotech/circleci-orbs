@@ -1,3 +1,3 @@
 rm -rf .terraform
-terraform init -input=false -backend=false -no-color "$module_path"
+terraform "$chdir" init -input=false -backend=false -no-color "$config_path"
 terraform version -input=false -no-color

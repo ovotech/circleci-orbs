@@ -1,8 +1,8 @@
 rm -rf .terraform
-terraform init -input=false -backend=false -no-color "$module_path"
+terraform "$chdir" init -input=false -backend=false -no-color "$config_path"
 
-if terraform validate -help | grep -e "-check-variables" > /dev/null; then
-    terraform validate -no-color -check-variables=false "$module_path"
+if terraform "$chdir" validate -help | grep -e "-check-variables" > /dev/null; then
+    terraform "$chdir" validate -no-color -check-variables=false "$config_path"
 else
-    terraform validate -no-color "$module_path"
+    terraform "$chdir" validate -no-color "$config_path"
 fi
