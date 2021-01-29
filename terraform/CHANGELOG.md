@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.3
+## Changed
+- Added -chdir parameter to >=0.14 terraform for provider lock file compatibility
+
 ## ovotech/terraform@1.8.2
 ## Fixed
 - Helm 2 init failing as the stable and incubator repositories have moved to a new location
