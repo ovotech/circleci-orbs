@@ -3,7 +3,7 @@ description: "Defines the core steps required for a smart journey deployment pip
 
 orbs:
   aws-ecr: circleci/aws-ecr@6.3.0
-  terraform: ovotech/terraform@1.8.3
+  terraform: ovotech/terraform@1.8.2
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
