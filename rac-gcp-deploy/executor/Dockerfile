@@ -8,18 +8,6 @@ RUN apk --update add openjdk8 jq
 
 RUN gcloud components install kubectl
 
-ARG HELM_VERSION
-ENV HELM_VERSION ${HELM_VERSION:-2.14.1}
-ENV HELM_BASE_URL="https://get.helm.sh"
-ENV HELM_TAR_FILE="helm-v${HELM_VERSION}-linux-amd64.tar.gz"
-
-RUN apk add --update --no-cache curl ca-certificates \
-	&& curl -L ${HELM_BASE_URL}/${HELM_TAR_FILE} |tar xvz \
-	&& mv linux-amd64/helm /usr/bin/helm \
-	&& chmod +x /usr/bin/helm \
-	&& rm -rf linux-amd64 \
-	&& rm -f /var/cache/apk/*
-
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
   && ESUM="acd6a104a27d979ab25eb9b95c105d45cd31b2591a861665c7cb13ae43a284b7" \
