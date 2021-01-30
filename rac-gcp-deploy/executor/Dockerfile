@@ -2,7 +2,7 @@ ARG GCLOUD_SDK_VERSION
 FROM google/cloud-sdk:${GCLOUD_SDK_VERSION:-304.0.0-alpine}
 
 ARG SBT_VERSION
-ENV SBT_VERSION ${SBT_VERSION:-1.4.2}
+ENV SBT_VERSION ${SBT_VERSION:-1.4.7}
 
 RUN apk --update add openjdk8 jq
 
@@ -10,7 +10,7 @@ RUN gcloud components install kubectl
 
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
-  && ESUM="acd6a104a27d979ab25eb9b95c105d45cd31b2591a861665c7cb13ae43a284b7" \
+  && ESUM="c2a759fe40a3c21a16b5a88d00cd66f3af6f0721e4ea61b63942dfb83a2d54fd" \
   && SBT_URL="https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" \
   && apk add shadow \
   && apk add bash \
@@ -68,4 +68,4 @@ ENV PATH="/opt/sbt/sbt/bin:$PATH" \
     JAVA_OPTS="-XX:+UseContainerSupport -Dfile.encoding=UTF-8" \
     SBT_OPTS="-Xmx2048M -Xss2M"
 
-RUN sbt about && rm -rf project/
+RUN sbt about -v && rm -rf project/
