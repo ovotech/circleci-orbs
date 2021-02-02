@@ -5,7 +5,7 @@ not listed
 
 ## ovotech/terraform@1.8.3
 ## Changed
-- Added [-chdir] global flag (https://www.terraform.io/docs/cli/commands/index.html#switching-working-directory-with-chdir)
+- Added [-chdir global flag](https://www.terraform.io/docs/cli/commands/index.html#switching-working-directory-with-chdir)
   From terraform version >= 0.14, `-chdir` will be set to the value of `path`,
   so that the lockfile from the specified dir is picked up. Specifying config
   path at the end of the terraform command was deprecated in 0.14.
