@@ -12,15 +12,15 @@ if hash tfswitch 2>/dev/null; then
   (cd "$module_path" && echo "" | tfswitch | grep -e Switched -e Reading | sed 's/^.*Switched/Switched/')
 fi
 
-export chdir="-chdir=${module_path}"
-export config_path=""
+export chdir=""
+export config_path="${module_path}"
 # -chdir was introduced in terraform 0.14 and is necessary in 0.14 to make sure the
 # provider lock file in the terraform config directory is picked up. However, older
 # versions of terraform need the terraform config directory to be specified at the
 # end of the command
 if terraform -help | grep -e "-chdir" >/dev/null; then
-  chdir=""
-  config_path="$module_path"
+  chdir="-chdir=${module_path}"
+  config_path=""
 fi
 
 if [ -n "$TF_REGISTRY_TOKEN" ]; then
