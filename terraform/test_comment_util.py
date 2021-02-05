@@ -1,3 +1,5 @@
+import textwrap
+
 import comment_util
 import pytest
 
@@ -26,4 +28,13 @@ def test_regex_comment_match(comment_id, comment_body,
 
 def test_comment_for_pr():
     comment_for_pr = comment_util.comment_for_pr("<comment_id>", "<plan>")
-    assert comment_for_pr == "<comment_id>\n<details open>\n<summary>Plan</summary>\n\n```hcl\n<plan>\n```\n</details>\n"
+    assert comment_for_pr == textwrap.dedent("""\
+    <comment_id>
+    <details open>
+    <summary>Plan</summary>
+    
+    ```hcl
+    <plan>
+    ```
+    </details>
+    """)
