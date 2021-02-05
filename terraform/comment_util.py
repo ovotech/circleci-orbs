@@ -1,4 +1,5 @@
 import re
+import textwrap
 
 
 def re_comment_match(comment_id, comment_body):
@@ -9,4 +10,12 @@ def re_comment_match(comment_id, comment_body):
 
 def comment_for_pr(comment_id, plan):
     """Returns a formatted string containing comment_id and plan"""
-    return f'{comment_id}\n```hcl\n{plan}\n```'
+    return textwrap.dedent(f"""\
+    {comment_id}
+    <details open>
+    <summary>Plan</summary>
+    
+    ```hcl
+    {plan}
+    ```
+    </details>""")
