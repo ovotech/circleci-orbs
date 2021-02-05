@@ -18,4 +18,5 @@ def comment_for_pr(comment_id, plan):
     ```hcl
     {plan}
     ```
-    </details>""")
+    </details>
+    """)
