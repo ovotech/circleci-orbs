@@ -18,5 +18,5 @@ if terraform fmt -help | grep -e "-recursive" >/dev/null; then
     exit $EXIT_CODE
 
 else
-    terraform "$chdir" fmt -no-color -check -diff "$config_path"
+    terraform "$chdir" fmt -no-color -check -diff $config_path
 fi

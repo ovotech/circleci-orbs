@@ -9,7 +9,7 @@ EOF
 exec 3>&1
 
 set +e
-terraform "$chdir" plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS "$config_path" \
+terraform "$chdir" plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS $config_path \
     | $TFMASK \
     | tee /dev/fd/3 \
     | $COMPACT_PLAN \
