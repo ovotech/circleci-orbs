@@ -322,7 +322,6 @@ jobs:
             - << parameters.lib >>/*
             - ./reports/jacoco/*
 
-
   build-and-test:
     parameters:
       <<: *serviceName
@@ -545,6 +544,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
+      - openjdk-install/openjdk:
+      version: 11
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
@@ -554,7 +555,6 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
-
 
   topology-describe:
     executor: python
