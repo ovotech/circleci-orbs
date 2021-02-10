@@ -347,6 +347,8 @@ jobs:
             - store_artifacts:
                 path: ~/test-results/junit
             - store_artifacts:
+                path: ~/reports/diagrams
+            - store_artifacts:
                 path: ~/reports/jacoco
       - when:
           condition: << parameters.publish >>
@@ -552,7 +554,7 @@ jobs:
           at: ~/working
       - topology-describe
       - store_artifacts:
-          path: ./reports/diagrams
+          path: ./*
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
