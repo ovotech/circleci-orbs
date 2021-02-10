@@ -206,10 +206,10 @@ commands:
             include ./scripts/code_coverage.sh
 
   topology-describe:
-    description: "Add Topology Diagram"
+    description: "Upload topology diagram to GH as a comment"
     steps:
       - run:
-          name: "Add topology diagram"
+          name: "Upload topology diagram to GH as a comment"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/topology_comment.sh

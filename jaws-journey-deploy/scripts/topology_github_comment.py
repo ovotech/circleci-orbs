@@ -13,7 +13,7 @@ build_number = os.environ['CIRCLE_BUILD_NUM']
 pr_number = "/0"
 commit = os.environ['CIRCLE_SHA1']
 
-class CoverageComment:
+class TopologyLinkComment:
     def __init__(self, path, comment_header, github_repo_id):
         self._path = path
         self._github_repo_id = github_repo_id
@@ -107,5 +107,5 @@ if __name__ == '__main__':
     path = sys.argv[1]
     comment_header = "## Topology Diagram"
     github = GithubClient(comment_header)
-    comment = CoverageComment(path, comment_header, github.github_repo_id)
+    comment = TopologyLinkComment(path, comment_header, github.github_repo_id)
     github.write_comment(comment.comment)
