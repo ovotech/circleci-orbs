@@ -195,19 +195,6 @@ commands:
           command: |
             include ./scripts/code_coverage.sh
 
-  generate-topology-diagram:
-    parameters:
-      serviceName:
-        type: string
-    description: "Generate topology diagram"
-    steps:
-      - run:
-          name: "Generate Topology Diagram"
-          shell: /bin/bash -eo pipefail
-          command: |
-            include ./scripts/make_gradle_executable.sh
-            include ./scripts/generate_topology_diagram.sh
-
   topology-describe:
     description: "Add Topology Diagram"
     steps:
@@ -321,6 +308,7 @@ jobs:
           paths:
             - << parameters.lib >>/*
             - ./reports/jacoco/*
+
 
   build-and-test:
     parameters:
@@ -554,28 +542,16 @@ jobs:
             - slack/notify:
                 <<: *slack-notification
 
+
   topology-describe:
-    machine:
-      docker_layer_caching: false
+    executor: python
     working_directory: ~/working
-    parameters:
-      <<: *serviceName
     steps:
       - attach_workspace:
           at: ~/working
-      - openjdk-install/openjdk:
-          version: 11
-      - generate-topology-diagram:
-          serviceName: << parameters.serviceName >>
-      - run:
-          name: "Switch to Python v3.5.2"
-          command: |
-            pyenv versions
-            pyenv global 3.5.2
-
       - topology-describe
       - store_artifacts:
-          path: ./reports/jacoco
+          path: ~/test-results/junit
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
