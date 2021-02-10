@@ -22,6 +22,13 @@ else
    echo file does not exist or is not executable
 fi
 
-find . -type f -regex ".*/build/test-results/.*png" -exec cp {} ~/test-results/junit/ \;
+DIAGRAM_FOLDER=~/test-results/junit/
+
 mkdir -p ./reports/diagrams/
-mkdir -p ./reports/diagrams/"$SERVICE_NAME"/
+
+if [ -e "$DIAGRAM_FOLDER"/journeyCotTopologyDiagram.png ]; then
+  mv "$DIAGRAM_FOLDER"/journeyCotTopologyDiagram.png ./reports/diagrams/"$SERVICE_NAME".png
+  mv "$DIAGRAM_FOLDER"/* ./reports/diagrams/"$SERVICE_NAME"
+else
+   echo file does not exist or is not executable
+fi
