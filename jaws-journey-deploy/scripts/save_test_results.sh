@@ -21,4 +21,3 @@ if [ -e "$REPORT_FOLDER"/jacocoTestReport.csv ]; then
 else
    echo file does not exist or is not executable
 fi
-

@@ -147,6 +147,16 @@ commands:
             include ./scripts/save_test_results.sh
           when: always
 
+  persist-topology-diagram:
+    description: "Run commands to persist topology diagram"
+    steps:
+      - run:
+          name: "Save topology diagram"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/persist_topology_diagram.sh
+          when: always
+
   calculate-build-version:
     description: "Run commands to calculate build version"
     steps:
@@ -194,6 +204,15 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/code_coverage.sh
+
+  topology-describe:
+    description: "Upload topology diagram to GH as a comment"
+    steps:
+      - run:
+          name: "Upload topology diagram to GH as a comment"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/topology_comment.sh
 
   install-adoptopenjdk:
     description: "Install adoptopenjdk"
@@ -333,10 +352,14 @@ jobs:
             - save-test-result:
                 serviceName: << parameters.serviceName >>
                 save_libs: false
+            - persist-topology-diagram
             - store_test_results:
                 path: ~/test-results
             - store_artifacts:
                 path: ~/test-results/junit
+            - store_artifacts:
+                path: ~/test-results/junit
+                destination: ~/reports/diagrams
             - store_artifacts:
                 path: ~/reports/jacoco
       - when:
@@ -372,6 +395,7 @@ jobs:
           root: .
           paths:
             - << parameters.serviceName >>/*
+            - ./reports/diagrams/*
             - ./reports/jacoco/*
 
   integration-test:
@@ -526,6 +550,23 @@ jobs:
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+
+  topology-describe:
+    executor: python
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - topology-describe
+      - store_artifacts:
+          path: ./reports/diagrams
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
