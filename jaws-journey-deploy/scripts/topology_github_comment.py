@@ -17,7 +17,7 @@ class CoverageComment:
     def __init__(self, path, comment_header, github_repo_id):
         self._path = path
         self._github_repo_id = github_repo_id
-        self._comment = f"{comment_header}\n| Project | Line Coverage | Branch Coverage |\n| ------- | -------------------- | -------------------- |\n"
+        self._comment = f"{comment_header}\n[Kafka topology Diagram]({create_url()})"
         self.generate_report_csv()
         self.generate_report_json()
 
@@ -25,56 +25,8 @@ class CoverageComment:
     def comment(self):
         return self._comment
 
-    def generate_report_csv(self):
-        reports = glob.glob(f"{self._path}/*.csv")
-
-        for report in reports:
-            with open(report) as csvfile:
-                report_reader = csv.reader(csvfile, delimiter=',')
-                instructions, instructions_covered = 0, 0
-                branches, branches_covered = 0, 0
-
-                next(report_reader, None)
-                for row in report_reader:
-                    instructions, instructions_covered = self.get_stats(instructions, instructions_covered,
-                                                                        row, LINE_COVERED, LINE_MISSED)
-                    branches, branches_covered = self.get_stats(branches, branches_covered, row, BRANCH_COVERED, BRANCH_MISSED)
-
-                filename = self.get_filename(report, '.csv')
-                url = self.create_url(f'{filename.replace(":", "%3A")}/html/index.html')
-                self._comment += self.create_line(filename, url,
-                                                  self.calc_percentage(instructions_covered, instructions),
-                                                  self.calc_percentage(branches_covered, branches))
-
-    def get_stats(self, total, covered, row, covered_idx, missed_idx):
-        return (total + int(row[covered_idx]) + int(row[missed_idx])), (covered + int(row[covered_idx]))
-
-    def generate_report_json(self):
-        reports = glob.glob(f"{self._path}/*.json")
-
-        for report in reports:
-            with open(report) as jsonfile:
-                total_stats = json.load(jsonfile)["totals"]
-                filename = self.get_filename(report, '.json')
-                url = self.create_url(f'{filename}/index.html')
-                self._comment += self.create_line(filename, url,
-                            round(self.calc_percentage(total_stats["covered_lines"], total_stats["num_statements"]), 2),
-                            round(self.calc_percentage(total_stats["covered_branches"], total_stats["num_branches"]), 2))
-
-    def create_line(self, filename, url, line_percentage, branch_percentage):
-        return f'| [{filename}]({url}) | { line_percentage }% | { branch_percentage }%|\n'
-
-    def get_filename(self, file, extension):
-        return file.split("/")[-1].replace(extension, "")
-
-    def calc_percentage(self, x, total):
-        if(total > 0):
-            return round((x / total) * 100, 2)
-        else:
-            return round(1 * 100, 2)
-
-    def create_url(self, project):
-        return f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/{project}'
+    def create_url(self):
+        return f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/topologyDiagram.png'
 
 
 class GithubClient:
