@@ -555,7 +555,8 @@ jobs:
                 <<: *slack-notification
 
   topology-describe:
-    executor: python
+    machine:
+      docker_layer_caching: false
     working_directory: ~/working
     parameters:
       <<: *serviceName
