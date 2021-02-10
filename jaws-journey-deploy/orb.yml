@@ -381,7 +381,7 @@ jobs:
           root: .
           paths:
             - << parameters.serviceName >>/*
-            - ~/test-results/junit/*
+            - ./test-results/junit/*
             - ./reports/jacoco/*
 
   integration-test:
@@ -552,7 +552,7 @@ jobs:
           at: ~/working
       - topology-describe
       - store_artifacts:
-          path: ~/test-results/junit
+          path: ./test-results/junit
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
