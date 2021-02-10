@@ -544,8 +544,6 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
-      - openjdk-install/openjdk:
-          version: 11
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
@@ -564,6 +562,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
+      - openjdk-install/openjdk:
+          version: 11
       - generate-topology-diagram:
           serviceName: << parameters.serviceName >>
       - topology-describe
