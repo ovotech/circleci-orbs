@@ -147,6 +147,16 @@ commands:
             include ./scripts/save_test_results.sh
           when: always
 
+  persist-topology-diagram:
+    description: "Run commands to persist topology diagram"
+      steps:
+        - run:
+            name: "Save topology diagram"
+            shell: /bin/bash -eo pipefail
+            command: |
+              include ./scripts/persist_topology_diagram.sh
+            when: always
+
   calculate-build-version:
     description: "Run commands to calculate build version"
     steps:
@@ -342,6 +352,7 @@ jobs:
             - save-test-result:
                 serviceName: << parameters.serviceName >>
                 save_libs: false
+            - persist-topology-diagram
             - store_test_results:
                 path: ~/test-results
             - store_artifacts:
