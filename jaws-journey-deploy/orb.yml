@@ -195,6 +195,16 @@ commands:
           command: |
             include ./scripts/code_coverage.sh
 
+  generate-topology-diagram:
+    description: "Generate topology diagram"
+    steps:
+      - run:
+          name: "Generate Topology Diagram"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/make_gradle_executable.sh
+            include ./scripts/generate_topology_diagram.sh
+
   topology-describe:
     description: "Add Topology Diagram"
     steps:
@@ -549,6 +559,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
+      - generate-topology-diagram
       - topology-describe
       - store_artifacts:
           path: ./reports/jacoco
