@@ -568,10 +568,10 @@ jobs:
       - generate-topology-diagram:
           serviceName: << parameters.serviceName >>
       - run:
-          name: "Switch to Python v3.7"
+          name: "Switch to Python v3.5.2"
           command: |
             pyenv versions
-            pyenv global 3.7.0
+            pyenv global 3.5.2
 
       - topology-describe
       - store_artifacts:
