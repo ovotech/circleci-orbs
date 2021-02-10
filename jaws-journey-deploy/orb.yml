@@ -552,7 +552,7 @@ jobs:
           at: ~/working
       - topology-describe
       - store_artifacts:
-          path: ./test-results/junit
+          path: ./reports/diagrams
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
