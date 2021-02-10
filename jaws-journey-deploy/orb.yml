@@ -196,6 +196,9 @@ commands:
             include ./scripts/code_coverage.sh
 
   generate-topology-diagram:
+    parameters:
+      serviceName:
+        type: string
     description: "Generate topology diagram"
     steps:
       - run:
@@ -556,10 +559,13 @@ jobs:
   topology-describe:
     executor: python
     working_directory: ~/working
+    parameters:
+      <<: *serviceName
     steps:
       - attach_workspace:
           at: ~/working
-      - generate-topology-diagram
+      - generate-topology-diagram:
+          serviceName: << parameters.serviceName >>
       - topology-describe
       - store_artifacts:
           path: ./reports/jacoco
