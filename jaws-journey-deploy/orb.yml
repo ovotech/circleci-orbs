@@ -149,13 +149,13 @@ commands:
 
   persist-topology-diagram:
     description: "Run commands to persist topology diagram"
-      steps:
-        - run:
-            name: "Save topology diagram"
-            shell: /bin/bash -eo pipefail
-            command: |
-              include ./scripts/persist_topology_diagram.sh
-            when: always
+    steps:
+      - run:
+          name: "Save topology diagram"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/persist_topology_diagram.sh
+          when: always
 
   calculate-build-version:
     description: "Run commands to calculate build version"
