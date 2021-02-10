@@ -22,3 +22,6 @@ else
    echo file does not exist or is not executable
 fi
 
+find . -type f -regex ".*/build/test-results/.*png" -exec cp {} ~/test-results/junit/ \;
+mkdir -p ./reports/diagrams/
+mkdir -p ./reports/diagrams/"$SERVICE_NAME"/

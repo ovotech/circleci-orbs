@@ -381,7 +381,7 @@ jobs:
           root: .
           paths:
             - << parameters.serviceName >>/*
-            - ./test-results/junit/*
+            - ./reports/diagrams/*
             - ./reports/jacoco/*
 
   integration-test:
