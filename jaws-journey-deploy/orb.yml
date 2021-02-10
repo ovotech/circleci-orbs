@@ -545,7 +545,7 @@ jobs:
       - attach_workspace:
           at: ~/working
       - openjdk-install/openjdk:
-      version: 11
+          version: 11
       - report-code-coverage
       - store_artifacts:
           path: ./reports/jacoco
