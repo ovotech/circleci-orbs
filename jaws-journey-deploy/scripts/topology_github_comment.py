@@ -17,7 +17,7 @@ class CoverageComment:
     def __init__(self, path, comment_header, github_repo_id):
         self._path = path
         self._github_repo_id = github_repo_id
-        self._comment = f"{comment_header}\n[Kafka topology Diagram]({create_url()})"
+        self._comment = f"{comment_header}\n[Kafka topology Diagram](f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/topologyDiagram.png')"
         self.generate_report_csv()
         self.generate_report_json()
 
@@ -25,8 +25,8 @@ class CoverageComment:
     def comment(self):
         return self._comment
 
-    def create_url(self):
-        return f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/topologyDiagram.png'
+#     def create_url(self):
+#         return f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/topologyDiagram.png'
 
 
 class GithubClient:
