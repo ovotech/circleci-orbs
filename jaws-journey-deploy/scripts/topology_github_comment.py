@@ -18,8 +18,6 @@ class CoverageComment:
         self._path = path
         self._github_repo_id = github_repo_id
         self._comment = f"{comment_header}\n[Kafka topology Diagram](f'https://{build_number}-{self._github_repo_id}-gh.circle-artifacts.com/0/{self._path}/topologyDiagram.png')"
-        self.generate_report_csv()
-        self.generate_report_json()
 
     @property
     def comment(self):
