@@ -195,6 +195,15 @@ commands:
           command: |
             include ./scripts/code_coverage.sh
 
+  topology-describe:
+    description: "Add Topology Diagram"
+    steps:
+      - run:
+          name: "Add topology diagram"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/topology_comment.sh
+
   install-adoptopenjdk:
     description: "Install adoptopenjdk"
     steps:
@@ -524,6 +533,23 @@ jobs:
       - attach_workspace:
           at: ~/working
       - report-code-coverage
+      - store_artifacts:
+          path: ./reports/jacoco
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+
+  topology-describe:
+    executor: python
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - topology-describe
       - store_artifacts:
           path: ./reports/jacoco
       - when:
