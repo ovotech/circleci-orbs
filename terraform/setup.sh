@@ -18,7 +18,7 @@ export config_path="${module_path}"
 # provider lock file in the terraform config directory is picked up. However, older
 # versions of terraform need the terraform config directory to be specified at the
 # end of the command
-if terraform -help | grep -e "-chdir" >/dev/null; then
+if terraform -help | grep -e "-chdir" >/dev/null && "<< parameters.chdir >>" == "true"; then
   chdir="-chdir=${module_path}"
   config_path=""
 fi
