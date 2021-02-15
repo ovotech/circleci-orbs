@@ -1,3 +1,14 @@
+export chdir=""
+export config_path="${module_path}"
+# -chdir was introduced in terraform 0.14 and is necessary in 0.14 to make sure the
+# provider lock file in the terraform config directory is picked up. However, older
+# versions of terraform need the terraform config directory to be specified at the
+# end of the command
+if terraform -help | grep -e "-chdir" >/dev/null && "<< parameters.use_chdir >>" == "true"; then
+  chdir="-chdir=${module_path}"
+  config_path=""
+fi
+
 # Initialize terraform
 if [[ -n "<< parameters.backend_config_file >>" ]]; then
     for file in $(echo "<< parameters.backend_config_file >>" | tr ',' '\n'); do
