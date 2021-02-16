@@ -39,4 +39,4 @@ export workspace
 unset TF_WORKSPACE
 
 rm -rf .terraform
-terraform "$chdir" init -input=false -lock-timeout=300s -no-color $INIT_ARGS $config_path
+terraform $chdir init -input=false -lock-timeout=300s -no-color $INIT_ARGS $config_path
