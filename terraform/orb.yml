@@ -92,6 +92,11 @@ aliases:
         type: "string"
         description: "Path to the json file to save the output variables to"
         default: ""
+    use_chdir: &use_chdir
+      use_chdir:
+        type: "boolean"
+        description: "Whether to use --chdir to set the terraform configuration directory. Only affects terraform 0.14 onwards. Enables use of terraform lockfiles."
+        default: false
 
   init-parameter-passthrough: &init-parameter-passthrough
     path: << parameters.path >>
@@ -101,6 +106,7 @@ aliases:
     var: << parameters.var >>
     var_file: << parameters.var_file >>
     parallelism: << parameters.parallelism >>
+    use_chdir: << parameters.use_chdir >>
 
 commands:
   in-workspace:
@@ -110,6 +116,7 @@ commands:
       <<: *workspace
       <<: *backend_config
       <<: *backend_config_file
+      <<: *use_chdir
       steps:
         type: "steps"
         description: "Steps to run in the initialized terraform working directory"
@@ -136,6 +143,7 @@ commands:
       <<: *parallelism
       <<: *label
       <<: *add_github_comment
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform plan << parameters.path >> << parameters.label >>"
@@ -161,6 +169,7 @@ commands:
       <<: *auto_approve
       <<: *target
       <<: *output_path
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
@@ -184,6 +193,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform check << parameters.path >> << parameters.label >>"
@@ -206,6 +216,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform destroy << parameters.path >> << parameters.label >>"
@@ -228,6 +239,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform workspace new"
@@ -248,6 +260,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform workspace delete"
@@ -268,6 +281,7 @@ commands:
       <<: *backend_config
       <<: *backend_config_file
       <<: *output_path
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform output << parameters.path >>"
@@ -302,6 +316,7 @@ commands:
     description: "Validate the terraform files in a directory"
     parameters: &validate-parameters
       <<: *path
+      <<: *use_chdir
     steps:
       - run:
           name: "terraform validate"

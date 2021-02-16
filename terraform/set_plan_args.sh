@@ -13,7 +13,13 @@ if [[ -n "<< parameters.var_file >>" ]]; then
         if [[ -f "$file" ]]; then
             PLAN_ARGS="$PLAN_ARGS -var-file=$file"
         elif [[ -f "$module_path/$file" ]]; then
-            PLAN_ARGS="$PLAN_ARGS -var-file=$module_path/$file"
+            if [[ "<< parameters.use_chdir >>" == "false" ]]; then
+                PLAN_ARGS="$PLAN_ARGS -var-file=$module_path/$file"
+            # The -chdir parameter expects all variable files to be given
+            # relative the directory specified in the chdir
+            else
+                PLAN_ARGS="$PLAN_ARGS -var-file=$file"
+            fi
         else
             echo "Var file '$file' wasn't found" >&2
             exit 1

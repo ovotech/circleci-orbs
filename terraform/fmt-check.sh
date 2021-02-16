@@ -15,5 +15,5 @@ if terraform fmt -help | grep -e "-recursive" >/dev/null; then
     exit $EXIT_CODE
 
 else
-    terraform fmt -no-color -check -diff "$module_path"
+    terraform fmt -no-color -check -diff $module_path
 fi
