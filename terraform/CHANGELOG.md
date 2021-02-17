@@ -3,6 +3,15 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.3
+## Changed
+- Added [-chdir global flag](https://www.terraform.io/docs/cli/commands/index.html#switching-working-directory-with-chdir)
+  A `use_chdir` parameter is now available for initialised actions. Setting this
+  parameter to true for terraform version >= 0.14, `-chdir` will be set to the value of `path`,
+  so that the lockfile from the specified dir is picked up. Specifying config
+  path at the end of the terraform command was deprecated in 0.14. `use_chdir`
+  has no effect on terraform version < 0.14.
+
 ## ovotech/terraform@1.8.2
 ## Fixed
 - Helm 2 init failing as the stable and incubator repositories have moved to a new location
