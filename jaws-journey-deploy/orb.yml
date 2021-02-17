@@ -98,6 +98,9 @@ commands:
       skipUnitTests:
         type: boolean
         default: false
+      saveTopology:
+        type: boolean
+        default: false
       <<: *environment
     steps:
       - run:
@@ -330,6 +333,9 @@ jobs:
       skipUnitTests:
         type: boolean
         default: false
+      saveTopology:
+        type: boolean
+        default: false
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -341,6 +347,7 @@ jobs:
           serviceName: << parameters.serviceName >>
           environment: << parameters.environment >>
           skipUnitTests: << parameters.skipUnitTests >>
+          saveTopology: << parameters.saveTopology >>
       - save_cache:
           paths:
             - .gradle
