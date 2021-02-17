@@ -1,5 +1,5 @@
 SKIP_UNIT_TESTS="<< parameters.skipUnitTests >>"
-SAVE_TOPOLOGY="<< parameters.skipUnitTests >>"
+SAVE_TOPOLOGY="<< parameters.saveTopology >>"
 if [[ "$SKIP_UNIT_TESTS" = true ]] ; then
   EXCLUDE="-x test"
 else
