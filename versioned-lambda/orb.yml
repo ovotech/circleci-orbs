@@ -33,6 +33,10 @@ jobs:
         description: "Whether or not to authenticate with the npm registry service. Defaults to true"
         type: boolean
         default: true
+      monitor-branch:
+        description: "If true, monitors the state of this branch in Snyk. Defaults to false."
+        type: boolean
+        default: false
     executor: << parameters.executor >>
     steps:
       - checkout
@@ -59,24 +63,11 @@ jobs:
             - run:
                 name: Sudo install
                 command: yum install -y sudo
-            - when:
-                condition:
-                  equal: [master, $CIRCLE_BRANCH]
-                steps:
-                  snyk/scan:
-                    token-variable: SNYK_TOKEN
-                    monitor-on-build: true
-                    severity-threshold: low
-                    project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
-            - unless:
-                condition:
-                  equal: [master, $CIRCLE_BRANCH]
-                steps:
-                  snyk/scan:
-                    token-variable: SNYK_TOKEN
-                    monitor-on-build: false
-                    severity-threshold: low
-                    project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
+            - snyk/scan:
+                token-variable: SNYK_TOKEN
+                monitor-on-build: << parameters.monitor-branch >>
+                severity-threshold: low
+                project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
       - run:
           name: Lint
           command: npm run lint
