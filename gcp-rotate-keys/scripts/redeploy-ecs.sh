@@ -1,10 +1,10 @@
 ##
-# Redeploys a service on fargate to pick up new keys
+# Redeploys a service on ECS to pick up new keys
 # Args:
 #  * $1 - Cluster name
 #  * $2 - Service name
 #  * $3 - Number of seconds to wait for update until aborting
-redeploy_fargate() {
+redeploy_ecs() {
   local _CLUSTER="$1"
   local _SERVICE="$2"
   local _TIMEOUT="$3"

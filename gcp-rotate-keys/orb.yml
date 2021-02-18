@@ -112,10 +112,10 @@ commands:
                 rm -f "${ROTATED_KEY_PATH}"
 
 jobs:
-  rotate-key-redeploy-fargate-service:
+  rotate-key-redeploy-ecs-service:
     description: >
       Rotates the key of the given GCP service account and rotates an AWS
-      fargate service that is using it.
+      ECS service that is using it.
     executor: default
     parameters:
       aws-access-key-id:
@@ -130,12 +130,12 @@ jobs:
         type: env_var_name
         description: AWS secret key for IAM role
         default: AWS_SECRET_ACCESS_KEY
-      fargate-cluster-name:
+      ecs-cluster-name:
         type: string
         description: >
-          Name of the fargate cluster containing the service to redeploy during
+          Name of the ECS cluster containing the service to redeploy during
           the key rotation process
-      fargate-service-name:
+      ecs-service-name:
         type: string
         description: >
           Name of the service to redeploy during the key rotation process
@@ -178,8 +178,8 @@ jobs:
           ssm-path: << parameter.ssm-path >>
           steps:
             - run:
-                name: Redeploy the fargate service
+                name: Redeploy the ecs service
                 command: |
-                  include scripts/redeploy-fargate.sh
+                  include scripts/redeploy-ecs.sh
 
-                  redeploy_fargate "<< parameter.fargate-cluster-name >>" "<< parameter.fargate-service-name >>" "<< parameter.redeploy-timeout >>"
+                  redeploy_ecs "<< parameter.ecs-cluster-name >>" "<< parameter.ecs-service-name >>" "<< parameter.redeploy-timeout >>"
