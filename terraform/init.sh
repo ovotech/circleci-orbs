@@ -1,3 +1,4 @@
+set -x
 export chdir=""
 export config_path="${module_path}"
 # -chdir was introduced in terraform 0.14 and is necessary in 0.14 to make sure the
