@@ -59,16 +59,16 @@ commands:
             include scripts/get-existing-key.sh
             include scripts/validate-service-account.sh
 
-            validate_service_account "<< parameter.service-account >>"
-            get_existing_key "<< parameter.service-account >>"
-            generate_key "<< parameter.service-account >>"
+            validate_service_account "<< parameters.service-account >>"
+            get_existing_key "<< parameters.service-account >>"
+            generate_key "<< parameters.service-account >>"
       - steps: << parameters.steps >>
       - run:
           name: Delete the old key for the service account
           command: |
             include scripts/delete-key.sh
 
-            delete_key "<< parameter.service-account >>" "${PREVIOUS_KEY_ID}"
+            delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
             rm -f "${ROTATED_KEY_PATH}"
 
   rotate-gcp-key-in-aws-ssm:
@@ -90,22 +90,22 @@ commands:
             include scripts/get-existing-key.sh
             include scripts/validate-service-account.sh
 
-            validate_service_account "<< parameter.service-account >>"
-            get_existing_key "<< parameter.service-account >>"
-            generate_key "<< parameter.service-account >>"
+            validate_service_account "<< parameters.service-account >>"
+            get_existing_key "<< parameters.service-account >>"
+            generate_key "<< parameters.service-account >>"
       - run:
           name: Upload the key to AWS SSM parameter store
           command: |
             include scripts/deploy-file-to-ssm.sh
 
-            deploy_file_to_ssm "<< parameter.ssm-path >>" "${ROTATED_KEY_PATH}"
+            deploy_file_to_ssm "<< parameters.ssm-path >>" "${ROTATED_KEY_PATH}"
       - steps: << parameters.steps >>
       - run:
           name: Delete the old key for the service account
           command: |
             include scripts/delete-key.sh
 
-            delete_key "<< parameter.service-account >>" "${PREVIOUS_KEY_ID}"
+            delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
             rm -f "${ROTATED_KEY_PATH}"
 
 jobs:
@@ -162,21 +162,21 @@ jobs:
     steps:
       - gcp/install
       - gcp/initialize:
-          gcloud-service-key: << parameter.gcloud-service-key >>
-          google-compute-region: << parameter.google-compute-region >>
-          google-compute-zone: << parameter.google-compute-zone >>
-          google-project-id: << parameter.google-project-id >>
+          gcloud-service-key: << parameters.gcloud-service-key >>
+          google-compute-region: << parameters.google-compute-region >>
+          google-compute-zone: << parameters.google-compute-zone >>
+          google-project-id: << parameters.google-project-id >>
       - aws/setup:
-          aws-access-key-id: << parameter.aws-access-key-id >>
-          aws-region: << parameter.aws-region >>
-          aws-secret-access-key: << parameter.aws-secret-access-key >>
+          aws-access-key-id: << parameters.aws-access-key-id >>
+          aws-region: << parameters.aws-region >>
+          aws-secret-access-key: << parameters.aws-secret-access-key >>
       - rotate-gcp-key-in-aws-ssm:
-          service-account: << parameter.service-account >>
-          ssm-path: << parameter.ssm-path >>
+          service-account: << parameters.service-account >>
+          ssm-path: << parameters.ssm-path >>
           steps:
             - run:
                 name: Redeploy the ecs service
                 command: |
                   include scripts/redeploy-ecs.sh
 
-                  redeploy_ecs "<< parameter.ecs-cluster-name >>" "<< parameter.ecs-service-name >>" "<< parameter.redeploy-timeout >>"
+                  redeploy_ecs "<< parameters.ecs-cluster-name >>" "<< parameters.ecs-service-name >>" "<< parameters.redeploy-timeout >>"
