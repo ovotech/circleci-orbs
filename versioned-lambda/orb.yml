@@ -12,6 +12,18 @@ executors:
       - image: lambci/lambda:20200721-build-nodejs12.x
 
 jobs:
+  snyk-monitor:
+    executor: lambci-node12
+    steps:
+      - checkout
+      - run:
+          name: Sudo install
+          command: yum install -y sudo
+      - snyk/scan:
+          token-variable: SNYK_TOKEN
+          monitor-on-build: true
+          severity-threshold: low
+          project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
   node-test-and-package:
     parameters:
       executor:
@@ -33,10 +45,6 @@ jobs:
         description: "Whether or not to authenticate with the npm registry service. Defaults to true"
         type: boolean
         default: true
-      snyk-monitor:
-        description: "If true, monitors the state of this branch in Snyk. Defaults to false."
-        type: boolean
-        default: false
     executor: << parameters.executor >>
     steps:
       - checkout
@@ -65,7 +73,7 @@ jobs:
                 command: yum install -y sudo
             - snyk/scan:
                 token-variable: SNYK_TOKEN
-                monitor-on-build: << parameters.snyk-monitor >>
+                monitor-on-build: false
                 severity-threshold: low
                 project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}
       - run:
