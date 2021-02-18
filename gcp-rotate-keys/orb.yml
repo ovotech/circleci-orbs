@@ -69,7 +69,11 @@ commands:
             include scripts/delete-key.sh
 
             delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
+      - run:
+          name: Delete the local generated key file
+          command: |
             rm -f "${GENERATED_KEY_PATH}"
+          when: always
 
   rotate-gcp-key-in-aws-ssm:
     description: >
@@ -106,7 +110,11 @@ commands:
             include scripts/delete-key.sh
 
             delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
+      - run:
+          name: Delete the local generated key file
+          command: |
             rm -f "${GENERATED_KEY_PATH}"
+          when: always
 
 jobs:
   rotate-key-redeploy-ecs-service:

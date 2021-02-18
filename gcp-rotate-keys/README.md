@@ -25,11 +25,11 @@ orb for one way to handle authentication.
 
 The command makes available three environment variables so that the processing
 stage can do things with the keys:
-* `ROTATED_KEY_PATH` - Path containing the exported JSON key file
-* `ROTATED_KEY_ID` - ID of the key that has been created
+* `GENERATED_KEY_PATH` - Path containing the exported JSON key file
+* `GENERATED_KEY_ID` - ID of the key that has been created
 * `PREVIOUS_KEY_ID` - ID of the key that is being rotated out
 
-The JSON key file at `ROTATED_KEY_PATH` is deleted after this command finishes.
+The JSON key file at `GENERATED_KEY_PATH` is deleted after this command finishes.
 
 Parameters:
 * `service-account` - The service account email address to rotate the key of
