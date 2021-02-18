@@ -43,4 +43,7 @@ rm -rf .terraform
 echo $chdir
 echo $INIT_ARGS
 echo $config_path
+
+ls -lah cluster
+
 terraform $chdir init -input=false -lock-timeout=300s -no-color $INIT_ARGS $config_path
