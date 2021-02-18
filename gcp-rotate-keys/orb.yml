@@ -83,33 +83,30 @@ commands:
       <<: *ssm-path
       <<: *steps
     steps:
-      rotate-gcp-key:
-        service-account: << parameter.service-account >>
-        steps:
-          - run:
-              name: Create a new key for the service account
-              command: |
-                include scripts/generate-key.sh
-                include scripts/get-existing-key.sh
-                include scripts/validate-service-account.sh
+      - run:
+          name: Create a new key for the service account
+          command: |
+            include scripts/generate-key.sh
+            include scripts/get-existing-key.sh
+            include scripts/validate-service-account.sh
 
-                validate_service_account "<< parameter.service-account >>"
-                get_existing_key "<< parameter.service-account >>"
-                generate_key "<< parameter.service-account >>"
-          - run:
-              name: Upload the key to AWS SSM parameter store
-              command: |
-                include scripts/deploy-file-to-ssm.sh
+            validate_service_account "<< parameter.service-account >>"
+            get_existing_key "<< parameter.service-account >>"
+            generate_key "<< parameter.service-account >>"
+      - run:
+          name: Upload the key to AWS SSM parameter store
+          command: |
+            include scripts/deploy-file-to-ssm.sh
 
-                deploy_file_to_ssm "<< parameter.ssm-path >>" "${ROTATED_KEY_PATH}"
-          - steps: << parameters.steps >>
-          - run:
-              name: Delete the old key for the service account
-              command: |
-                include scripts/delete-key.sh
+            deploy_file_to_ssm "<< parameter.ssm-path >>" "${ROTATED_KEY_PATH}"
+      - steps: << parameters.steps >>
+      - run:
+          name: Delete the old key for the service account
+          command: |
+            include scripts/delete-key.sh
 
-                delete_key "<< parameter.service-account >>" "${PREVIOUS_KEY_ID}"
-                rm -f "${ROTATED_KEY_PATH}"
+            delete_key "<< parameter.service-account >>" "${PREVIOUS_KEY_ID}"
+            rm -f "${ROTATED_KEY_PATH}"
 
 jobs:
   rotate-key-redeploy-ecs-service:
