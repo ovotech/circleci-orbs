@@ -44,8 +44,8 @@ commands:
       processing after creating the new key but before deleting the old key.
 
       The newly created key is available at a temporary path stored in the
-      environment variable ROTATED_KEY_PATH and the ID is available in the
-      environment variable ROTATED_KEY_ID.
+      environment variable GENERATED_KEY_PATH and the ID is available in the
+      environment variable GENERATED_KEY_ID.
 
       The old key ID is available in the environment variable PREVIOUS_KEY_ID.
     parameters:
@@ -69,7 +69,7 @@ commands:
             include scripts/delete-key.sh
 
             delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
-            rm -f "${ROTATED_KEY_PATH}"
+            rm -f "${GENERATED_KEY_PATH}"
 
   rotate-gcp-key-in-aws-ssm:
     description: >
@@ -98,7 +98,7 @@ commands:
           command: |
             include scripts/deploy-file-to-ssm.sh
 
-            deploy_file_to_ssm "<< parameters.ssm-path >>" "${ROTATED_KEY_PATH}"
+            deploy_file_to_ssm "<< parameters.ssm-path >>" "${GENERATED_KEY_PATH}"
       - steps: << parameters.steps >>
       - run:
           name: Delete the old key for the service account
@@ -106,7 +106,7 @@ commands:
             include scripts/delete-key.sh
 
             delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
-            rm -f "${ROTATED_KEY_PATH}"
+            rm -f "${GENERATED_KEY_PATH}"
 
 jobs:
   rotate-key-redeploy-ecs-service:
