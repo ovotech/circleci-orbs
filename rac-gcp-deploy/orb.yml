@@ -322,6 +322,28 @@ jobs:
           monitor-on-build: false
           severity-threshold: high
 
+  scalafmt:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore the workspace"
+        type: string
+        default: ~/project
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - attach_workspace:
+          at: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-suffix: <<parameters.cache-suffix>>
+      - run: sbt scalafmtCheckAll
+
   notify_shipit:
     parameters:
       executor:
