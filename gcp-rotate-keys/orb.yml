@@ -100,9 +100,12 @@ commands:
       - run:
           name: Upload the key to AWS SSM parameter store
           command: |
+            include scripts/delete-key.sh
             include scripts/deploy-file-to-ssm.sh
 
+            trap 'delete_key "<< parameters.service-account >>" "${GENERATED_KEY_ID}"' EXIT
             deploy_file_to_ssm "<< parameters.ssm-path >>" "${GENERATED_KEY_PATH}"
+            trap - EXIT
       - steps: << parameters.steps >>
       - run:
           name: Delete the old key for the service account
