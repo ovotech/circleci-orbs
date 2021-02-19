@@ -22,8 +22,12 @@ function update_status() {
 }
 
 function apply() {
+    plan_path="plan.out"
+    if terraform -help | grep -e "-chdir" >/dev/null && "<< parameters.use_chdir >>" == "true"; then
+        plan_path="${module_path}/${plan_path}"
+    fi
     set +e
-    terraform apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    terraform apply -input=false -no-color -auto-approve -lock-timeout=300s "${plan_path}" | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
