@@ -6,8 +6,6 @@ ENV SBT_VERSION ${SBT_VERSION:-1.4.7}
 
 RUN apk --update add openjdk8 jq
 
-RUN gcloud components install kubectl
-
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
   && ESUM="c2a759fe40a3c21a16b5a88d00cd66f3af6f0721e4ea61b63942dfb83a2d54fd" \
