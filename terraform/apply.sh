@@ -22,12 +22,12 @@ function update_status() {
 }
 
 function apply() {
-    plan_path="plan.out"
-    if terraform -help | grep -e "-chdir" >/dev/null && "<< parameters.use_chdir >>" == "true"; then
-        plan_path="${module_path}/${plan_path}"
-    fi
     set +e
-    terraform apply -input=false -no-color -auto-approve -lock-timeout=300s "${plan_path}" | $TFMASK
+    # We're using chdir here but not using $module_path at the end deliberately. This is
+    # because when running "terraform init $module_path", the .terraform directory is created in
+    # the working directory. When running "terraform -chdir=blah init", the .terraform
+    # directory is created in blah, so the terraform apply also needs to be run from blah with chdir.
+    terraform apply "${chdir}" -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
