@@ -27,7 +27,7 @@ function apply() {
     # because when running "terraform init $module_path", the .terraform directory is created in
     # the working directory. When running "terraform -chdir=blah init", the .terraform
     # directory is created in blah, so the terraform apply also needs to be run from blah with chdir.
-    terraform apply "${chdir}" -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    terraform apply $chdir -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
