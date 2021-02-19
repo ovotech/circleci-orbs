@@ -95,19 +95,6 @@ commands:
             gcloud config set project $<<parameters.project-id>>
             gcloud config set compute/zone <<parameters.google-compute-zone>>
 
-  k8s_auth:
-    description: "Authenticate with K8s cluster"
-    parameters:
-      cluster-name:
-        description: "Name of environment variable storing the Kubernetes cluster name"
-        type: env_var_name
-    steps:
-      - run:
-          name: "Authenticate with K8s cluster"
-          command: |
-            gcloud --quiet config set container/cluster $<<parameters.cluster-name>>
-            gcloud --quiet container clusters get-credentials $<<parameters.cluster-name>>
-
   shipit_notification:
     description: "Send a notification to ShipIt"
     parameters:
