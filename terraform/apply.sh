@@ -23,7 +23,11 @@ function update_status() {
 
 function apply() {
     set +e
-    terraform apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    # We're using chdir here but not using $module_path at the end deliberately. This is
+    # because when running "terraform init $module_path", the .terraform directory is created in
+    # the working directory. When running "terraform -chdir=blah init", the .terraform
+    # directory is created in blah, so the terraform apply also needs to be run from blah with chdir.
+    terraform $chdir apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
