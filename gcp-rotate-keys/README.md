@@ -78,4 +78,4 @@ Parameters:
 ## Limitations
 
 Currently the commands will abort without doing anything if the service account
-has more than key.
+has more than one key.
