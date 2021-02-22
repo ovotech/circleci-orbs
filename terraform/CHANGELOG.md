@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.4
+## Fixed
+- tf apply failing due to `-chdir` not being used
+
 ## ovotech/terraform@1.8.3
 ## Changed
 - Added [-chdir global flag](https://www.terraform.io/docs/cli/commands/index.html#switching-working-directory-with-chdir)
