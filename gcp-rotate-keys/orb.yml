@@ -1,0 +1,193 @@
+version: 2.1
+
+description: >
+  An orb that allows rotating the keys of GCP service accounts and updating
+  corresponding values in AWS SSM Parameter Store.
+
+display:
+  source_url: https://github.com/ovotech/circleci-orbs/tree/master/gcp-rotate-keys
+
+executors:
+  default:
+    description: <
+      This orb requires bash, the AWS and GCP command lines, and the command
+      line utility jq to be installed
+    docker:
+      - image: cimg/base:stable
+
+orbs:
+  aws: circleci/aws-cli@1.4.0
+  gcp: circleci/gcp-cli@2.1.0
+
+aliases:
+  parameters:
+    - &service-account
+      service-account:
+        type: string
+        description: The email address of the service account to rotate keys of
+    - &ssm-path
+      ssm-path:
+        type: string
+        description: The AWS SSM path to save the rotated key to
+    - &steps
+      steps:
+        type: steps
+        description: >
+          Actions to take after generating the new key but before deleting the
+          old one
+        default: []
+
+commands:
+  rotate-gcp-key:
+    description: >
+      Rotates the key of the given GCP service account and performs arbitrary
+      processing after creating the new key but before deleting the old key.
+
+      The newly created key is available at a temporary path stored in the
+      environment variable GENERATED_KEY_PATH and the ID is available in the
+      environment variable GENERATED_KEY_ID.
+
+      The old key ID is available in the environment variable PREVIOUS_KEY_ID.
+    parameters:
+      <<: *service-account
+      <<: *steps
+    steps:
+      - run:
+          name: Create a new key for the service account
+          command: |
+            include scripts/generate-key.sh
+            include scripts/get-existing-key.sh
+            include scripts/validate-service-account.sh
+
+            validate_service_account "<< parameters.service-account >>"
+            get_existing_key "<< parameters.service-account >>"
+            generate_key "<< parameters.service-account >>"
+      - steps: << parameters.steps >>
+      - run:
+          name: Delete the old key for the service account
+          command: |
+            include scripts/delete-key.sh
+
+            delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
+      - run:
+          name: Delete the local generated key file
+          command: |
+            rm -f "${GENERATED_KEY_PATH}"
+          when: always
+
+  rotate-gcp-key-in-aws-ssm:
+    description: >
+      Rotates the key of the given GCP service account and performs arbitrary
+      processing after creating the new key and uploading it to an AWS SSM
+      parameter, but before deleting the old key.
+
+      Exposes the same environment variables as the rotate-gcp-key command
+    parameters:
+      <<: *service-account
+      <<: *ssm-path
+      <<: *steps
+    steps:
+      - run:
+          name: Create a new key for the service account
+          command: |
+            include scripts/generate-key.sh
+            include scripts/get-existing-key.sh
+            include scripts/validate-service-account.sh
+
+            validate_service_account "<< parameters.service-account >>"
+            get_existing_key "<< parameters.service-account >>"
+            generate_key "<< parameters.service-account >>"
+      - run:
+          name: Upload the key to AWS SSM parameter store
+          command: |
+            include scripts/delete-key.sh
+            include scripts/deploy-file-to-ssm.sh
+
+            trap 'delete_key "<< parameters.service-account >>" "${GENERATED_KEY_ID}"' EXIT
+            deploy_file_to_ssm "<< parameters.ssm-path >>" "${GENERATED_KEY_PATH}"
+            trap - EXIT
+      - steps: << parameters.steps >>
+      - run:
+          name: Delete the old key for the service account
+          command: |
+            include scripts/delete-key.sh
+
+            delete_key "<< parameters.service-account >>" "${PREVIOUS_KEY_ID}"
+      - run:
+          name: Delete the local generated key file
+          command: |
+            rm -f "${GENERATED_KEY_PATH}"
+          when: always
+
+jobs:
+  rotate-key-redeploy-ecs-service:
+    description: >
+      Rotates the key of the given GCP service account and rotates an AWS
+      ECS service that is using it.
+    executor: default
+    parameters:
+      aws-access-key-id:
+        type: env_var_name
+        description: AWS access key id for IAM role
+        default: AWS_ACCESS_KEY_ID
+      aws-region:
+        type: env_var_name
+        description: AWS region to operate in
+        default: AWS_DEFAULT_REGION
+      aws-secret-access-key:
+        type: env_var_name
+        description: AWS secret key for IAM role
+        default: AWS_SECRET_ACCESS_KEY
+      ecs-cluster-name:
+        type: string
+        description: >
+          Name of the ECS cluster containing the service to redeploy during
+          the key rotation process
+      ecs-service-name:
+        type: string
+        description: >
+          Name of the service to redeploy during the key rotation process
+      gcloud-service-key:
+        type: env_var_name
+        description: Full service key JSON file to connect with
+        default: GCLOUD_SERVICE_KEY
+      google-compute-region:
+        type: env_var_name
+        description: The Google compute region to connect with
+        default: GOOGLE_COMPUTE_REGION
+      google-compute-zone:
+        type: env_var_name
+        description: The Google compute zone to connect with
+        default: GOOGLE_COMPUTE_ZONE
+      google-project-id:
+        type: env_var_name
+        description: The Google project ID to connect with
+        default: GOOGLE_PROJECT_ID
+      redeploy-timeout:
+        type: integer
+        description: >
+          Number of seconds to wait for the redeployment to reach steady state
+        default: 300
+      <<: *service-account
+      <<: *ssm-path
+    steps:
+      - gcp/install
+      - gcp/initialize:
+          gcloud-service-key: << parameters.gcloud-service-key >>
+          google-compute-region: << parameters.google-compute-region >>
+          google-compute-zone: << parameters.google-compute-zone >>
+          google-project-id: << parameters.google-project-id >>
+      - aws/setup:
+          aws-access-key-id: << parameters.aws-access-key-id >>
+          aws-region: << parameters.aws-region >>
+          aws-secret-access-key: << parameters.aws-secret-access-key >>
+      - rotate-gcp-key-in-aws-ssm:
+          service-account: << parameters.service-account >>
+          ssm-path: << parameters.ssm-path >>
+          steps:
+            - run:
+                name: Redeploy the ecs service
+                command: |
+                  include scripts/redeploy-ecs.sh
+
+                  redeploy_ecs "<< parameters.ecs-cluster-name >>" "<< parameters.ecs-service-name >>" "<< parameters.redeploy-timeout >>"

@@ -1,0 +1,1 @@
+ovotech/gcp-rotate-keys@1.0.0
