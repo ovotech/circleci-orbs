@@ -171,6 +171,12 @@ jobs:
       <<: *service-account
       <<: *ssm-path
     steps:
+      - run:
+          name: Prepare the GCP service account key
+          command: |
+            include scripts/maybe-decode.sh
+
+            echo "export << parameters.gcloud-service-key >>='"$(maybe_decode "$(printenv << parameters.gcloud-service-key >>)")"'" >> $BASH_ENV
       - gcp/install
       - gcp/initialize:
           gcloud-service-key: << parameters.gcloud-service-key >>
