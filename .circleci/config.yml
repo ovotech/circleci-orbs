@@ -161,4 +161,5 @@ workflows:
                 - ssh-proxy
                 - jaws-journey-deploy
                 - oot-deploy
+                - gcp-rotate-keys
 
