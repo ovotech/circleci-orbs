@@ -499,6 +499,9 @@ jobs:
   tf-apply:
     working_directory: ~/working
     <<: *tf-common
+      destroy_first:
+        type: boolean
+        default: false
     description: tf-apply-<< parameters.environment >>
     environment:
       <<: *tf-mask
@@ -515,6 +518,10 @@ jobs:
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
+      - when:
+          condition: << parameters.destroy_first >>
+          steps:
+            - terraform/destroy
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
