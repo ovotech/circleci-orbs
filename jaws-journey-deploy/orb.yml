@@ -521,7 +521,8 @@ jobs:
       - when:
           condition: << parameters.destroy_first >>
           steps:
-            - terraform/destroy
+            - terraform/destroy:
+                <<: *tf-parameters
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
