@@ -45,6 +45,9 @@ aliases:
       attach_workspace:
         type: boolean
         default: false
+      destroy_first:
+        type: boolean
+        default: false
       <<: *environment
 
   tf-parameters: &tf-parameters
@@ -499,9 +502,6 @@ jobs:
   tf-apply:
     working_directory: ~/working
     <<: *tf-common
-          destroy_first:
-            type: boolean
-            default: false
     description: tf-apply-<< parameters.environment >>
     environment:
       <<: *tf-mask
