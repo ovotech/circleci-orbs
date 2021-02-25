@@ -45,6 +45,9 @@ aliases:
       attach_workspace:
         type: boolean
         default: false
+      destroy_first:
+        type: boolean
+        default: false
       <<: *environment
 
   tf-parameters: &tf-parameters
@@ -515,6 +518,11 @@ jobs:
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
+      - when:
+          condition: << parameters.destroy_first >>
+          steps:
+            - terraform/destroy:
+                <<: *tf-parameters
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
