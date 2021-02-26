@@ -9,4 +9,4 @@ def re_comment_match(comment_id, comment_body):
 
 def comment_for_pr(comment_id, plan):
     """Returns a formatted string containing comment_id and plan"""
-    return f'{comment_id}\n```hcl\n{plan}\n```'
+    return f"{comment_id}\n<details open>\n<summary>Plan</summary>\n\n```hcl\n{plan}\n```\n</details>\n"
