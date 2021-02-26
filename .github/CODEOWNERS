@@ -13,3 +13,4 @@
 /ssh-proxy/               @ovotech/orion-security-engineering
 /jaws-journey-deploy      @ovotech/jaws-library-maintainers
 /oot-deploy/              @ovotech/orion-ops-tooling
+/sbt-deploy/              @ovotech/smart-bookings

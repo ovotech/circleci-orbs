@@ -1,0 +1,87 @@
+version: 0.1.0
+description: "Deploy images to Argo-managed cluster using Kustomize"
+
+comands:
+  deploy-service:
+    description: "Updates the image tag for a service."
+
+    parameters:
+      environment:
+        description: "[Description] Environment in which service is being deployed (e.g. prod/non-prod)."
+        type: string
+        default: ${ENVIRONMENT}
+      service-name:
+        description: "[Description] Service name being deployed (e.g. Public API Bookings)."
+        type: string
+        default: ${CIRCLE_PROJECT_REPONAME}
+      service-image-new-name:
+        description: "URI of service image to deploy (excluding tag)."
+        type: string
+      service-image-current-name:
+        description: "Text specified in image name field for deploying service."
+        type: string
+        default: "SERVICE_IMAGE_NAME"
+      service-image-new-tag:
+        description: "Image Registry tag of service to be deployed"
+        type: string
+        default: ${CIRCLE_SHA1}
+      gitops-ssh-key-fingerprint:
+        description: "The github SSH key that will be used to update the repository."
+        type: string
+      gitops-repo:
+        description: "URL for repository containing kubernetes manifests."
+        type: string
+        default: "git@github.com:ovotech/smart-bookings-environments.git"
+      gitops-username:
+        description: "Username to associate with git actions."
+        type: string
+        default: "SME CircleCI User"
+      gitops-email:
+        description: "Email to associate with git actions."
+        type: string
+        default: "circleci@sme-circleci.ovotech.org.uk"
+      gitops_overlay_path:
+        description: "Path to overlay with kustomization.yaml to be updated."
+        type: string
+        default: "overlays/non-prod"
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - add_ssh_keys:
+          fingerprints:
+            - << parameters.gitops-ssh-key-fingerprint >>
+
+      - run:
+          name: Clone repo
+          command: |
+            git clone << parameters.gitops-repo >> /tmp/gitops
+
+      - install_kustomize:
+          name: Install Kustomize CLI tool
+          command: |
+            KUSTOMIZE_VERSION=4.0.2
+            curl -L -o /usr/local/bin/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64
+            chmod +x /usr/local/bin/kustomize
+            kustomize version
+
+      - run:
+          name: Update image tag
+          command: |
+            cd /tmp/gitops/<< parameters.gitops_overlay_path >>
+            kustomize edit set image << parameters.service-image-placeholder >>=<< parameters.service-image-new-name >>:<< parameters.service-image-new-tag >>
+
+      - run:
+        name: Commit and push changes
+        command: |
+          cd /tmp/gitops
+          git config user.email "<< parameters.gitops-email >>"
+          git config user.name "<< parameters.gitops-username >>"
+          git add --all
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes detected."
+          else
+            git commit -m "Set << parameters.service-name >> << parameters.environment >> image tag to << parameters.service-image-new-tag >>"
+            git push origin master
+          fi
