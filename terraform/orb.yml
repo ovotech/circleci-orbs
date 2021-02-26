@@ -19,9 +19,13 @@ executors:
     docker:
       - image: ovotech/terraform:0.12-slim
   terraform-0_13:
-    description: "Terraform 0.13 executor"
+    description: "Terraform 0.13 executor (only contains TF v0.13.3)"
     docker:
       - image: ovotech/terraform:0.13
+  terraform-0_14:
+    description: "Terraform 0.14 executor (only contains TF v0.14.7)"
+    docker:
+      - image: ovotech/terraform:0.14_26-02-2021
 
 aliases:
   parameters:
