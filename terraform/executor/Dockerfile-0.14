@@ -1,13 +1,10 @@
-FROM golang:1.12.6 AS tfmask
-
-RUN git clone https://github.com/cloudposse/tfmask.git
-RUN cd tfmask && make && make go/build
-
 FROM debian:buster-slim
 
 ARG DEFAULT_TF_VERSION="0.14.7"
+ARG TFMASK_VERSION="0.7.0"
 ARG TFSWITCH_VERSION=0.10.958
 ARG GCLOUD_VERSION=329.0.0
+ARG AWSCLI_VERSION=1.19.16
 
 # internal providers
 ARG TF_OVO_VERSIONS="1.0.0"
@@ -34,6 +31,10 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     wget \
  && rm -rf /var/lib/apt/lists/*
+
+# tfmask
+RUN curl -fsL https://github.com/cloudposse/tfmask/releases/download/${TFMASK_VERSION}/tfmask_linux_amd64 -o tfmask \
+ && mv tfmask /usr/local/bin
 
 # tfswitch
  RUN curl -fsL https://github.com/warrensbox/terraform-switcher/releases/download/${TFSWITCH_VERSION}/terraform-switcher_${TFSWITCH_VERSION}_linux_amd64.tar.gz -o tfswitch.tar.gz \
@@ -65,7 +66,8 @@ RUN curl -fsL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-
  && rm google-cloud-sdk.tar.gz
 ENV PATH "/opt/google-cloud-sdk/bin:$PATH"
 
-COPY --from=tfmask /go/tfmask/release/tfmask /usr/local/bin/tfmask
+RUN pip3 install awscli==$AWSCLI_VERSION
+
 ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"
 
 COPY compact_plan.py /usr/local/bin/compact_plan
