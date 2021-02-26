@@ -23,7 +23,11 @@ function update_status() {
 
 function apply() {
     set +e
-    terraform apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    # We're using chdir here but not using $module_path at the end deliberately. This is
+    # because when running "terraform init $module_path", the .terraform directory is created in
+    # the working directory. When running "terraform -chdir=blah init", the .terraform
+    # directory is created in blah, so the terraform apply also needs to be run from blah with chdir.
+    terraform $chdir apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
@@ -46,7 +50,7 @@ update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}
 exec 3>&1
 
 set +e
-terraform plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS "$module_path" \
+terraform $chdir plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS $config_path \
     | $TFMASK \
     | tee /dev/fd/3 \
     | $COMPACT_PLAN \
