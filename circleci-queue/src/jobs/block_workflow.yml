@@ -1,0 +1,48 @@
+parameters:
+  consider-branch:
+    type: boolean
+    default: true
+    description: "Should we only consider jobs running on the same branch?"
+  block-workflow:
+    type: boolean
+    # this is true at JOB level as intention is to block workflow
+    default: true
+    description: "If true, this job will block until no other workflows with an earlier timestamp are running. Typically used as first job."
+  time:
+    type: string
+    default: "10"
+    description: "How many minutes to wait before giving up."
+  dont-quit:
+    type: boolean
+    default: false
+    description: "Quiting is for losers. Force job through once time expires instead of failing."
+  only-on-branch:
+    type: string
+    default: "*"
+    description: "Only queue on specified branch. Default is to enforce serialization on all branches."
+  vcs-type:
+    type: string
+    default: "github"
+    description: "Override VCS to 'bitbucket' if needed."
+  confidence:
+    type: string
+    default: "1"
+    description: "Due to scarce API, we need to requery the recent jobs list to ensure we're not just in a pending state for previous jobs.  This number indicates the threhold for API returning no previous pending jobs. Default is a single confirmation."
+  circleci-api-key:
+    type: env_var_name
+    default: CIRCLECI_API_KEY
+    description: "In case you use a different Environment Variable Name than CIRCLECI_API_KEY, supply it here."
+
+docker:
+  - image: cimg/base:stable
+resource_class: small
+steps:
+  - until_front_of_line:
+      consider-branch: <<parameters.consider-branch>>
+      block-workflow: <<parameters.block-workflow>>
+      time: <<parameters.time>>
+      dont-quit: <<parameters.dont-quit>>
+      only-on-branch: <<parameters.only-on-branch>>
+      vcs-type: <<parameters.vcs-type>>
+      confidence: <<parameters.confidence>>
+      circleci-api-key: <<parameters.circleci-api-key>>
