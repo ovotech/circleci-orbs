@@ -23,7 +23,7 @@ ENV TF_INPUT=false
 ENV TF_PLUGIN_CACHE_DIR=/usr/local/share/terraform/plugin-cache
 ENV CLOUDSDK_PYTHON=python3
 
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN apt-get update && apt-get install -y \
     ssh \
     tar \
     gzip \
