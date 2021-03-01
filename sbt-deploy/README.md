@@ -11,18 +11,19 @@ Requires the K8s cluster to be configured with Argo and Kustomize.
 
 ## Parameters
 
-| Parameter                  | Required |       Default        | Description                             |
-| -------------------------- | :------: | :------------------: | --------------------------------------- |
-| environment                |   Yes    |          -           | Which env to deploy within              |
-| service-name               |   Yes    |          -           | User readable service name              |
-| service-image-new-name     |   Yes    |          -           | Image URI excluding tag                 |
-| service-image-new-tag      |   Yes    |          -           | Tag of image to deploy                  |
-| gitops-ssh-key-fingerprint |   Yes    |          -           | SSH key to allow gitops repo update     |
-| gitops-repo                |   Yes    |          -           | Gitops repository URI                   |
-| gitops-username            |   Yes    |          -           | Username to associate with git actions  |
-| gitops-email               |   Yes    |          -           | Email to associate with git actions     |
-| gitops_overlay_path        |   Yes    |          -           | Path to kustomize overlay to be updated |
-| service-image-current-name |    No    | `SERVICE_IMAGE_NAME` | Placeholder image name text in manifest |
+| Parameter                  | Required |       Default        | Description                                 |
+| -------------------------- | :------: | :------------------: | ------------------------------------------- |
+| environment                |   Yes    |          -           | Which env to deploy within                  |
+| service-name               |   Yes    |          -           | User readable service name                  |
+| service-image-new-name     |   Yes    |          -           | Image URI excluding tag                     |
+| service-image-new-tag      |   Yes    |          -           | Tag of image to deploy                      |
+| gitops-ssh-key-fingerprint |   Yes    |          -           | SSH key to allow gitops repo update         |
+| gitops-repo                |   Yes    |          -           | Gitops repository URI                       |
+| gitops-deploy-branch       |    No    |        `main`        | Gitops repository branch to make changes to |
+| gitops-username            |   Yes    |          -           | Username to associate with git actions      |
+| gitops-email               |   Yes    |          -           | Email to associate with git actions         |
+| gitops_overlay_path        |   Yes    |          -           | Path to kustomize overlay to be updated     |
+| service-image-current-name |    No    | `SERVICE_IMAGE_NAME` | Placeholder image name text in manifest     |
 
 ## Example Usage
 
@@ -37,8 +38,8 @@ jobs:
     steps:
       - sbt-deploy/deploy-service:
           environment: non-prod
-          service-name: public-api-bookings
-          service-image-new-name: XXXXXX.dkr.ecr.eu-west-1.amazonaws.com/public-api-bookings
+          service-name: public-api
+          service-image-new-name: XXXXXX.dkr.ecr.eu-west-1.amazonaws.com/public-api
           service-image-new-tag: 1.23.4
           gitops-ssh-key-fingerprint: "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
           gitops-repo: git@github.com:ovotech/placeholder-repo.git

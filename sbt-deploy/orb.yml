@@ -28,6 +28,10 @@ commands:
       gitops-repo:
         description: "URL for repository containing kubernetes manifests."
         type: string
+      gitops-deploy-branch:
+        description: "Branch in which to update image tag"
+        type: string
+        default: "main"
       gitops-username:
         description: "Username to associate with git actions."
         type: string
@@ -76,5 +80,5 @@ commands:
               echo "No changes detected."
             else
               git commit -m "Set << parameters.service-name >> << parameters.environment >> image tag to << parameters.service-image-new-tag >>"
-              git push origin main
+              git push origin << parameters.gitops-deploy-branch >>
             fi
