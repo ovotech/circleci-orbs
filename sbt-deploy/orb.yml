@@ -1,7 +1,7 @@
-version: 0.1.0
+version: 2.1
 description: "Deploy images to Argo-managed cluster using Kustomize"
 
-comands:
+commands:
   deploy-service:
     description: "Updates the image tag for a service."
 
@@ -9,7 +9,6 @@ comands:
       environment:
         description: "[Description] Environment in which service is being deployed (e.g. prod/non-prod)."
         type: string
-        default: ${ENVIRONMENT}
       service-name:
         description: "[Description] Service name being deployed (e.g. Public API Bookings)."
         type: string
@@ -52,7 +51,7 @@ comands:
           command: |
             git clone << parameters.gitops-repo >> /tmp/gitops
 
-      - install_kustomize:
+      - run:
           name: Install Kustomize CLI tool
           command: |
             KUSTOMIZE_VERSION=4.0.2
@@ -64,18 +63,18 @@ comands:
           name: Update image tag
           command: |
             cd /tmp/gitops/<< parameters.gitops_overlay_path >>
-            kustomize edit set image << parameters.service-image-placeholder >>=<< parameters.service-image-new-name >>:<< parameters.service-image-new-tag >>
+            kustomize edit set image << parameters.service-image-current-name >>=<< parameters.service-image-new-name >>:<< parameters.service-image-new-tag >>
 
       - run:
-        name: Commit and push changes
-        command: |
-          cd /tmp/gitops
-          git config user.email "<< parameters.gitops-email >>"
-          git config user.name "<< parameters.gitops-username >>"
-          git add --all
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "No changes detected."
-          else
-            git commit -m "Set << parameters.service-name >> << parameters.environment >> image tag to << parameters.service-image-new-tag >>"
-            git push origin master
-          fi
+          name: Commit and push changes
+          command: |
+            cd /tmp/gitops
+            git config user.email "<< parameters.gitops-email >>"
+            git config user.name "<< parameters.gitops-username >>"
+            git add --all
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "No changes detected."
+            else
+              git commit -m "Set << parameters.service-name >> << parameters.environment >> image tag to << parameters.service-image-new-tag >>"
+              git push origin main
+            fi
