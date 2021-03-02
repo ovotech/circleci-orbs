@@ -59,8 +59,11 @@ commands:
           name: Install Kustomize CLI tool
           command: |
             KUSTOMIZE_VERSION=4.0.2
-            curl -L -o /usr/local/bin/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64
-            chmod +x /usr/local/bin/kustomize
+            KUSTOMIZE_DL_FILE=kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            curl -L -O https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/${KUSTOMIZE_DL_FILE}
+            tar -xzf ${KUSTOMIZE_DL_FILE}
+            sudo mv kustomize /usr/local/bin/kustomize
+            sudo chmod u+x /usr/local/bin/kustomize
             kustomize version
 
       - run:
