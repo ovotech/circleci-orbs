@@ -29,7 +29,7 @@ Requires the K8s cluster to be configured with Argo and Kustomize.
 
 ```yaml
 orbs:
-  sbt-deploy: ovotech/sbt-deploy@0.1.0
+  sbt-deploy: ovotech/sbt-deploy@0.1.1
 
 jobs:
   deploy-to-uat:
