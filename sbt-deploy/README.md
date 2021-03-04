@@ -46,7 +46,7 @@ jobs:
           service-image-current-name: SOME_SERVICE_PLACEHOLDER
           service-image-new-name: XXXXXX.dkr.ecr.eu-west-1.amazonaws.com/public-api
           service-image-new-tag: 1.23.4
-          gitops-repo: git@github.com:ovotech/placeholder-repo.git
+          gitops-repo: git@ghgitops:ovotech/placeholder-repo.git
           gitops-username: CircleCI deploy bot
           gitops-email: deploy-bot@circleci.ovotech.org.uk
           gitops_overlay_path: overlays/non-prod
