@@ -67,7 +67,7 @@ commands:
             - run:
                 name: Update SSH config hostnames
                 command: |
-                  sed -i -e 's/Host << parameters.gitops-repo-ssh-key-host >>/<< parameters.gitops-repo-ssh-key-host >>\n  HostName << parameters.gitops-repo-ssh-key-hostname >>/g' ~/.ssh/config
+                  sed -i -e 's/Host << parameters.gitops-repo-ssh-key-host >>/Host << parameters.gitops-repo-ssh-key-host >>\n  HostName << parameters.gitops-repo-ssh-key-hostname >>/g' ~/.ssh/config
 
       - run:
           name: Clone repo
