@@ -18,20 +18,12 @@ commands:
       service-image-current-name:
         description: "Text specified in image name field for deploying service."
         type: string
-        default: "SERVICE_IMAGE_NAME"
       service-image-new-tag:
         description: "Image Registry tag of service to be deployed"
-        type: string
-      gitops-ssh-key-fingerprint:
-        description: "The github SSH key that will be used to update the repository."
         type: string
       gitops-repo:
         description: "URL for repository containing kubernetes manifests."
         type: string
-      gitops-deploy-branch:
-        description: "Branch in which to update image tag"
-        type: string
-        default: "main"
       gitops-username:
         description: "Username to associate with git actions."
         type: string
@@ -41,14 +33,41 @@ commands:
       gitops_overlay_path:
         description: "Path to overlay with kustomization.yaml to be updated."
         type: string
+      gitops-deploy-branch:
+        description: "Branch in which to update image tag"
+        type: string
+        default: "main"
+      gitops-repo-ssh-key-fingerprint:
+        description: "The github SSH key that will be used to update the repository."
+        type: string
+        default: ""
+      gitops-repo-ssh-key-host:
+        description: 'A host identifier to be set if multiple "Additional SSH keys" require a custom host to be set for the gitops repository, so as not to confict with another host.'
+        type: string
+        default: ""
+      gitops-repo-ssh-key-hostname:
+        description: "Optional HostName to update ssh config with, if gitops-repo-host is set."
+        type: string
+        default: github.com
 
     steps:
       - attach_workspace:
-          at: .
+          at: /tmp/workspace
 
-      - add_ssh_keys:
-          fingerprints:
-            - << parameters.gitops-ssh-key-fingerprint >>
+      - when:
+          condition: << parameters.gitops-repo-ssh-key-fingerprint >>
+          steps:
+            - add_ssh_keys:
+                fingerprints:
+                  - << parameters.gitops-repo-ssh-key-fingerprint >>
+
+      - when:
+          condition: << parameters.gitops-repo-ssh-key-host >>
+          steps:
+            - run:
+                name: Update SSH config hostnames
+                command: |
+                  sed -i -e 's/Host << parameters.gitops-repo-ssh-key-host >>/<< parameters.gitops-repo-ssh-key-host >>\n  HostName << parameters.gitops-repo-ssh-key-hostname >>/g' ~/.ssh/config
 
       - run:
           name: Clone repo
