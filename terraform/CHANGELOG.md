@@ -3,6 +3,15 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.6
+## Fixed
+- Reverted 1.8.5 - causing apply to fail as logic to compare apply-time plan to PR plan not updated
+
+
+## ovotech/terraform@1.8.5
+## Changed
+- Added collapsible plans option
+
 ## ovotech/terraform@1.8.4
 ## Fixed
 - tf apply failing due to `-chdir` not being used
@@ -64,11 +73,11 @@ not listed
 
 ## ovotech/terraform@1.7.2
 ### Changed
-- Updated 0.12 slim executor with Aiven's terraform-provider-aiven 2.0.1 
+- Updated 0.12 slim executor with Aiven's terraform-provider-aiven 2.0.1
 
 ## ovotech/terraform@1.7.1
 ### Changed
-- Added slim Terraform 0.12 executor 
+- Added slim Terraform 0.12 executor
   This image contains one version of each provider/tool
 
 ## ovotech/terraform@1.7.0
@@ -102,7 +111,7 @@ not listed
 ### Changed
 - Updated executors to include:
     - wget
-    
+
 ## ovotech/terraform@1.6.4
 ### Changed
 - Updated executors to include:
@@ -124,7 +133,7 @@ not listed
 ### Changed
 - Updated executors to include:
     - Aiven's aiven-provider-terraform 1.0.20, 1.1.0
-    
+
 ### Fixed
 - Older versions of aiven-provider that were accidentally left out of 1.6.1 have been restored
 
@@ -183,7 +192,7 @@ not listed
     - gcloud 265.0.0
     - awscli 1.16.249
     - Aivens' aiven-provider-terraform 1.0.17
-    
+
 ## ovotech/terraform@1.5.8
 ### Changed
 - Updated executors to include:
@@ -249,7 +258,7 @@ not listed
 
 ## ovotech/terraform@1.4.46
 ### Added
-- Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/) 
+- Specific terraform versions can be specified using a [tfswitch](https://warrensbox.github.io/terraform-switcher/)
 `.terraformrc` or [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in the module path
 
   This allows you to use newer terraform versions without waiting for a new orb version, and also doesn't force you to upgrade with new orb versions.

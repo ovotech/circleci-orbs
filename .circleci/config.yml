@@ -162,4 +162,4 @@ workflows:
                 - jaws-journey-deploy
                 - oot-deploy
                 - gcp-rotate-keys
-
+                - sbt-deploy

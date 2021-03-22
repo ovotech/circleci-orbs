@@ -36,6 +36,7 @@ any changes to the orb.
  - [ovotech/clojure](clojure) - test, scan and package Clojure projects built using Leiningen. 
  - [ovotech/oot-eks](oot-eks) - deploy services to EKS, OOT-style. 
  - [ovotech/oot-deploy](oot-deploy) - deploy services via Argo, OOT-style. 
+ - [ovotech/sbt-deploy](sbt-deploy) - Deploy services via Argo, using Kustomize. 
  
  Other orbs in the ovotech namespace:
  - [ovotech/shipit@1](https://github.com/ovotech/pe-orbs/tree/master/shipit) - Run shipit and record deployments to https://shipit.ovotech.org.uk.
