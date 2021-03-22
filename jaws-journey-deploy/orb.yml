@@ -339,6 +339,9 @@ jobs:
       saveTopology:
         type: boolean
         default: false
+      persist_to_workspace:
+        type: boolean
+        default: true
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -401,12 +404,15 @@ jobs:
             - slack/notify:
                 <<: *slack-notification
 
-      - persist_to_workspace:
-          root: .
-          paths:
-            - << parameters.serviceName >>/*
-            - ./reports/diagrams/*
-            - ./reports/jacoco/*
+      - when:
+          condition: << parameters.persist_to_workspace>>
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - << parameters.serviceName >>/*
+                  - ./reports/diagrams/*
+                  - ./reports/jacoco/*
 
   integration-test:
     parameters:
