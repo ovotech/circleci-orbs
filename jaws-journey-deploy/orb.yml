@@ -211,7 +211,7 @@ commands:
           command: |
             include ./scripts/code_coverage.sh
 
-  jmh:
+  run-jmh:
     description: "runs benchmarking"
     steps:
       - run:
@@ -219,6 +219,18 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/run_jmh.sh
+
+  jmh-commit:
+    description: "output benchmarking results to PR"
+    parameters:
+      file_path:
+        type: string
+    steps:
+      - run:
+          name: "Output benchmarking results to PR"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/jmh_commit.sh
 
   topology-describe:
     description: "Upload topology diagram to GH as a comment"
@@ -345,9 +357,11 @@ jobs:
           at: ~/working
       - openjdk-install/openjdk:
           version: 11
-      - jmh
+      - run-jmh
       - store_artifacts:
           path: ~/working/<< parameters.serviceName >>/build/reports/jmh
+      - jmh-commit:
+          file_path: "~/working/<< parameters.serviceName >>/build/reports/jmh"
 
   build-and-test:
     parameters:
