@@ -337,6 +337,8 @@ jobs:
   jmh:
     machine:
       docker_layer_caching: false
+    parameters:
+      <<: *serviceName
     working_directory: ~/working
     steps:
       - attach_workspace:
@@ -345,7 +347,7 @@ jobs:
           version: 11
       - jmh
       - store_artifacts:
-          path: ~/reports/jmh
+          path: ~/working/<< parameters.serviceName >>/reports/jmh
 
   build-and-test:
     parameters:
