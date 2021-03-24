@@ -347,7 +347,7 @@ jobs:
           version: 11
       - jmh
       - store_artifacts:
-          path: ~/working/<< parameters.serviceName >>/reports/jmh
+          path: ~/working/<< parameters.serviceName >>/build/reports/jmh
 
   build-and-test:
     parameters:
