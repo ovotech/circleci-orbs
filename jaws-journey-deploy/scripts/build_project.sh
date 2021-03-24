@@ -8,7 +8,7 @@ else
 fi
 
 if [[ "$SAVE_TOPOLOGY" = true ]] ; then
-  ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask :"<< parameters.serviceName >>":shadow -Pprofile=${PROFILE} --no-daemon -x integrationTest --full-stacktrace ${EXCLUDE}
+  ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask -Pprofile=${PROFILE} --no-daemon -x integrationTest --full-stacktrace ${EXCLUDE}
 else
   ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build :"<< parameters.serviceName >>":shadow -Pprofile=${PROFILE} --no-daemon -x integrationTest --full-stacktrace ${EXCLUDE}
 fi

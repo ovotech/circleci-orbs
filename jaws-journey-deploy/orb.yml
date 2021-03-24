@@ -211,6 +211,15 @@ commands:
           command: |
             include ./scripts/code_coverage.sh
 
+  jmh:
+    description: "runs benchmarking"
+    steps:
+      - run:
+          name: "Run benchmarking tool"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/run_jmh.sh
+
   topology-describe:
     description: "Upload topology diagram to GH as a comment"
     steps:
@@ -325,6 +334,18 @@ jobs:
             - << parameters.lib >>/*
             - ./reports/jacoco/*
 
+  jmh:
+    machine:
+      docker_layer_caching: false
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - openjdk-install/openjdk:
+          version: 11
+      - jmh
+      - store_artifacts:
+          path: ~/reports/jmh
 
   build-and-test:
     parameters:
