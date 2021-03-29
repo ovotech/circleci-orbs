@@ -37,7 +37,7 @@ aliases:
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
     TFMASK_RESOURCES_REGEX: "(?i)^(ovo_kafka_user|random_password|random_id|random_string).*$"
-    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64|query).*$"
+    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64|keystore_base64).*$"
 
   tf-common: &tf-common
     executor: terraform
