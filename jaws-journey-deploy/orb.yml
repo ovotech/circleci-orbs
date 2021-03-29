@@ -19,6 +19,9 @@ executors:
   node:
     docker:
       - image: circleci/node:14.15.3
+  terraform:
+    docker:
+      - image: ovotech/terraform:0.13
 
 aliases:
   parameters:
@@ -487,6 +490,7 @@ jobs:
     description: tf-plan << parameters.environment >>
     environment:
       <<: *tf-mask
+    executor: terraform
     steps:
       - when:
           condition: << parameters.attach_workspace >>
@@ -523,6 +527,7 @@ jobs:
     description: tf-apply-<< parameters.environment >>
     environment:
       <<: *tf-mask
+    executor: terraform
     steps:
       - when:
           condition: << parameters.attach_workspace >>
