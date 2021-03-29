@@ -48,6 +48,9 @@ aliases:
       destroy_first:
         type: boolean
         default: false
+      install_java:
+        type: boolean
+        default: false
       <<: *environment
 
   tf-parameters: &tf-parameters
@@ -494,6 +497,15 @@ jobs:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
+      - when:
+          condition: << parameters.install_java >>
+          steps:
+            - run:
+                name: Install adoptopenjdk
+                command: |
+                  source ./.circleci/scripts/install_adoptopenjdk.sh
+                  echo "export GITHUB_USERNAME=$GITHUB_BOT_USERNAME" >> $BASH_ENV
+                  echo "export GITHUB_TOKEN=$GITHUB_BOT_PACKAGE_MANAGER_TOKEN" >> $BASH_ENV
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -521,6 +533,15 @@ jobs:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
+      - when:
+          condition: << parameters.install_java >>
+          steps:
+            - run:
+                name: Install adoptopenjdk
+                command: |
+                  source ./.circleci/scripts/install_adoptopenjdk.sh
+                  echo "export GITHUB_USERNAME=$GITHUB_BOT_USERNAME" >> $BASH_ENV
+                  echo "export GITHUB_TOKEN=$GITHUB_BOT_PACKAGE_MANAGER_TOKEN" >> $BASH_ENV
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
