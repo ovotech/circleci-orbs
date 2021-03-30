@@ -40,6 +40,7 @@ aliases:
     TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64).*$"
 
   tf-common: &tf-common
+    executor: terraform
     parameters:
       path:
         type: string
@@ -589,7 +590,6 @@ jobs:
                 <<: *slack-notification
 
   tf-infrastructure:
-    executor: terraform
     working_directory: ~/working
     <<: *tf-common
     description: tf infrastructure << parameters.type >> << parameters.environment >>
