@@ -568,8 +568,8 @@ jobs:
       - when:
           condition:
             equal: [ "plan", << parameters.command >> ]
-            steps:
-              - terraform/plan: *tf-parameters
+          steps:
+            - terraform/plan: *tf-parameters
 #      - when:
 #          condition:
 #            equal: [ "apply", << parameters.command >> ]
