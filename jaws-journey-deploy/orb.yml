@@ -565,11 +565,11 @@ jobs:
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
-#      - when:
-#          condition:
-#            equal: [ "plan", << parameters.command >> ]
-#            steps:
-#              - terraform/plan: *tf-parameters
+      - when:
+          condition:
+            equal: [ "plan", << parameters.command >> ]
+            steps:
+              - terraform/plan: *tf-parameters
 #      - when:
 #          condition:
 #            equal: [ "apply", << parameters.command >> ]
