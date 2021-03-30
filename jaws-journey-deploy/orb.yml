@@ -570,18 +570,18 @@ jobs:
             equal: [ "plan", << parameters.type >> ]
             steps:
               - terraform/plan: *tf-parameters
-      - when:
-          condition:
-            equal: [ "apply", << parameters.type >> ]
-            steps:
-              - when:
-                  condition: << parameters.destroy_first >>
-                  steps:
-                    - terraform/destroy:
-                        <<: *tf-parameters
-              - terraform/apply:
-                  auto_approve: true
-                  <<: *tf-parameters
+#      - when:
+#          condition:
+#            equal: [ "apply", << parameters.type >> ]
+#            steps:
+#              - when:
+#                  condition: << parameters.destroy_first >>
+#                  steps:
+#                    - terraform/destroy:
+#                        <<: *tf-parameters
+#              - terraform/apply:
+#                  auto_approve: true
+#                  <<: *tf-parameters
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
