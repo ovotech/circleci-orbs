@@ -36,11 +36,10 @@ aliases:
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
-    TFMASK_RESOURCES_REGEX: "(?i)^(ovo_kafka_user|random_password|random_id|random_string).*$"
-    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64|keystore_base64).*$"
+    TFMASK_RESOURCES_REGEX: "(?i)^(random_password|random_id|random_string).*$"
+    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64).*$"
 
   tf-common: &tf-common
-    executor: terraform
     parameters:
       path:
         type: string
@@ -51,9 +50,23 @@ aliases:
       destroy_first:
         type: boolean
         default: false
-      install_java:
+      <<: *environment
+
+  tf-shared: &tf-shared
+    parameters:
+      path:
+        type: string
+        default: ""
+      attach_workspace:
         type: boolean
         default: false
+      destroy_first:
+        type: boolean
+        default: false
+      type:
+        type: "enum"
+        enum: [ "plan", "apply" ]
+        default: "plan"
       <<: *environment
 
   tf-parameters: &tf-parameters
@@ -500,15 +513,6 @@ jobs:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
-      - when:
-          condition: << parameters.install_java >>
-          steps:
-            - run:
-                name: Install adoptopenjdk
-                command: |
-                  source ./.circleci/scripts/install_adoptopenjdk.sh
-                  echo "export GITHUB_USERNAME=$GITHUB_BOT_USERNAME" >> $BASH_ENV
-                  echo "export GITHUB_TOKEN=$GITHUB_BOT_PACKAGE_MANAGER_TOKEN" >> $BASH_ENV
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -536,15 +540,6 @@ jobs:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
-      - when:
-          condition: << parameters.install_java >>
-          steps:
-            - run:
-                name: Install adoptopenjdk
-                command: |
-                  source ./.circleci/scripts/install_adoptopenjdk.sh
-                  echo "export GITHUB_USERNAME=$GITHUB_BOT_USERNAME" >> $BASH_ENV
-                  echo "export GITHUB_TOKEN=$GITHUB_BOT_PACKAGE_MANAGER_TOKEN" >> $BASH_ENV
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -556,6 +551,99 @@ jobs:
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+  tf:
+    working_directory: ~/working
+    <<: *tf-shared
+    description: tf << parameters.type >> << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/working
+      - unless:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - checkout
+      - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
+      - when:
+          condition:
+            equal: [ "plan", << parameters.type >> ]
+            steps:
+              - terraform/plan: *tf-parameters
+      - when:
+          condition:
+            equal: [ "apply", << parameters.type >> ]
+            steps:
+              - when:
+                  condition: << parameters.destroy_first >>
+                  steps:
+                    - terraform/destroy:
+                        <<: *tf-parameters
+              - terraform/apply:
+                  auto_approve: true
+                  <<: *tf-parameters
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+  tf-infrastructure:
+    executor: terraform
+    working_directory: ~/working
+    <<: *tf-shared
+    description: tf infrastructure << parameters.type >> << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/working
+      - unless:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - checkout
+      - run:
+          name: Install adoptopenjdk
+          command: |
+            source ./.circleci/scripts/install_adoptopenjdk.sh
+            echo "export GITHUB_USERNAME=$GITHUB_BOT_USERNAME" >> $BASH_ENV
+            echo "export GITHUB_TOKEN=$GITHUB_BOT_PACKAGE_MANAGER_TOKEN" >> $BASH_ENV
+      - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
+      - when:
+          condition:
+            equal: [ "plan", << parameters.type >> ]
+            steps:
+              - terraform/plan: *tf-parameters
+      - when:
+          condition:
+            equal: [ "apply", << parameters.type >> ]
+            steps:
+              - when:
+                  condition: << parameters.destroy_first >>
+                  steps:
+                    - terraform/destroy:
+                        <<: *tf-parameters
+              - terraform/apply:
+                  auto_approve: true
+                  <<: *tf-parameters
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
