@@ -51,7 +51,7 @@ aliases:
       destroy_first:
         type: boolean
         default: false
-      type:
+      command:
         type: "enum"
         enum: [ "plan", "apply" ]
         default: "plan"
@@ -549,7 +549,7 @@ jobs:
   tf:
     working_directory: ~/working
     <<: *tf-common
-    description: tf << parameters.type >> << parameters.environment >>
+    description: tf << parameters.command >> << parameters.environment >>
     environment:
       <<: *tf-mask
     steps:
@@ -567,12 +567,12 @@ jobs:
           path: terraform/<< parameters.path >>
 #      - when:
 #          condition:
-#            equal: [ "plan", << parameters.type >> ]
+#            equal: [ "plan", << parameters.command >> ]
 #            steps:
 #              - terraform/plan: *tf-parameters
 #      - when:
 #          condition:
-#            equal: [ "apply", << parameters.type >> ]
+#            equal: [ "apply", << parameters.command >> ]
 #            steps:
 #              - when:
 #                  condition: << parameters.destroy_first >>
@@ -592,7 +592,7 @@ jobs:
 #  tf-infrastructure:
 #    working_directory: ~/working
 #    <<: *tf-common
-#    description: tf infrastructure << parameters.type >> << parameters.environment >>
+#    description: tf infrastructure << parameters.command >> << parameters.environment >>
 #    environment:
 #      <<: *tf-mask
 #    steps:
@@ -616,12 +616,12 @@ jobs:
 #          path: terraform/<< parameters.path >>
 #      - when:
 #          condition:
-#            equal: [ "plan", << parameters.type >> ]
+#            equal: [ "plan", << parameters.command >> ]
 #            steps:
 #              - terraform/plan: *tf-parameters
 #      - when:
 #          condition:
-#            equal: [ "apply", << parameters.type >> ]
+#            equal: [ "apply", << parameters.command >> ]
 #            steps:
 #              - when:
 #                  condition: << parameters.destroy_first >>
