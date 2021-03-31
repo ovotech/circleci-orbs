@@ -244,6 +244,50 @@ commands:
             npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
           name: Run semantic versioning
 
+
+  tf:
+    working_directory: ~/working
+    <<: *tf-common
+    description: tf << parameters.command >> << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/working
+      - unless:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - checkout
+      - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
+      - when:
+          condition:
+            equal: [ "plan", << parameters.command >> ]
+          steps:
+            - terraform/plan: *tf-parameters
+      - when:
+          condition:
+            equal: [ "apply", << parameters.command >> ]
+          steps:
+            - when:
+                condition: << parameters.destroy_first >>
+                steps:
+                  - terraform/destroy:
+                      <<: *tf-parameters
+            - terraform/apply:
+                auto_approve: true
+                <<: *tf-parameters
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
 jobs:
   checkout-code:
     executor: kotlin
@@ -486,31 +530,35 @@ jobs:
       - create-release
 
   tf-plan:
-    working_directory: ~/working
-    <<: *tf-common
-    description: tf-plan << parameters.environment >>
-    environment:
-      <<: *tf-mask
-    steps:
-      - when:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - attach_workspace:
-                at: ~/working
-      - unless:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - checkout
-      - calculate-build-version
-      - terraform/fmt-check:
-          path: terraform/<< parameters.path >>
-      - terraform/plan: *tf-parameters
-      - when:
-          condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
-          steps:
-            - slack/notify:
-                <<: *slack-notification
+    - tf:
+      command: plan
+
+
+#    working_directory: ~/working
+#    <<: *tf-common
+#    description: tf-plan << parameters.environment >>
+#    environment:
+#      <<: *tf-mask
+#    steps:
+#      - when:
+#          condition: << parameters.attach_workspace >>
+#          steps:
+#            - attach_workspace:
+#                at: ~/working
+#      - unless:
+#          condition: << parameters.attach_workspace >>
+#          steps:
+#            - checkout
+#      - calculate-build-version
+#      - terraform/fmt-check:
+#          path: terraform/<< parameters.path >>
+#      - terraform/plan: *tf-parameters
+#      - when:
+#          condition:
+#            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+#          steps:
+#            - slack/notify:
+#                <<: *slack-notification
 
   tf-apply:
     working_directory: ~/working
@@ -539,49 +587,6 @@ jobs:
       - terraform/apply:
           auto_approve: true
           <<: *tf-parameters
-      - when:
-          condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
-          steps:
-            - slack/notify:
-                <<: *slack-notification
-
-  tf:
-    working_directory: ~/working
-    <<: *tf-common
-    description: tf << parameters.command >> << parameters.environment >>
-    environment:
-      <<: *tf-mask
-    steps:
-      - when:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - attach_workspace:
-                at: ~/working
-      - unless:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - checkout
-      - calculate-build-version
-      - terraform/fmt-check:
-          path: terraform/<< parameters.path >>
-      - when:
-          condition:
-            equal: [ "plan", << parameters.command >> ]
-          steps:
-            - terraform/plan: *tf-parameters
-      - when:
-          condition:
-            equal: [ "apply", << parameters.command >> ]
-          steps:
-            - when:
-                condition: << parameters.destroy_first >>
-                steps:
-                  - terraform/destroy:
-                      <<: *tf-parameters
-            - terraform/apply:
-                auto_approve: true
-                <<: *tf-parameters
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
