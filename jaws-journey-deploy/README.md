@@ -148,12 +148,12 @@ This step performs a linting step to make sure the terraform styling is standard
 ### tf-plan-java
 **Description**
 
-This step is the same as [tf-plan](#tf-plan) but installs adoptopenjdk in order to allow avro keystore and truststore to be created.
+This step is the same as [tf-plan](#tf-plan) but installs adoptopenjdk in order to allow java keystore and truststore to be created.
 
 ### tf-apply-java
 **Description**
 
-This step is the same as [tf-apply](#tf-apply) but installs adoptopenjdk in order to allow avro keystore and truststore to be created.
+This step is the same as [tf-apply](#tf-apply) but installs adoptopenjdk in order to allow java keystore and truststore to be created.
 
 ### notify-shipit
 
