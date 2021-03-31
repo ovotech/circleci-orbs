@@ -269,7 +269,7 @@ commands:
           steps:
             - checkout
       - when:
-          conditions: << parameters.install_java >>
+          condition: << parameters.install_java >>
           steps:
             - run:
                 name: Install adoptopenjdk
