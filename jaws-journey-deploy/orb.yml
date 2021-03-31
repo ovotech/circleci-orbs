@@ -40,7 +40,6 @@ aliases:
     TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64).*$"
 
   tf-common: &tf-common
-    executor: terraform
     parameters:
       path:
         type: string
@@ -246,11 +245,8 @@ commands:
 
 
   tf:
-    working_directory: ~/working
     <<: *tf-common
     description: tf << parameters.command >> << parameters.environment >>
-    environment:
-      <<: *tf-mask
     steps:
       - when:
           condition: << parameters.attach_workspace >>
@@ -530,8 +526,15 @@ jobs:
       - create-release
 
   tf-plan:
-    - tf:
-      command: plan
+    executor: terraform
+    working_directory: ~/working
+    <<: *tf-common
+    description: tf << parameters.command >> << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - tf:
+        command: plan
 
 
 #    working_directory: ~/working
