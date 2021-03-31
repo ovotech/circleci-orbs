@@ -270,7 +270,10 @@ commands:
           steps:
             - run:
                 name: "Install adoptopenjdk"
-                command: source ./scripts/tf_install_adoptopenjdk.sh
+                shell: /bin/bash -eo pipefail
+                command: |
+                  ls -la ./scripts
+                  source ./scripts/tf_install_adoptopenjdk.sh
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
