@@ -529,74 +529,21 @@ jobs:
     executor: terraform
     working_directory: ~/working
     <<: *tf-common
-    description: tf << parameters.command >> << parameters.environment >>
     environment:
       <<: *tf-mask
     steps:
       - tf:
         command: plan
 
-
-#    working_directory: ~/working
-#    <<: *tf-common
-#    description: tf-plan << parameters.environment >>
-#    environment:
-#      <<: *tf-mask
-#    steps:
-#      - when:
-#          condition: << parameters.attach_workspace >>
-#          steps:
-#            - attach_workspace:
-#                at: ~/working
-#      - unless:
-#          condition: << parameters.attach_workspace >>
-#          steps:
-#            - checkout
-#      - calculate-build-version
-#      - terraform/fmt-check:
-#          path: terraform/<< parameters.path >>
-#      - terraform/plan: *tf-parameters
-#      - when:
-#          condition:
-#            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
-#          steps:
-#            - slack/notify:
-#                <<: *slack-notification
-
   tf-apply:
     executor: terraform
     working_directory: ~/working
     <<: *tf-common
-    description: tf-apply-<< parameters.environment >>
     environment:
       <<: *tf-mask
     steps:
-      - when:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - attach_workspace:
-                at: ~/working
-      - unless:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - checkout
-      - calculate-build-version
-      - terraform/fmt-check:
-          path: terraform/<< parameters.path >>
-      - when:
-          condition: << parameters.destroy_first >>
-          steps:
-            - terraform/destroy:
-                <<: *tf-parameters
-      - terraform/apply:
-          auto_approve: true
-          <<: *tf-parameters
-      - when:
-          condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
-          steps:
-            - slack/notify:
-                <<: *slack-notification
+      - tf:
+        command: apply
 
   tf-infrastructure:
     executor: terraform
