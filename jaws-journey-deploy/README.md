@@ -15,6 +15,8 @@ Available Jobs
 * [synk-scan](#synk-scan)
 * [tf-plan](#tf-plan)
 * [tf-apply](#tf-apply)
+* [tf-plan-java](#tf-plan-java)
+* [tf-apply-java](#tf-apply-java)
 * [notify-shipit](#notify-shipit)
 * [run-automation-test](#run-automation-test)
 * [create-release](#create-release)
@@ -139,8 +141,19 @@ terraform
 This step performs a linting step to make sure the terraform styling is standardised, and then runs a terraform apply - based on the files provided in the path parameter.
 
 **Parameters**
+* attach_workspace: Boolean field to indicate whether you want to attach to the workspace 'working'.  This is defaulted to false, and is only used for the template build.
 * path: The path of the terraform files you are wanting to run against - **Note** remember to omit the root terraform directory from your path.  As shown in the hierarchy example below Journeys will typically contain a main and kubernetes subfolder.
 * environment: Indicates which environment the code is being deployed to.  Expected values are `[sandbox, nonprod, prod]`
+
+### tf-plan-java
+**Description**
+
+This step is the same as [tf-plan](#tf-plan) but installs adoptopenjdk in order to allow avro keystore and truststore to be created.
+
+### tf-apply-java
+**Description**
+
+This step is the same as [tf-apply](#tf-apply) but installs adoptopenjdk in order to allow avro keystore and truststore to be created.
 
 ### notify-shipit
 

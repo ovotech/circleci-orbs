@@ -246,17 +246,14 @@ commands:
             npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
           name: Run semantic versioning
 
-
   tf:
     parameters:
       <<: *tf-common-parameters
       command:
         type: "enum"
         enum: [ "plan", "apply" ]
-        default: "plan"
       install_java:
         type: boolean
-        default: false
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -271,9 +268,7 @@ commands:
       - when:
           condition: << parameters.install_java >>
           steps:
-            - run:
-                name: Install adoptopenjdk
-                command: source ./.circleci/scripts/install_adoptopenjdk.sh
+            - install-adoptopenjdk
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -552,6 +547,7 @@ jobs:
       - tf:
           <<: *tf-command-parameters
           command: plan
+          install_java: false
 
   tf-apply:
     executor: terraform
@@ -563,6 +559,7 @@ jobs:
       - tf:
           <<: *tf-command-parameters
           command: apply
+          install_java: false
 
   tf-plan-java:
     executor: terraform
