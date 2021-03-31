@@ -268,7 +268,10 @@ commands:
       - when:
           condition: << parameters.install_java >>
           steps:
-            - install-adoptopenjdk
+            - run:
+                name: "Install adoptopenjdk"
+                shell: /bin/bash -eo pipefail
+                command: include ./scripts/tf_install_adoptopenjdk.sh
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
