@@ -564,6 +564,7 @@ jobs:
 #                <<: *slack-notification
 
   tf-apply:
+    executor: terraform
     working_directory: ~/working
     <<: *tf-common
     description: tf-apply-<< parameters.environment >>
@@ -598,6 +599,7 @@ jobs:
                 <<: *slack-notification
 
   tf-infrastructure:
+    executor: terraform
     working_directory: ~/working
     <<: *tf-common
     description: tf infrastructure << parameters.command >> << parameters.environment >>
