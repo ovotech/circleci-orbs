@@ -573,7 +573,6 @@ jobs:
       - tf:
           <<: *tf-command-parameters
           command: plan
-          install_java: true
 
   tf-apply-java:
     executor: terraform
@@ -586,7 +585,6 @@ jobs:
       - tf:
           <<: *tf-command-parameters
           command: apply
-          install_java: true
 
   run-automation-test:
     parameters:
