@@ -40,7 +40,7 @@ aliases:
     TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64).*$"
 
   tf-common: &tf-common
-    parameters:
+    parameters: &tf-common-parameters
       path:
         type: string
         default: ""
@@ -50,11 +50,14 @@ aliases:
       destroy_first:
         type: boolean
         default: false
-      command:
-        type: "enum"
-        enum: [ "plan", "apply" ]
-        default: "plan"
       <<: *environment
+
+  tf-command-parameters: &tf-command-parameters
+    path: << parameters.path >>
+    attach_workspace: << parameters.attach_workspace >>
+    destroy_first: << parameters.destroy_first >>
+    environment: << parameters.environment >>
+
 
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
@@ -245,7 +248,15 @@ commands:
 
 
   tf:
-    <<: *tf-common
+    parameters:
+      <<: *tf-common-parameters
+      command:
+        type: "enum"
+        enum: [ "plan", "apply" ]
+        default: "plan"
+      install_java:
+        type: boolean
+        default: false
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -257,6 +268,12 @@ commands:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
+      - when:
+          conditions: << parameters.install_java >>
+          steps:
+            - run:
+                name: Install adoptopenjdk
+                command: source ./.circleci/scripts/install_adoptopenjdk.sh
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -533,11 +550,8 @@ jobs:
       <<: *tf-mask
     steps:
       - tf:
+          <<: *tf-command-parameters
           command: plan
-          path: << parameters.path >>
-          attach_workspace: << parameters.attach_workspace >>
-          destroy_first: << parameters.destroy_first >>
-          environment: << parameters.environment >>
 
   tf-apply:
     executor: terraform
@@ -547,11 +561,32 @@ jobs:
       <<: *tf-mask
     steps:
       - tf:
+          <<: *tf-command-parameters
           command: apply
-          path: << parameters.path >>
-          attach_workspace: << parameters.attach_workspace >>
-          destroy_first: << parameters.destroy_first >>
-          environment: << parameters.environment >>
+
+  tf-plan-java:
+    executor: terraform
+    working_directory: ~/working
+    <<: *tf-common
+    environment:
+      <<: *tf-mask
+    steps:
+      - tf:
+          <<: *tf-command-parameters
+          command: plan
+          install_java: true
+
+  tf-apply-java:
+    executor: terraform
+    working_directory: ~/working
+    <<: *tf-common
+    environment:
+      <<: *tf-mask
+    steps:
+      - tf:
+          <<: *tf-command-parameters
+          command: apply
+          install_java: true
 
   tf-infrastructure:
     executor: terraform
