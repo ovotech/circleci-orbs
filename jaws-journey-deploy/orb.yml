@@ -534,6 +534,10 @@ jobs:
     steps:
       - tf:
         command: plan
+        path: << parameters.path >>
+        attach_workspace: << parameters.attach_workspace >>
+        destroy_first: << parameters.destroy_first >>
+        environment: << parameters.environment >>
 
   tf-apply:
     executor: terraform
@@ -544,6 +548,10 @@ jobs:
     steps:
       - tf:
         command: apply
+        path: << parameters.path >>
+        attach_workspace: << parameters.attach_workspace >>
+        destroy_first: << parameters.destroy_first >>
+        environment: << parameters.environment >>
 
   tf-infrastructure:
     executor: terraform
