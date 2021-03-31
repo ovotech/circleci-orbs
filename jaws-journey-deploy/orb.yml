@@ -36,7 +36,7 @@ aliases:
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
-    TFMASK_RESOURCES_REGEX: "(?i)^(random_password|random_id|random_string).*$"
+    TFMASK_RESOURCES_REGEX: "(?i)^(ovo_kafka_user|random_password|random_id|random_string).*$"
     TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64).*$"
 
   tf-common: &tf-common
@@ -261,8 +261,6 @@ commands:
       command:
         type: "enum"
         enum: [ "plan", "apply" ]
-      install_java:
-        type: boolean
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -274,10 +272,6 @@ commands:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
-      - when:
-          condition: << parameters.install_java >>
-          steps:
-            - tf-install-adoptopenjdk
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -556,7 +550,6 @@ jobs:
       - tf:
           <<: *tf-command-parameters
           command: plan
-          install_java: false
 
   tf-apply:
     executor: terraform
@@ -568,7 +561,6 @@ jobs:
       - tf:
           <<: *tf-command-parameters
           command: apply
-          install_java: false
 
   tf-plan-java:
     executor: terraform
@@ -577,6 +569,7 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
+      - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
           command: plan
@@ -589,6 +582,7 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
+      - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
           command: apply
