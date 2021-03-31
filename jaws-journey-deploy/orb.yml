@@ -238,6 +238,15 @@ commands:
           command: |
             include ./scripts/install_adoptopenjdk.sh
 
+  tf-install-adoptopenjdk:
+    description: "Install terraform adoptopenjdk"
+    steps:
+      - run:
+          name: "Install terraform adoptopenjdk"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/tf_install_adoptopenjdk.sh
+
   create-release:
     description: "Create release and changelog"
     steps:
@@ -268,12 +277,7 @@ commands:
       - when:
           condition: << parameters.install_java >>
           steps:
-            - run:
-                name: "Install adoptopenjdk"
-                shell: /bin/bash -eo pipefail
-                command: |
-                  ls -la ./scripts
-                  source ./scripts/tf_install_adoptopenjdk.sh
+            - tf-install-adoptopenjdk
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
