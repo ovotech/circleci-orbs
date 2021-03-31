@@ -541,7 +541,7 @@ jobs:
 
   gitops-deploy:
     working_directory: ~/working
-    executor: cimg/base:2020.01
+    machine: true
     parameters:
       manifest_directory:
         type: string
