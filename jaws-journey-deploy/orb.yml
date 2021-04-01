@@ -613,11 +613,6 @@ jobs:
           fingerprints:
             - << parameters.ssh_key_fingerprint >>
       - run:
-          name: "Clone repo"
-          command: |
-            git clone git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} /tmp/gitops
-            cd /tmp/gitops
-      - run:
           name: "Install yq"
           command: |
             include ./scripts/install_yq.sh
