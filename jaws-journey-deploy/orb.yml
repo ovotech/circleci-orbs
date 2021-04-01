@@ -539,6 +539,46 @@ jobs:
             - slack/notify:
                 <<: *slack-notification
 
+  gitops-deploy:
+    working_directory: ~/working
+    machine: true
+    parameters:
+      manifest_directory:
+        type: string
+        default: "manifests"
+      git_email:
+        type: string
+        default: "jaws.devsdl@ovoenergy.com"
+      git_name:
+        type: string
+        default: "Journeys CircleCI Orb"
+      ssh_key_fingerprint:
+        type: string
+      yq_version: 
+        type: string
+        default: "v4.6.2"
+      <<: *environment
+    description: Deploy to << parameters.environment >>
+    environment:
+      <<: *tf-mask
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - << parameters.ssh_key_fingerprint >>
+      - run:
+          name: "Install yq"
+          command: |
+            include ./scripts/install_yq.sh
+      - run:  
+          name: "Update helm values"
+          command: |   
+            include ./scripts/configure_helm.sh
+      - run:  
+          name: "Commit manifest update"
+          command: |
+            include ./scripts/commit_manifest.sh
+  
   run-automation-test:
     parameters:
       <<: *environment
