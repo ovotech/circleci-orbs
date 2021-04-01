@@ -19,6 +19,9 @@ executors:
   node:
     docker:
       - image: circleci/node:14.15.3
+  terraform:
+    docker:
+      - image: ovotech/terraform:0.13
 
 aliases:
   parameters:
@@ -34,11 +37,10 @@ aliases:
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
     TFMASK_RESOURCES_REGEX: "(?i)^(ovo_kafka_user|random_password|random_id|random_string).*$"
-    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result).*$"
+    TFMASK_VALUES_REGEX: "(?i)^.*(oauth|secret|token|password|key|result|cert|base64).*$"
 
   tf-common: &tf-common
-    executor: terraform/terraform-0_12
-    parameters:
+    parameters: &tf-common-parameters
       path:
         type: string
         default: ""
@@ -49,6 +51,13 @@ aliases:
         type: boolean
         default: false
       <<: *environment
+
+  tf-command-parameters: &tf-command-parameters
+    path: << parameters.path >>
+    attach_workspace: << parameters.attach_workspace >>
+    destroy_first: << parameters.destroy_first >>
+    environment: << parameters.environment >>
+
 
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
@@ -229,6 +238,15 @@ commands:
           command: |
             include ./scripts/install_adoptopenjdk.sh
 
+  tf-install-adoptopenjdk:
+    description: "Install terraform adoptopenjdk"
+    steps:
+      - run:
+          name: "Install terraform adoptopenjdk"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/tf_install_adoptopenjdk.sh
+
   create-release:
     description: "Create release and changelog"
     steps:
@@ -236,6 +254,50 @@ commands:
           command: |
             npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
           name: Run semantic versioning
+
+  tf:
+    parameters:
+      <<: *tf-common-parameters
+      command:
+        type: "enum"
+        enum: [ "plan", "apply" ]
+    description: tf << parameters.command >> << parameters.environment >>
+    steps:
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/working
+      - unless:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - checkout
+      - calculate-build-version
+      - terraform/fmt-check:
+          path: terraform/<< parameters.path >>
+      - when:
+          condition:
+            equal: [ "plan", << parameters.command >> ]
+          steps:
+            - terraform/plan: *tf-parameters
+      - when:
+          condition:
+            equal: [ "apply", << parameters.command >> ]
+          steps:
+            - when:
+                condition: << parameters.destroy_first >>
+                steps:
+                  - terraform/destroy:
+                      <<: *tf-parameters
+            - terraform/apply:
+                auto_approve: true
+                <<: *tf-parameters
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
 jobs:
   checkout-code:
@@ -479,65 +541,50 @@ jobs:
       - create-release
 
   tf-plan:
+    executor: terraform
     working_directory: ~/working
     <<: *tf-common
-    description: tf-plan << parameters.environment >>
     environment:
       <<: *tf-mask
     steps:
-      - when:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - attach_workspace:
-                at: ~/working
-      - unless:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - checkout
-      - calculate-build-version
-      - terraform/fmt-check:
-          path: terraform/<< parameters.path >>
-      - terraform/plan: *tf-parameters
-      - when:
-          condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
-          steps:
-            - slack/notify:
-                <<: *slack-notification
+      - tf:
+          <<: *tf-command-parameters
+          command: plan
 
   tf-apply:
+    executor: terraform
     working_directory: ~/working
     <<: *tf-common
-    description: tf-apply-<< parameters.environment >>
     environment:
       <<: *tf-mask
     steps:
-      - when:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - attach_workspace:
-                at: ~/working
-      - unless:
-          condition: << parameters.attach_workspace >>
-          steps:
-            - checkout
-      - calculate-build-version
-      - terraform/fmt-check:
-          path: terraform/<< parameters.path >>
-      - when:
-          condition: << parameters.destroy_first >>
-          steps:
-            - terraform/destroy:
-                <<: *tf-parameters
-      - terraform/apply:
-          auto_approve: true
-          <<: *tf-parameters
-      - when:
-          condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
-          steps:
-            - slack/notify:
-                <<: *slack-notification
+      - tf:
+          <<: *tf-command-parameters
+          command: apply
+
+  tf-plan-java:
+    executor: terraform
+    working_directory: ~/working
+    <<: *tf-common
+    environment:
+      <<: *tf-mask
+    steps:
+      - tf-install-adoptopenjdk
+      - tf:
+          <<: *tf-command-parameters
+          command: plan
+
+  tf-apply-java:
+    executor: terraform
+    working_directory: ~/working
+    <<: *tf-common
+    environment:
+      <<: *tf-mask
+    steps:
+      - tf-install-adoptopenjdk
+      - tf:
+          <<: *tf-command-parameters
+          command: apply
 
   gitops-deploy:
     working_directory: ~/working
