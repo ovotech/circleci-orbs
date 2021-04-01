@@ -163,3 +163,4 @@ workflows:
                 - oot-deploy
                 - gcp-rotate-keys
                 - sbt-deploy
+                - pipeline-utils

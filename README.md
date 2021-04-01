@@ -38,6 +38,7 @@ any changes to the orb.
  - [ovotech/oot-deploy](oot-deploy) - deploy services via Argo, OOT-style. 
  - [ovotech/sbt-deploy](sbt-deploy) - Deploy services via Argo, using Kustomize. 
  - [ovotech/jaws-journey-deploy](sbt-deploy) - Provides a standard deployment process for all jaws journey repositories.
+ - [ovotech/pipeline-utils](pipeline-utils) - Miscellaneous bash commands to ease CircleCI pipeline development.
 
  Other orbs in the ovotech namespace:
  - [ovotech/shipit@1](https://github.com/ovotech/pe-orbs/tree/master/shipit) - Run shipit and record deployments to https://shipit.ovotech.org.uk.
