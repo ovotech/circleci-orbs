@@ -609,7 +609,6 @@ jobs:
     environment:
       <<: *tf-mask
     steps:
-      - checkout
       - add_ssh_keys:
           fingerprints:
             - << parameters.ssh_key_fingerprint >>
@@ -620,11 +619,7 @@ jobs:
       - run:  
           name: "Update helm values"
           command: |   
-            include ./scripts/configure_helm.sh
-      - run:  
-          name: "Commit manifest update"
-          command: |
-            include ./scripts/commit_manifest.sh
+            include ./scripts/update_helm.sh
   
   run-automation-test:
     parameters:
