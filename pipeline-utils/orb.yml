@@ -39,4 +39,4 @@ commands:
           command: |
             include scripts/maybe-decode.sh
 
-            echo "export << parameters.var >>='"$(maybe_decode "$(printenv << parameters.var >>)")"'" >> "${BASH_ENV}"
+            maybe_decode "<< parameters.var >>"
