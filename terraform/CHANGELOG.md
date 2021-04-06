@@ -3,10 +3,14 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+
+## ovotech/terraform@1.8.7
+## Added
+- Added Terraform provider Aiven Kafka Users v1.0.0
+
 ## ovotech/terraform@1.8.6
 ## Fixed
 - Reverted 1.8.5 - causing apply to fail as logic to compare apply-time plan to PR plan not updated
-
 
 ## ovotech/terraform@1.8.5
 ## Changed
