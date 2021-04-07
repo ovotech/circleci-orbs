@@ -34,6 +34,7 @@ redeploy_ecs() {
           | map(select(
             (.createdAt
               | sub("(?<time>T[0-9:]+)(\\.\\d+)?(?<tz>Z|[+\\-]\\d{2}:?(\\d{2})?)$"; .time + .tz)
+              | sub("Z$"; "+00:00")
               | sub("(?<h>[+\\-]\\d{2}):?(?<m>\\d{2})$"; .h + .m)
               | strptime("%Y-%m-%dT%H:%M:%S%z")
               | mktime >= ($now | tonumber))
