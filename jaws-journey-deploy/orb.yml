@@ -534,7 +534,6 @@ jobs:
 
   create-release:
     executor: node
-    working_directory: ~/working
     steps:
       - create-release
 
