@@ -74,6 +74,20 @@ commands:
           name: "Create Bintray credentials file"
           command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
 
+  artifactory_credentials:
+    description: "Create Artifactory credentials file"
+    parameters:
+      username:
+        description: "Name of the environment variable storing artifactory username"
+        type: env_var_name
+      api-key:
+        description: "Name of the environment variable storing artifactory api key"
+        type: env_var_name
+    steps:
+      - run:
+          name: "Create Artifactory credentials file"
+          command: echo "credentials += Credentials(\"Artifactory Realm\", \"kaluza.jfrog.io\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > artifactory.sbt
+
   gcloud_auth:
     description: "Initialize the `gcloud` CLI"
     parameters:
@@ -155,6 +169,14 @@ jobs:
         description: "Name of the environment variable storing the bintray api key"
         default: BINTRAY_API_KEY
         type: env_var_name
+      artifactory-username:
+        description: "Name of the environment variable storing the artifactory username"
+        default: ARTIFACTORY_USERNAME
+        type: env_var_name
+      artifactory-api-key:
+        description: "Name of the environment variable storing the artifactory api key"
+        default: ARTIFACTORY_API_KEY
+        type: env_var_name
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -170,6 +192,9 @@ jobs:
       - bintray_credentials:
           username: <<parameters.bintray-username>>
           api-key: <<parameters.bintray-api-key>>
+      - artifactory_credentials:
+          username: <<parameters.artifactory-username>>
+          api-key: <<parameters.artifactory-api-key>>
       - run:
           name: "Compile"
           command: sbt update compile test:compile evicted
