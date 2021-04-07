@@ -28,7 +28,7 @@ redeploy_ecs() {
 
     _UPDATED=$(
       AWS_PAGER="" aws ecs describe-services --cluster "${_CLUSTER}" --service "${_SERVICE}" \
-        | jq --arg now "${_START}" --arg name "${_SERVICE}" \
+        | TZ=UTC jq --arg now "${_START}" --arg name "${_SERVICE}" \
           '.services[]
           | select(.serviceName == $name).events
           | map(select(
