@@ -32,7 +32,11 @@ redeploy_ecs() {
           '.services[]
           | select(.serviceName == $name).events
           | map(select(
-            (.createdAt | sub("\\.[0-9]+\\+00:00"; "Z") | fromdate >= ($now | tonumber))
+            (.createdAt
+              | sub("(?<time>T[0-9:]+)(\\.\\d+)?(?<tz>Z|[+\\-]\\d{2}:?(\\d{2})?)$"; .time + .tz)
+              | sub("(?<h>[+\\-]\\d{2}):?(?<m>\\d{2})$"; .h + .m)
+              | strptime("%Y-%m-%dT%H:%M:%S%z")
+              | mktime >= ($now | tonumber))
             and
             (.message | contains("reached a steady state"))
           ))
