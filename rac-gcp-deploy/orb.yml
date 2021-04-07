@@ -86,7 +86,7 @@ commands:
     steps:
       - run:
           name: "Create Artifactory credentials file"
-          command: echo "credentials += Credentials(\"Artifactory Realm\", \"kaluza.jfrog.io\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > artifactory.sbt
+          command: echo "credentials += Credentials(\"Artifactory Realm\", \"kaluza.jfrog.io\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" >> credentials.sbt
 
   gcloud_auth:
     description: "Initialize the `gcloud` CLI"
