@@ -4,6 +4,7 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
 aliases:
   # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
   - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
+  - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
 
 .gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
@@ -58,7 +59,23 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
+            - *cache-key
+  store_cache:
+    parameters:
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+    description: "Save dependencies into cache"
+    steps:
+      - save_cache:
+          key: *cache-key
+          paths:
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.embedpostgresql
+            - ~/.cache/coursier
 
   bintray_credentials:
     description: "Create Bintray credentials file"
@@ -204,15 +221,8 @@ jobs:
             rm -fv ~/.ivy2/.sbt.ivy.lock
             find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
             find ~/.sbt -name "*.lock" -print -delete
-      - save_cache:
-          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
-          paths:
-            - ~/.m2
-            - ~/.ivy2
-            - ~/.sbt
-            - ~/.embedpostgresql
-            - ~/.cache/coursier
-
+      - store_cache:
+          cache-suffix: <<parameters.cache-suffix>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
