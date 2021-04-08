@@ -48,10 +48,10 @@ jobs:
 
               if [[ "$filename" == "Dockerfile" ]]; then
                   TAG="latest"
-                  BUILD_TAG="$(date "+%d-%m-%Y")"
+                  BUILD_TAG="${CIRCLE_BRANCH}_$(date "+%d-%m-%Y")"
               else
                   TAG="${filename#"Dockerfile-"}"
-                  BUILD_TAG="${TAG}_$(date "+%d-%m-%Y")"
+                  BUILD_TAG="${TAG}_${CIRCLE_BRANCH}_$(date "+%d-%m-%Y")"
               fi
 
               docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
