@@ -96,9 +96,11 @@ commands:
     parameters:
       username:
         description: "Name of the environment variable storing artifactory username"
+        default: ARTIFACTORY_USERNAME
         type: env_var_name
       api-key:
         description: "Name of the environment variable storing artifactory api key"
+        default: ARTIFACTORY_API_KEY
         type: env_var_name
     steps:
       - run:
