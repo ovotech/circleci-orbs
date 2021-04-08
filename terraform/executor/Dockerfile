@@ -46,6 +46,7 @@ RUN mkdir -p /root/.terraform.d/plugins \
  && for TF_OVO_VERSION in $TF_OVO_VERSIONS; do \
       curl -f -L https://ovo-kafka-user.s3-eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_VERSION}/terraform-provider-ovo_${TF_OVO_VERSION}_linux_amd64.zip -o ovo.zip \
       && mkdir -p /root/.terraform.d/plugins/terraform.ovotech.org.uk/pe/ovo/${TF_OVO_VERSION}/linux_amd64 \
+      && unzip aiven-kafka-users.zip -d /root/.terraform.d/plugins \
       && unzip ovo.zip -d /root/.terraform.d/plugins/terraform.ovotech.org.uk/pe/ovo/${TF_OVO_VERSION}/linux_amd64 \
       && rm ovo.zip; \
     done
@@ -54,6 +55,7 @@ RUN mkdir -p /root/.terraform.d/plugins \
 RUN for TF_AIVEN_KAFKA_USERS_VERSION in $TF_AIVEN_KAFKA_USERS_VERSIONS; do \
       curl -f -L https://kafka-users-prod-tf-provider.s3-eu-west-1.amazonaws.com/terraform-provider-aiven-kafka-users/${TF_AIVEN_KAFKA_USERS_VERSION}/terraform-provider-aiven-kafka-users_${TF_AIVEN_KAFKA_USERS_VERSION}_linux_amd64.zip -o aiven-kafka-users.zip \
       && mkdir -p /root/.terraform.d/plugins/terraform.ovotech.org.uk/pe/aiven-kafka-users/${TF_AIVEN_KAFKA_USERS_VERSION}/linux_amd64 \
+      && unzip aiven-kafka-users.zip -d /root/.terraform.d/plugins \
       && unzip aiven-kafka-users.zip -d /root/.terraform.d/plugins/terraform.ovotech.org.uk/pe/aiven-kafka-users/${TF_AIVEN_KAFKA_USERS_VERSION}/linux_amd64 \
       && rm aiven-kafka-users.zip; \
     done
