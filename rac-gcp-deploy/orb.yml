@@ -500,6 +500,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - setup_remote_docker
@@ -524,7 +528,7 @@ jobs:
             docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
       - run:
           name: "Release"
-          command: sbt "release with-defaults"
+          command: sbt "release with-defaults" <<parameters.sbt-extra-options>>
       - run: |
           # sbt unconditionally builds image tagges as nonprod
           echo "export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>" >> "$BASH_ENV"
