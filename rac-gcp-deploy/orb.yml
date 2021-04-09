@@ -210,6 +210,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - add_ssh_keys:
@@ -227,7 +231,7 @@ jobs:
           api-key: <<parameters.artifactory-api-key>>
       - run:
           name: "Compile"
-          command: sbt update compile test:compile evicted
+          command: sbt update compile test:compile evicted <<parameters.sbt-extra-options>>
       - run:
           name: "avoid unnecessary cache updates"
           command: |
@@ -286,6 +290,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
@@ -293,7 +301,7 @@ jobs:
       - load_cache:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: sbt test:test
+      - run: sbt +test:test <<parameters.sbt-extra-options>>
 
   service-tests-with-docker:
     parameters:
