@@ -606,6 +606,14 @@ jobs:
         description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
+      artifactory-username:
+        description: "Name of the environment variable storing the artifactory username"
+        default: ARTIFACTORY_USERNAME
+        type: env_var_name
+      artifactory-api-key:
+        description: "Name of the environment variable storing the artifactory api key"
+        default: ARTIFACTORY_API_KEY
+        type: env_var_name
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
@@ -623,6 +631,9 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
+      - artifactory_credentials:
+          username: <<parameters.artifactory-username>>
+          api-key: <<parameters.artifactory-api-key>>
       - run:
           name: "Release"
           command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
