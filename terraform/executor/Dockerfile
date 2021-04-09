@@ -66,7 +66,7 @@ RUN curl -fsL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-
 ENV PATH "/opt/google-cloud-sdk/bin:$PATH"
 
 RUN pip3 install awscli==$AWSCLI_VERSION
-RUN pip3 install requests
+RUN pip3 install --upgrade requests
 
 ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"
 
