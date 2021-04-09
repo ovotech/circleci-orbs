@@ -5,7 +5,7 @@ executors:
   default:
     description: "Terraform executor (terraform is not baked in)"
     docker:
-      - image: ovotech/terraform:tf-2.0.0_08-04-2021
+      - image: ovotech/terraform:tf-2.0.0_09-04-2021
   terraform-0_12-slim:
     description: "Terraform 0.12 executor (only contains TF v0.12.29)"
     docker:
