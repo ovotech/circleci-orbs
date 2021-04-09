@@ -261,6 +261,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - restore_workspace:
@@ -270,7 +274,7 @@ jobs:
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Compile docs"
-          command: sbt -v docs/compile
+          command: sbt -v docs/compile <<parameters.sbt-extra-options>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -321,6 +325,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - attach_workspace:
@@ -337,7 +345,7 @@ jobs:
             docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
       - run:
           name: Service Tests
-          command: sbt -v service-test:test
+          command: sbt -v service-test:test <<parameters.sbt-extra-options>>
           no_output_timeout: 20m
 
   snyk_test:
@@ -399,6 +407,10 @@ jobs:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
     executor: <<parameters.executor>>
     steps:
       - attach_workspace:
@@ -406,7 +418,7 @@ jobs:
       - load_cache:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: sbt -v scalafmtCheckAll
+      - run: sbt -v scalafmtCheckAll  <<parameters.sbt-extra-options>>
 
   notify_shipit:
     parameters:
