@@ -577,9 +577,9 @@ jobs:
   release_library:
     parameters:
       executor:
-        description: "Name of executor to use for this job. Defaults to docker executor"
+        description: "Name of executor to use for this job. Defaults to machine executor"
         type: executor
-        default: docker
+        default: machine
       workspace-dir:
         description: "Path to restore/save the workspace"
         type: string
@@ -608,7 +608,6 @@ jobs:
         type: string
     executor: <<parameters.executor>>
     steps:
-      - setup_remote_docker
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
