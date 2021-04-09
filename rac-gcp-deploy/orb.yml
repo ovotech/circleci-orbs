@@ -4,7 +4,7 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
 aliases:
   # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
   - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
-  - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
+  - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
 .gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
@@ -52,6 +52,9 @@ commands:
   load_cache:
     description: "Restore cached dependencies"
     parameters:
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -59,17 +62,21 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - *cache-key
+            - <<parameters.cache-key>><<parameters.cache-suffix>>
+
   store_cache:
     parameters:
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
         type: string
+      cache-key:
+        type: string
+        default: *cache-key
     description: "Save dependencies into cache"
     steps:
       - save_cache:
-          key: *cache-key
+          key: <<parameters.cache-key>><<parameters.cache-suffix>>
           paths:
             - ~/.m2
             - ~/.ivy2
@@ -196,6 +203,9 @@ jobs:
         description: "Name of the environment variable storing the artifactory api key"
         default: ARTIFACTORY_API_KEY
         type: env_var_name
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -207,6 +217,7 @@ jobs:
             - <<parameters.ssh-key-fingerprint>>
       - checkout
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - bintray_credentials:
           username: <<parameters.bintray-username>>
@@ -238,6 +249,9 @@ jobs:
         description: "Path to persist the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -247,6 +261,7 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Compile docs"
@@ -264,6 +279,9 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -273,6 +291,7 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run: sbt test:test
 
@@ -286,6 +305,9 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -295,6 +317,7 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: Update SBT launcher
@@ -318,6 +341,9 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -331,6 +357,7 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run: *sbt-dependency-graph
       - when:
@@ -356,6 +383,9 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -365,6 +395,7 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run: sbt scalafmtCheckAll
 
@@ -453,6 +484,9 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -463,6 +497,7 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Setup git config"
