@@ -557,3 +557,58 @@ jobs:
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
+
+  release_library:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git_user_email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '--mem 2048'"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git_user_email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - run:
+          name: "Release"
+          command: sbt "release with-defaults" <<parameters.sbt-extra-options>>
+      - snyk_monitor
