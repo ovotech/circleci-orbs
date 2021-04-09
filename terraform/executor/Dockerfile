@@ -4,6 +4,7 @@ ARG TFMASK_VERSION="0.7.0"
 ARG TFSWITCH_VERSION=0.10.958
 ARG GCLOUD_VERSION=329.0.0
 ARG AWSCLI_VERSION=1.19.16
+ARG HELM3_VERSION=3.5.3
 
 # internal providers
 ARG TF_OVO_VERSIONS="1.0.0"
@@ -60,12 +61,20 @@ RUN for TF_AIVEN_KAFKA_USERS_VERSION in $TF_AIVEN_KAFKA_USERS_VERSIONS; do \
       && rm aiven-kafka-users.zip; \
     done
 
+# helm 3
+RUN curl -fsL "https://get.helm.sh/helm-v${HELM3_VERSION}-linux-amd64.tar.gz" | tar -xzvf- \
+ && mv linux-amd64/helm /usr/local/bin/helm3 \
+ && rm -rf helm*.tar.gz linux-amd64/
+
+# gcloud
 RUN curl -fsL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz -o /opt/google-cloud-sdk.tar.gz \
  && cd /opt; tar -xf google-cloud-sdk.tar.gz \
  && rm google-cloud-sdk.tar.gz
 ENV PATH "/opt/google-cloud-sdk/bin:$PATH"
 
+# awscli
 RUN pip3 install awscli==$AWSCLI_VERSION
+# Upgrade requests lib again to prevent RequestsDependencyWarning for urllib3 and chardet
 RUN pip3 install --upgrade requests
 
 ENV TFMASK_RESOURCES_REGEX="(?i)^(random_id|kubernetes_secret|acme_certificate).*$"
