@@ -211,7 +211,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -262,7 +262,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -296,7 +296,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -326,7 +326,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -408,7 +408,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -513,7 +513,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -603,7 +603,7 @@ jobs:
         default: ""
         type: string
       sbt-extra-options:
-        description: "Extra options being passed to sbt, like '--mem 2048'"
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
