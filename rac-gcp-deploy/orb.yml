@@ -231,7 +231,7 @@ jobs:
           api-key: <<parameters.artifactory-api-key>>
       - run:
           name: "Compile"
-          command: sbt update compile test:compile evicted <<parameters.sbt-extra-options>>
+          command: sbt +update +compile +test:compile +evicted <<parameters.sbt-extra-options>>
       - run:
           name: "avoid unnecessary cache updates"
           command: |
