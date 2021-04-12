@@ -4,6 +4,7 @@ description: An orb to build scala services and deploy them to a Kubernetes clus
 aliases:
   # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
   - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
+  - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
 .gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
@@ -51,6 +52,9 @@ commands:
   load_cache:
     description: "Restore cached dependencies"
     parameters:
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -58,7 +62,27 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
+            - <<parameters.cache-key>><<parameters.cache-suffix>>
+
+  store_cache:
+    parameters:
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+    description: "Save dependencies into cache"
+    steps:
+      - save_cache:
+          key: <<parameters.cache-key>><<parameters.cache-suffix>>
+          paths:
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.embedpostgresql
+            - ~/.cache/coursier
 
   bintray_credentials:
     description: "Create Bintray credentials file"
@@ -79,9 +103,11 @@ commands:
     parameters:
       username:
         description: "Name of the environment variable storing artifactory username"
+        default: ARTIFACTORY_USERNAME
         type: env_var_name
       api-key:
         description: "Name of the environment variable storing artifactory api key"
+        default: ARTIFACTORY_API_KEY
         type: env_var_name
     steps:
       - run:
@@ -177,8 +203,15 @@ jobs:
         description: "Name of the environment variable storing the artifactory api key"
         default: ARTIFACTORY_API_KEY
         type: env_var_name
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -188,6 +221,7 @@ jobs:
             - <<parameters.ssh-key-fingerprint>>
       - checkout
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - bintray_credentials:
           username: <<parameters.bintray-username>>
@@ -197,22 +231,16 @@ jobs:
           api-key: <<parameters.artifactory-api-key>>
       - run:
           name: "Compile"
-          command: sbt update compile test:compile evicted
+          command: sbt -v +update +compile +test:compile +evicted <<parameters.sbt-extra-options>>
       - run:
           name: "avoid unnecessary cache updates"
           command: |
             rm -fv ~/.ivy2/.sbt.ivy.lock
             find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
             find ~/.sbt -name "*.lock" -print -delete
-      - save_cache:
-          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
-          paths:
-            - ~/.m2
-            - ~/.ivy2
-            - ~/.sbt
-            - ~/.embedpostgresql
-            - ~/.cache/coursier
-
+      - store_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -226,8 +254,15 @@ jobs:
         description: "Path to persist the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -235,10 +270,11 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Compile docs"
-          command: sbt docs/compile
+          command: sbt -v docs/compile <<parameters.sbt-extra-options>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -252,8 +288,15 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -261,8 +304,9 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: sbt test:test
+      - run: sbt -v +test:test <<parameters.sbt-extra-options>>
 
   service-tests-with-docker:
     parameters:
@@ -274,8 +318,15 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -283,6 +334,7 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: Update SBT launcher
@@ -293,7 +345,7 @@ jobs:
             docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
       - run:
           name: Service Tests
-          command: sbt service-test:test
+          command: sbt -v service-test:test <<parameters.sbt-extra-options>>
           no_output_timeout: 20m
 
   snyk_test:
@@ -306,6 +358,9 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -319,6 +374,7 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run: *sbt-dependency-graph
       - when:
@@ -344,8 +400,15 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -353,8 +416,9 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: sbt scalafmtCheckAll
+      - run: sbt -v scalafmtCheckAll  <<parameters.sbt-extra-options>>
 
   notify_shipit:
     parameters:
@@ -441,8 +505,15 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -451,6 +522,7 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Setup git config"
@@ -468,7 +540,7 @@ jobs:
             docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
       - run:
           name: "Release"
-          command: sbt "release with-defaults"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
       - run: |
           # sbt unconditionally builds image tagges as nonprod
           echo "export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>" >> "$BASH_ENV"
@@ -501,3 +573,68 @@ jobs:
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
+
+  release_library:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to machine executor"
+        type: executor
+        default: machine
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git_user_email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
+        default: ""
+        type: string
+      artifactory-username:
+        description: "Name of the environment variable storing the artifactory username"
+        default: ARTIFACTORY_USERNAME
+        type: env_var_name
+      artifactory-api-key:
+        description: "Name of the environment variable storing the artifactory api key"
+        default: ARTIFACTORY_API_KEY
+        type: env_var_name
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git_user_email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - artifactory_credentials:
+          username: <<parameters.artifactory-username>>
+          api-key: <<parameters.artifactory-api-key>>
+      - run:
+          name: "Release"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
+      - snyk_monitor
