@@ -2,8 +2,6 @@ version: 2.1
 description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
 aliases:
-  # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
-  - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
   - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
 .gcloud_auth_uat: &gcloud_auth_uat
@@ -167,7 +165,6 @@ commands:
 
   snyk_monitor:
     steps:
-      - run: *sbt-dependency-graph
       - snyk/scan:
           project: $CIRCLE_PROJECT_REPONAME
           fail-on-issues: false
@@ -376,7 +373,6 @@ jobs:
       - load_cache:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: *sbt-dependency-graph
       - when:
           condition: <<parameters.enable-pr-comment>>
           steps:
