@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.7
+## Fixed
+- Fix bug in the use_chdir parameter which causes it to fail in terraform 0.15
+
 ## ovotech/terraform@1.8.6
 ## Fixed
 - Reverted 1.8.5 - causing apply to fail as logic to compare apply-time plan to PR plan not updated
