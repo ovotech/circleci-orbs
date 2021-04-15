@@ -139,7 +139,7 @@ Parameters:
 - var (string): Comma separated list of vars to set, e.g. foo=bar
 - parallelism (int): Limit the number of concurrent operations
 - add_github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### apply
 
@@ -158,7 +158,7 @@ Parameters:
 - auto_approve: true, to apply the plan, even if it has not been approved through a PR.
 - parallelism: Limit the number of concurrent operations
 - output_path (string): An optional path to write a json file containing the output variables.
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### output
 
@@ -171,7 +171,7 @@ Parameters:
 - backend_config_file (string): Comma separated list of terraform backend config files
 - backend_config (string): Comma separated list of backend configs, e.g. foo=bar
 - output_path (string): The path to write the json file containing the output variables.
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### check
 
@@ -188,7 +188,7 @@ Parameters:
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### destroy
 
@@ -203,7 +203,7 @@ Parameters:
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### new-workspace
 
@@ -215,7 +215,7 @@ Parameters:
 - workspace: Terraform workspace to create
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### destroy-workspace
 
@@ -230,7 +230,7 @@ Parameters:
 - var_file: Comma separater list of terraform var files
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### fmt-check
 
@@ -249,7 +249,7 @@ Statically validates the terraform configuration in a directory.
 Parameters:
 
 - path: Path to the terraform configuration to validate
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### in-workspace
 
@@ -263,7 +263,7 @@ Parameters:
 - backend_config_file: Comma separated list of terraform backend config files
 - backend_config: Comma separated list of backend configs, e.g. foo=bar
 - steps: The steps to execute in the initialized working directory
-- use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- use_chdir (bool): 'true' to use the -chdir option in terraform. This can only be used in terraform 0.14+ but is required for terraform 0.15+. Default: false
 
 ### version
 

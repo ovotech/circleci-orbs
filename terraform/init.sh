@@ -6,7 +6,7 @@ export config_path="${module_path}"
 # end of the command
 if terraform -help | grep -e "-chdir" >/dev/null && "<< parameters.use_chdir >>" == "true"; then
   chdir="-chdir=${module_path}"
-  config_path=""
+  config_path=
 fi
 
 # Initialize terraform
