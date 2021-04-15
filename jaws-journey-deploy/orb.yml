@@ -452,7 +452,7 @@ jobs:
                 region: AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
-                extra-build-args: "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID"
+                extra-build-args: "--build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID"
             - snyk/scan:
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
