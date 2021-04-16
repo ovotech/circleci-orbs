@@ -557,7 +557,10 @@ jobs:
 
   create-release:
     executor: node
+    working_directory: ~/working
     steps:
+      - attach_workspace:
+          at: ~/working
       - create-release
 
   tf-plan:
