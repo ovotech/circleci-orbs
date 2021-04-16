@@ -1,5 +1,5 @@
 
 USERNAME="<< parameters.username >>"
-PASSWORD="<< parameters.password >>"
+TOKEN="<< parameters.token >>"
 
-docker login https://docker.pkg.github.com -u $USERNAME -p $PASSWORD
+docker login https://docker.pkg.github.com -u $USERNAME -p $TOKEN

@@ -260,7 +260,7 @@ commands:
     parameters:
       username:
         type: string
-      password:
+      token:
         type: string
     steps:
       - run:
@@ -421,7 +421,7 @@ jobs:
       username:
         type: string
         default: $GITHUB_BOT_USERNAME
-      password:
+      token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
     executor: kotlin
@@ -462,7 +462,7 @@ jobs:
           steps:
             - github-repo-login:
                 username: << parameters.username >>
-                password: << parameters.password >>
+                token: << parameters.token >>
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
