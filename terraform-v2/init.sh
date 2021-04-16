@@ -33,4 +33,4 @@ export workspace
 unset TF_WORKSPACE
 
 rm -rf ${module_path}/.terraform
-terraform -chdir=${module_path} init -input=false -lock-timeout=300s -no-color $INIT_ARGS
+terraform -chdir=${module_path} init -input=false -no-color $INIT_ARGS
