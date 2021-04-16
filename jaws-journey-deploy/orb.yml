@@ -454,8 +454,8 @@ jobs:
                 tag: "latest,$CIRCLE_SHA1"
                 extra-build-args: "--build-arg BASE_IMAGE=$AWS_ACCOUNT_ID."
                 docker-login: true
-                dockerhub-password: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
-                dockerhub-username: $GITHUB_BOT_USERNAME
+                dockerhub-password: GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+                dockerhub-username: GITHUB_BOT_USERNAME
             - snyk/scan:
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
