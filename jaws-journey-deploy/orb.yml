@@ -257,6 +257,11 @@ commands:
 
   github-repo-login:
     description: "Log into github repo"
+    parameters:
+      username:
+        type: string
+      password:
+        type: string
     steps:
       - run:
           command: |
@@ -412,6 +417,12 @@ jobs:
       persist_to_workspace:
         type: boolean
         default: true
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      password:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -448,7 +459,9 @@ jobs:
       - when:
           condition: << parameters.publish >>
           steps:
-            - github-repo-login
+            - github-repo-login:
+                username: << parameters.username >>
+                password: << parameters.password >>
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
