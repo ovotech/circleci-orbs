@@ -265,7 +265,7 @@ commands:
     steps:
       - run:
           command: |
-            docker login https://docker.pkg.github.com -u $GITHUB_BOT_USERNAME --password $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+            include ./scripts/github_docker_login.sh
           name: Github Docker Repo Login
 
   tf:
