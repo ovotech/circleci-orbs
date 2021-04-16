@@ -264,6 +264,7 @@ commands:
         type: string
     steps:
       - run:
+          shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/github_docker_login.sh
           name: Github Docker Repo Login
