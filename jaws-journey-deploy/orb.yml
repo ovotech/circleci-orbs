@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-ecr: circleci/aws-ecr@6.3.0
   terraform: ovotech/terraform@1.8.2
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
@@ -461,7 +461,6 @@ jobs:
                 region: AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
-                extra-build-args: "--build-arg BASE_IMAGE=$AWS_ACCOUNT_ID."
             - snyk/scan:
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
