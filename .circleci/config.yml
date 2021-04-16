@@ -153,6 +153,7 @@ workflows:
                 - rac-gcp-deploy
                 - set-current-environment
                 - terraform
+                - terraform-v2
                 - tools-install
                 - versioned-lambda
                 - with-git-deploy-key

@@ -1,0 +1,383 @@
+version: 2.1
+description: "Terraform orb. See https://github.com/ovotech/circleci-orbs/tree/master/terraform"
+
+executors:
+  default:
+    description: "Terraform executor (terraform binary is not baked in)"
+    docker:
+      - image: ovotech/terraform:tf-2.0.0_16-04-2021
+
+aliases:
+  parameters:
+    path: &path
+      path:
+        type: "string"
+        description: "Path to the terraform module"
+    workspace: &workspace
+      workspace:
+        type: "string"
+        description: "Name of the terraform workspace"
+        default: "default"
+    backend_config: &backend_config
+      backend_config:
+        type: "string"
+        description: "Comma separated list of backend configs to set, e.g. 'foo=bar'"
+        default: ""
+    backend_config_file: &backend_config_file
+      backend_config_file:
+        type: "string"
+        description: "Path to a backend config file"
+        default: ""
+    var: &var
+      var:
+        type: "string"
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
+    var_file: &var_file
+      var_file:
+        type: "string"
+        description: "Comma separated list of var file paths"
+        default: ""
+    parallelism: &parallelism
+      parallelism:
+        type: "integer"
+        description: "Limit the number of concurrent operations"
+        default: 0
+    label: &label
+      label:
+        type: "string"
+        description: "A friendly name for the environment this step is for"
+        default: ""
+    target: &target
+      target:
+        type: "string"
+        description: "Comma separated list of targets to apply against, e.g. 'kubernetes_secret.tls_cert_public,kubernetes_secret.tls_cert_private' NOTE: this argument only takes effect if auto_approve is also set."
+        default: ""
+    auto_approve: &auto_approve
+      auto_approve:
+        type: "boolean"
+        description: "Automatically approve and apply plan"
+        default: false
+    add_github_comment: &add_github_comment
+      add_github_comment:
+        type: "boolean"
+        description: "Add the plan to a GitHub PR"
+        default: true
+    module_name: &module_name
+      module_name:
+        type: "string"
+        description: "The full module name, of the form <namespace>/<name>/<provider>"
+    version_file_path: &version_file_path
+      version_file_path:
+        type: "string"
+        description: "Path to a file containing the semantic version of the module to publish"
+    output_path: &output_path
+      output_path:
+        type: "string"
+        description: "Path to the json file to save the output variables to"
+        default: ""
+
+  init-parameter-passthrough: &init-parameter-passthrough
+    path: << parameters.path >>
+    workspace: << parameters.workspace >>
+    backend_config: << parameters.backend_config >>
+    backend_config_file: << parameters.backend_config_file >>
+    var: << parameters.var >>
+    var_file: << parameters.var_file >>
+    parallelism: << parameters.parallelism >>
+
+commands:
+  in-workspace:
+    description: "Run commands in an initialized terraform working directory"
+    parameters:
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      steps:
+        type: "steps"
+        description: "Steps to run in the initialized terraform working directory"
+        default: []
+    steps:
+      - run:
+          name: "terraform init << parameters.path >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+      - steps: << parameters.steps >>
+
+  plan:
+    description: "Create a Terraform plan"
+    parameters: &plan-parameters
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *var
+      <<: *var_file
+      <<: *parallelism
+      <<: *label
+      <<: *add_github_comment
+    steps:
+      - run:
+          name: "terraform plan << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+            include set_plan_args.sh
+            include plan.sh
+
+  apply:
+    description: "Apply a Terraform plan"
+    parameters: &apply-parameters
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *var
+      <<: *var_file
+      <<: *parallelism
+      <<: *label
+      <<: *auto_approve
+      <<: *target
+      <<: *output_path
+    steps:
+      - run:
+          name: "terraform apply << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+            include set_plan_args.sh
+            include apply.sh
+            include output.sh
+
+  check:
+    description: "Check that terraform state hasn't drifted"
+    parameters: &check-parameters
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *var
+      <<: *var_file
+      <<: *parallelism
+      <<: *label
+    steps:
+      - run:
+          name: "terraform check << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+            include set_plan_args.sh
+            include check.sh
+
+  destroy:
+    description: "Destroy terraform resources"
+    parameters: &destroy-parameters
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *var
+      <<: *var_file
+      <<: *parallelism
+      <<: *label
+    steps:
+      - run:
+          name: "terraform destroy << parameters.path >> << parameters.label >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+            include set_plan_args.sh
+            include destroy.sh
+
+  new-workspace:
+    description: "Create a terraform workspace"
+    parameters: &new-workspace-parameters
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *var
+      <<: *var_file
+      <<: *parallelism
+      <<: *label
+    steps:
+      - run:
+          name: "terraform workspace new"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include new_workspace.sh
+
+  destroy-workspace:
+    description: "Destroy a terraform workspace"
+    parameters: &destroy-workspace-parameters
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *var
+      <<: *var_file
+      <<: *parallelism
+      <<: *label
+    steps:
+      - run:
+          name: "terraform workspace delete"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+            include set_plan_args.sh
+            include destroy.sh
+            include delete_workspace.sh
+
+  output:
+    description: "Save the output variables from a terraform state into a json file"
+    parameters:
+      <<: *path
+      <<: *workspace
+      <<: *backend_config
+      <<: *backend_config_file
+      <<: *output_path
+    steps:
+      - run:
+          name: "terraform output << parameters.path >>"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include init.sh
+            include select_workspace.sh
+
+            if [ -z "<< parameters.output_path >>" ]; then
+                echo "output_path parameter not specified"
+                exit 1
+            fi
+
+            include output.sh
+
+  # These commands don't need an initialized workspace:
+
+  version:
+    description: "Prints terraform and provider versions"
+    parameters: &version-parameters
+      <<: *path
+    steps:
+      - run:
+          name: "terraform version"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include version.sh
+
+  validate:
+    description: "Validate the terraform files in a directory"
+    parameters: &validate-parameters
+      <<: *path
+    steps:
+      - run:
+          name: "terraform validate"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include validate.sh
+
+  fmt-check:
+    description: "Check that Terraform configuration files are in canonical format"
+    parameters: &fmt-check-parameters
+      <<: *path
+    steps:
+      - run:
+          name: "terraform fmt"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include setup.sh
+            include fmt-check.sh
+
+  publish-module:
+    description: "Publish a terraform module to a module registry"
+    parameters:
+      <<: *path
+      <<: *module_name
+      <<: *version_file_path
+    steps:
+      - run:
+          name: "publish terraform module"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include publish.sh
+
+jobs:
+  plan:
+    executor: default
+    description: "Create a Terraform plan"
+    parameters:
+      <<: *plan-parameters
+    steps:
+      - checkout
+      - plan:
+          <<: *init-parameter-passthrough
+
+  apply:
+    executor: default
+    description: "Apply a terraform plan"
+    parameters:
+      <<: *apply-parameters
+    steps:
+      - checkout
+      - apply:
+          <<: *init-parameter-passthrough
+          target: << parameters.target >>
+          auto_approve: << parameters.auto_approve >>
+
+  check:
+    executor: default
+    description: "Check that terraform state hasn't drifted"
+    parameters:
+      <<: *check-parameters
+    steps:
+      - checkout
+      - check:
+          <<: *init-parameter-passthrough
+
+  destroy:
+    executor: default
+    description: "Destroy terraform resources"
+    parameters:
+      <<: *destroy-parameters
+    steps:
+      - checkout
+      - destroy:
+          <<: *init-parameter-passthrough
+
+  new-workspace:
+    executor: default
+    description: "Create a terraform workspace"
+    parameters:
+      <<: *new-workspace-parameters
+    steps:
+      - checkout
+      - new-workspace:
+          <<: *init-parameter-passthrough
+
+  destroy-workspace:
+    executor: default
+    description: "Destroy and delete a terraform workspace"
+    parameters:
+      <<: *destroy-workspace-parameters
+    steps:
+      - checkout
+      - destroy-workspace:
+          <<: *init-parameter-passthrough

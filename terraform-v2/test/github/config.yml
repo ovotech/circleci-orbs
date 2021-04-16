@@ -1,0 +1,145 @@
+version: 2.1
+
+orbs:
+  terraform: ovotech/terraform@1
+
+jobs:
+  terraform_11_plan:
+    executor: terraform/terraform-0_11
+    steps:
+      - checkout
+
+      ### Plan
+      - terraform/plan:
+          path: tf
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: tf
+          label: mylabel
+
+      - run: rm -f *.tfstate
+      - terraform/new-workspace:
+          path: tf
+          workspace: different
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: tf
+          workspace: different
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: tf
+          var: example=true
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: no_changes
+
+      ### Apply
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+          label: mylabel
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+          workspace: different
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+          var: example=true
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: no_changes
+
+  terraform_12_plan:
+    executor: terraform/terraform-0_12
+    steps:
+      - checkout
+
+      ### Plan
+      - terraform/plan:
+          path: tf
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: tf
+          label: mylabel
+
+      - run: rm -f *.tfstate
+      - terraform/new-workspace:
+          path: tf
+          workspace: different
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: tf
+          workspace: different
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: tf
+          var: example=true
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          path: no_changes
+
+      - run: rm -f *.tfstate
+      - terraform/plan:
+          label: no comment
+          path: tf
+          add_github_comment: false
+
+      ### Apply
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+          label: mylabel
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+          workspace: different
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: tf
+          var: example=true
+
+      - run: rm -f *.tfstate
+      - terraform/apply:
+          path: no_changes
+
+  terraform_11_error:
+    executor: terraform/terraform-0_11
+    steps:
+      - checkout
+      - terraform/plan:
+          path: error
+
+  terraform_12_error:
+    executor: terraform/terraform-0_12
+    steps:
+      - checkout
+      - terraform/plan:
+          path: error
+
+workflows:
+  test:
+    jobs:
+      - terraform_11_plan
+      - terraform_12_plan
+      - terraform_11_error
+      - terraform_12_error
