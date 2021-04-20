@@ -1,3 +1,5 @@
+set -x
+
 # 'path' is a required parameter, save it as module_path
 readonly module_path="<< parameters.path >>"
 export path=$module_path

@@ -48,7 +48,7 @@ update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}
 exec 3>&1
 
 set +e
-terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS $config_path \
+terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS \
     | $TFMASK \
     | tee /dev/fd/3 \
     | $COMPACT_PLAN \
