@@ -17,7 +17,7 @@ executors:
   terraform-0_12-slim:
     description: "Terraform 0.12 executor (only contains TF v0.12.29)"
     docker:
-      - image: ovotech/terraform:0.12_20-04-2021
+      - image: ovotech/terraform:0.12-slim
   terraform-0_13:
     description: "Terraform 0.13 executor"
     docker:
