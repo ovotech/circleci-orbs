@@ -1,11 +1,5 @@
 set -x
 
-for dir in $(find "$module_path" -type d);
-  do
-    if ! terraform fmt -no-color -check -diff "$dir"; then
-      EXIT_CODE=1
-    fi
-  done
+terraform -chdir=${module_path} fmt -no-color -check -diff -recursive
 
-  exit $EXIT_CODE
 
