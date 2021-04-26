@@ -335,7 +335,7 @@ jobs:
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: Update SBT launcher
-          command: cd /tmp && curl  -L -O https://dl.bintray.com/sbt/debian/sbt-1.4.1.deb && sudo apt-get update; sudo dpkg -i  ./sbt-1.4.1.deb
+          command: cd /tmp && curl  -L -O https://repo.scala-sbt.org/scalasbt/debian/sbt-1.5.1.deb && sudo apt-get update; sudo dpkg -i  ./sbt-1.5.1.deb
       - run:
           name: "Configure dockerhub auth"
           command: |
