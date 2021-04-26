@@ -3,6 +3,11 @@
 This orb can be used to plan and apply terraform modules.
 It is published as `ovotech/terraform@1.6`
 
+**Note: this orb only supports terraform `<=0.14`.**
+
+**Version 2 of this orb is now available for terraform `>=0.14`, published as a
+separate orb, `terraform-v2`. Head over <here> for help upgrading.**
+
 ## Executors
 
 The orb provides executors for running terraform commands.

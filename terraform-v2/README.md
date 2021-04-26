@@ -1,7 +1,9 @@
 # Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform)](https://circleci.com/orbs/registry/orb/ovotech/terraform)
 
 This orb can be used to plan and apply terraform modules.
-It is published as `ovotech/terraform@1.6`
+It is published as `ovotech/terraform-v2@1`.
+
+If you're upgrading from terraform orb v1, see <this upgrade guide>
 
 ## Executors
 
@@ -564,17 +566,16 @@ The version of terraform to use is discovered from the first of:
 2. A [tfswitch](https://warrensbox.github.io/terraform-switcher/) `.tfswitchrc` file
 3. A [tfenv](https://github.com/tfutils/tfenv) `.terraform-version` file in path of the terraform
    configuration.
-4. Terraform v0.12.5 for the 0.12 executor, or 0.11.14 for the 0.11 executor.
 
 The `required_version` constraint goes somewhere in your terraform configuration:
 ```hcl
 terraform {
-  required_version = "0.12.28"
+  required_version = "0.15.0"
 }
 ```
 
 tfswitch and tfenv make it easy to install the correct version locally.  
 Their config files contain a terraform version number to use:
 ```
-0.12.18
+0.15.0
 ```
