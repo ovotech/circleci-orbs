@@ -6,7 +6,7 @@ not listed
 
 ## ovotech/terraform@1.8.7
 ## Added
-- Added Terraform provider Aiven Kafka Users v1.0.0
+- Added Terraform provider Aiven Kafka Users v1.0.1
 
 ## ovotech/terraform@1.8.6
 ## Fixed
