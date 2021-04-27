@@ -1,9 +1,10 @@
-# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform)](https://circleci.com/orbs/registry/orb/ovotech/terraform)
+# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform-v2)](https://circleci.com/orbs/registry/orb/ovotech/terraform-v2)
 
 This orb can be used to plan and apply terraform modules.
 It is published as `ovotech/terraform-v2@1`.
 
-If you're upgrading from terraform orb v1, see <this upgrade guide>
+If you're upgrading from terraform orb v1, see
+[the upgrade guide](v1-to-v2.md).
 
 ## Executors
 
@@ -12,80 +13,14 @@ An executor defines the docker image to use for jobs.
 
 ### default
 
-The executor named `default` is the same as `terraform-0_11`
+[Dockerfile](executor/Dockerfile)
 
-### terraform-0_11
-
-[Dockerfile](executor/Dockerfile-0.11)
-
-This executor uses terraform 0.11.14 by default. However `tfswitch` is
-installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
-to change this.
-
-It also contains:
-- helm + terraform-provider-helm
-- terraform-provider-acme
+It contains:
 - google-cloud-sdk
-- aws-cli
-- ovo's terraform-provider-aiven as version 0.0.1
-- ovo's kafka user provider
-
-If the AIVEN_PROVIDER environment variable is set, also has:
-- Aiven's terraform-provider-aiven from versions 1.0.0+
-
-### terraform-0_12
-
-[Dockerfile](executor/Dockerfile-0.12)
-
-This executor uses terraform 0.12.29 by default. However `tfswitch` is
-installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
-to change this.
-
-It also contains:
-- Aiven's terraform-provider-aiven
-- google-cloud-sdk
-- Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
-- aws-cli
-- ovo's kafka user provider
-
-### terraform-0_12-slim
-
-[Dockerfile](executor/Dockerfile-0.12-slim)
-
-A much much slimmer image. Carries one version of each provider/tool.
-This executor uses terraform 0.12.29 by default. However `tfswitch` is
-installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
-to change this.
-
-It also contains:
-- Aiven's terraform-provider-aiven
-- google-cloud-sdk
-- Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
-- aws-cli
-- ovo's kafka user provider
-
-### terraform-0_13
-
-[Dockerfile](executor/Dockerfile-0.13)
-
-This executor uses terraform 0.13.0 by default. However `tfswitch` is
-installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
-to change this.
-
-It also contains:
-- Aiven's terraform-provider-aiven
-- google-cloud-sdk
-- Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
-- beta "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
+- stable "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
 
 
 ## Commands
@@ -305,7 +240,7 @@ to the open PR. If that PR is then merged, the plan is applied.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.6
+  terraform: ovotech/terraform-v2@1
 
 workflows:
   test:
@@ -336,7 +271,7 @@ terraform helm provider.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.6
+  terraform: ovotech/terraform-v2@1
 
 jobs:
   terraform_plan:
@@ -433,7 +368,7 @@ This can be done using the `helm3` command prior to any apply jobs.
 
 ```yaml
   terraform_apply:
-    executor: terraform/terraform-0_12
+    executor: terraform/default
     steps:
     - checkout
     - run:
@@ -448,7 +383,7 @@ This can be done using the `helm3` command prior to any apply jobs.
 ```
 
 #### Default version
-The `helm` command will use `helm2` by default, however if the `HELM` 
+The `helm` command will use `helm3` by default, however if the `HELM` 
 environment variable is set to `helm3`, the `helm` command invokes Helm 3 instead.
 
 ### Using the aiven provider
@@ -467,7 +402,7 @@ always available. (And OVO's is not).
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.6
+  terraform: ovotech/terraform-v2@1
 
 jobs:
   terraform_plan:
@@ -498,7 +433,7 @@ detected to any of the terraform resources the build is failed.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform@1.6
+  terraform: ovotech/terraform-v2@1
 
 workflows:
   nightly:

@@ -64,7 +64,8 @@ RUN for TF_AIVEN_KAFKA_USERS_VERSION in $TF_AIVEN_KAFKA_USERS_VERSIONS; do \
 # helm 3
 RUN curl -fsL "https://get.helm.sh/helm-v${HELM3_VERSION}-linux-amd64.tar.gz" | tar -xzvf- \
  && mv linux-amd64/helm /usr/local/bin/helm3 \
- && rm -rf helm*.tar.gz linux-amd64/
+ && rm -rf helm*.tar.gz linux-amd64/ \
+ && ln -s /usr/local/bin/helm3 /usr/local/bin/helm
 
 # gcloud
 RUN curl -fsL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz -o /opt/google-cloud-sdk.tar.gz \
