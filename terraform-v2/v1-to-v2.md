@@ -70,8 +70,9 @@ relevant.
 
 - **Version manager required**
 
-As detailed <here>, you can use tfswitch, tfenv or required_version config
-setting to tell the orb which terraform version you’d like to use.
+As detailed [here](README.md#specifying-a-terraform-version), you can use
+tfswitch, tfenv or required_version config setting to tell the orb which
+terraform version you’d like to use.
 
 
 - **Support for terraform <0.14 removed**
