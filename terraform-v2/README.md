@@ -3,6 +3,8 @@
 This orb can be used to plan and apply terraform modules.
 It is published as `ovotech/terraform-v2@1`.
 
+**Note: this orb only supports terraform `>=0.14`.**
+
 If you're upgrading from terraform orb v1, see
 [the upgrade guide](v1-to-v2.md).
 
@@ -17,8 +19,8 @@ An executor defines the docker image to use for jobs.
 
 It contains:
 - google-cloud-sdk
-- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
+- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
 - stable "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
 
