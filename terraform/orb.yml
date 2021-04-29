@@ -154,6 +154,7 @@ commands:
             include select_workspace.sh
             include set_plan_args.sh
             include plan.sh
+
   apply:
     description: "Apply a Terraform plan"
     parameters: &apply-parameters
@@ -180,6 +181,7 @@ commands:
             include set_plan_args.sh
             include apply.sh
             include output.sh
+
   check:
     description: "Check that terraform state hasn't drifted"
     parameters: &check-parameters
@@ -202,6 +204,7 @@ commands:
             include select_workspace.sh
             include set_plan_args.sh
             include check.sh
+
   destroy:
     description: "Destroy terraform resources"
     parameters: &destroy-parameters
@@ -224,6 +227,7 @@ commands:
             include select_workspace.sh
             include set_plan_args.sh
             include destroy.sh
+
   new-workspace:
     description: "Create a terraform workspace"
     parameters: &new-workspace-parameters
@@ -244,6 +248,7 @@ commands:
             include setup.sh
             include init.sh
             include new_workspace.sh
+
   destroy-workspace:
     description: "Destroy a terraform workspace"
     parameters: &destroy-workspace-parameters
@@ -267,6 +272,7 @@ commands:
             include set_plan_args.sh
             include destroy.sh
             include delete_workspace.sh
+
   output:
     description: "Save the output variables from a terraform state into a json file"
     parameters:
@@ -284,11 +290,14 @@ commands:
             include setup.sh
             include init.sh
             include select_workspace.sh
+
             if [ -z "<< parameters.output_path >>" ]; then
                 echo "output_path parameter not specified"
                 exit 1
             fi
+
             include output.sh
+
   # These commands don't need an initialized workspace:
 
   version:
@@ -302,6 +311,7 @@ commands:
           command: |
             include setup.sh
             include version.sh
+
   validate:
     description: "Validate the terraform files in a directory"
     parameters: &validate-parameters
@@ -314,6 +324,7 @@ commands:
           command: |
             include setup.sh
             include validate.sh
+
   fmt-check:
     description: "Check that Terraform configuration files are in canonical format"
     parameters: &fmt-check-parameters
@@ -325,6 +336,7 @@ commands:
           command: |
             include setup.sh
             include fmt-check.sh
+
   publish-module:
     description: "Publish a terraform module to a module registry"
     parameters:
@@ -337,6 +349,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include publish.sh
+
 jobs:
   plan:
     executor: default
