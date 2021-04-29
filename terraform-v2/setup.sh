@@ -54,11 +54,6 @@ if [[ -n "$AIVEN_PROVIDER" ]]; then
     ln -fs /root/aiven/* /root/.terraform.d/plugins/
 fi
 
-if [[ -n "$HELM" ]]; then
-    rm /usr/local/bin/helm
-    ln -s /usr/local/bin/$HELM /usr/local/bin/helm
-fi
-
 # Detect tfmask
 TFMASK=tfmask
 if ! hash $TFMASK 2>/dev/null; then

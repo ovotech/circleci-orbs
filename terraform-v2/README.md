@@ -20,7 +20,7 @@ An executor defines the docker image to use for jobs.
 It contains:
 - google-cloud-sdk
 - aws-cli
-- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform-v2#Using-Helm-3)
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
 - stable "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
 
@@ -263,8 +263,8 @@ workflows:
 ### A real-world example
 
 This configuration defines it's own plan and apply jobs which use the
-orb's plan and apply commands on multiple terraform modules. It uses
-terraform 0.12 via `terraform-0_12` executor.
+orb's plan and apply commands on multiple terraform modules.
+
 It also configures a helm repo within the the container for use with the
 terraform helm provider.
 
@@ -277,7 +277,7 @@ orbs:
 
 jobs:
   terraform_plan:
-    executor: terraform/terraform-0_12
+    executor: terraform/default
     steps:
     - checkout
     - run:
@@ -311,7 +311,7 @@ jobs:
         path: terraform/deployments/sqs-test
 
   terraform_apply:
-    executor: terraform/terraform-0_12
+    executor: terraform/default
     steps:
     - checkout
     - run:
@@ -359,6 +359,7 @@ workflows:
 ```
 
 ### Using Helm 3
+
 #### Repositories
 If you are using Helm 3 (terraform provider > v1) you must explicitly add
 repositories, this includes charts in `stable` which is no longer included 
@@ -385,19 +386,7 @@ This can be done using the `helm3` command prior to any apply jobs.
 ```
 
 #### Default version
-The `helm` command will use `helm3` by default, however if the `HELM` 
-environment variable is set to `helm3`, the `helm` command invokes Helm 3 instead.
-
-### Using the aiven provider
-
-When using the default or terraform-0_11 executors, OVO's
-`terraform-provider-aiven` is available at version `0.0.1`.
-To use Aiven's `terraform-provider-aiven` set the AIVEN_PROVIDER
-environment variable and set a version equal or greater than `1.0.0` in
-the provider configuration.
-
-When using the terraform-0_12 executor Aiven's `terraform-provider-aiven` is
-always available. (And OVO's is not).
+The `helm` command will use `helm3` by default.
 
 ```yaml
 
