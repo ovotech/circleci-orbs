@@ -49,10 +49,6 @@ commands:
             kustomize version
 
       - run:
-          name: "Setup custom environment variables"
-          command: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
-
-      - run:
           name: Clone gitops repo
           command: |
             rm -rf ~/gitops
