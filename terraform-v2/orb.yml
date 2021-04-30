@@ -3,9 +3,9 @@ description: "Terraform orb. See https://github.com/ovotech/circleci-orbs/tree/m
 
 executors:
   default:
-    description: "Terraform executor (terraform binary is not baked in)"
+    description: "Terraform-v2 executor"
     docker:
-      - image: ovotech/terraform:tf-2.0.0_16-04-2021
+      - image: ovotech/terraform-v2:latest
 
 aliases:
   parameters:
