@@ -25,6 +25,10 @@ from the same codebase.
 Upgrading is therefore entirely in the control of the user, no-one will be 
 automatically upgraded.
 
+Publishing to the same ("terraform") orb from two separate code directories
+was something we decided against. The orb publishing process is already pretty
+complex.
+
 ## Pre-requisites To Upgrading
 
 Before upgrading, you must ensure you meet the following criteria:
