@@ -1,0 +1,120 @@
+version: 2.1
+description: "Update ASP deployments with gitops."
+
+orbs:
+  aws-ecr: circleci/aws-ecr@7.0.0
+
+commands:
+  update-gitops:
+    parameters:
+      env:
+        type: string
+        description: "[Description] Environment in which the service is being deployed (e.g. prod/nonprod)."
+      service-name:
+        type: string
+        description: "[Description] Service name being deployed (e.g. asp-saga-execution-controller)."
+        default: ${CIRCLE_PROJECT_REPONAME}
+      image-tag:
+        type: string
+        description: "[Description] Tag of the service to be deployed"
+        default: $(git describe --tags)
+      gitops-repo:
+        description: "[Description] URL for repository containing kubernetes manifests."
+        type: string
+      gitops-deploy-branch:
+        type: string
+        default: "main"
+        description: "[Description] Branch in which to update image tag"
+      gitops-username:
+        type: string
+        description: "[Description] Username to associate with git actions."
+      gitops-email:
+        type: string
+        description: "[Description] Email to associate with git actions."
+      aws-account-url:
+        type: env_var_name
+        description: "[Description] Registry URL used to update the kubernetes manifest"
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Install Kustomize
+          command: |
+            curl -L -O https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_v4.1.2_linux_amd64.tar.gz
+            tar -xzf kustomize_v4.1.2_linux_amd64.tar.gz
+            sudo mv kustomize /usr/local/bin/kustomize
+            sudo chmod u+x /usr/local/bin/kustomize
+            kustomize version
+
+      - run:
+          name: "Setup custom environment variables"
+          command: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
+
+      - run:
+          name: Clone gitops repo
+          command: |
+            rm -rf ~/gitops
+            git clone <<parameters.gitops-repo>> ~/gitops
+
+      - run:
+          name: Patch deployment
+          command: |
+            cd  ~/gitops/<<parameters.env>>
+            kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:<<parameters.image-tag>>
+
+      - run:
+          name: Commit and push
+          command: |
+            cd  ~/gitops
+            git config user.email "<<parameters.gitops-email>>"
+            git config user.name "<<parameters.gitops-username>>"
+            git add .
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "No changes detected."
+            else
+              git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version <<parameters.image-tag>>"
+              git push origin <<parameters.gitops-deploy-branch>>
+            fi
+
+  ecr-push:
+    parameters:
+      env:
+        type: string
+        description: "[Description] Environment in which the service is being deployed (e.g. prod/nonprod)."
+      service-name:
+        type: string
+        description: "[Description] Service name being deployed (e.g. asp-saga-execution-controller)."
+        default: ${CIRCLE_PROJECT_REPONAME}
+      image-name:
+        type: string
+        description: "[Description] Name of the image to be pushed to ECR"
+        default: ${CIRCLE_PROJECT_REPONAME}:$(git rev-parse --short HEAD)
+      aws-account-url:
+        type: env_var_name
+        description: "[Description] URL for the ECR AWS Account"
+      aws-access-key-id:
+        type: env_var_name
+        description: "[Description] Key ID for the ECR AWS Account"
+      aws-secret-access-key:
+        type: env_var_name
+        description: "[Description] Access Key for the ECR AWS Account"
+    steps:
+      - attach_workspace:
+          at: .
+      - setup_remote_docker
+      - aws-ecr/ecr-login:
+          account-url: <<parameters.aws-account-url>>
+          aws-access-key-id: <<parameters.aws-access-key-id>>
+          aws-secret-access-key: <<parameters.aws-secret-access-key>>
+      - run:
+          name: Load image from workspace
+          command: docker load -i image
+      - run:
+          name: Tag image for docker push
+          command: docker tag <<parameters.image-name>> ${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$(git describe --tags)
+      - aws-ecr/push-image:
+          account-url: <<parameters.aws-account-url>>
+          repo: <<parameters.service-name>>-<<parameters.env>>
+          tag: $(git describe --tags)
