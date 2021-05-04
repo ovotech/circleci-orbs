@@ -164,3 +164,4 @@ workflows:
                 - gcp-rotate-keys
                 - sbt-deploy
                 - pipeline-utils
+                - asp-deploy
