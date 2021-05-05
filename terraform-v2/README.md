@@ -18,11 +18,13 @@ An executor defines the docker image to use for jobs.
 [Dockerfile](executor/Dockerfile)
 
 It contains:
+- tfmask
+- tfswitch
 - google-cloud-sdk
 - aws-cli
 - Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform-v2#Using-Helm-3)
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
-- stable "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
+- stable "aiven-kafka-users" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
 
 
 ## Commands
