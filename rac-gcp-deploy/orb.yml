@@ -635,7 +635,7 @@ jobs:
           name: "Store Docker image in a file"
           command: |
             # sbt unconditionally builds image tagged as nonprod
-            docker save -o <<parameters.workspace-dir>>/<<parameters.container-name>>.dockerimage <<parameters.registry-url>>/randc-nonprod/<<parameters.container-name>>
+            docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage <<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
@@ -692,7 +692,7 @@ jobs:
       - run:
           name: "Load Docker image from a file"
           command: |
-            docker load -i <<parameters.workspace-dir>>/<<parameters.container-name>>.dockerimage
+            docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
       - gcloud_auth:
           gcloud-service-key: <<parameters.gcloud-service-key>>
           project-id: <<parameters.gcp-project-id>>
