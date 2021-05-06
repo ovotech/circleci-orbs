@@ -30,7 +30,8 @@ any changes to the orb.
  - [ovotech/clair-scanner@1](clair-scanner) - Scan Docker images for vulnerabilities.
  - [ovotech/rac-gcp-deply@1](rac-gcp-deploy) - Deploy Scala services to a Kubernetes cluster running in Google Cloud.
  - [ovotech/set-current-environment@1](set-current-environment) - Set current environment (master branch, tag or other) to environmental variable.
- - [ovotech/terraform@1](terraform) - Plan and apply Terraform modules.
+ - [ovotech/terraform@1](terraform) - Plan and apply Terraform modules, with terraform <=0.14
+ - [ovotech/terraform-v2@2](terraform-v2) - Plan and apply Terraform modules, with terraform >=0.14
  - [ovotech/tools-install@1](tools-install) - Download and unpack tools archives
  - [ovotech/with-git-deploy-key@1](with-git-deploy-key) - Execute Git operations on another repo selecting specific public key.
  - [ovotech/clojure](clojure) - test, scan and package Clojure projects built using Leiningen. 

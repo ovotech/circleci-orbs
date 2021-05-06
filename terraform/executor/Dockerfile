@@ -1,3 +1,5 @@
+# The docker image produced by this is intended to be used by the terraform-v2
+# orb.
 FROM debian:buster-slim
 
 ARG TFMASK_VERSION="0.7.0"
@@ -8,7 +10,7 @@ ARG HELM3_VERSION=3.5.3
 
 # internal providers
 ARG TF_OVO_VERSIONS="1.0.0"
-ARG TF_AIVEN_KAFKA_USERS_VERSIONS="0.0.1"
+ARG TF_AIVEN_KAFKA_USERS_VERSIONS="0.0.1 1.0.1"
 
 # Terraform environment variables
 ENV CHECKPOINT_DISABLE=true
