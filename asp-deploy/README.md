@@ -64,7 +64,7 @@ jobs:
       - migrate
     - asp-deploy/ecr-push:
         env: nonprod
-        account-url: AWS_ECR_ACCOUNT_URL_NONPROD
+        aws-account-url: AWS_ECR_ACCOUNT_URL_NONPROD
         aws-access-key-id: AWS_ACCESS_KEY_ID_NONPROD
         aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NONPROD
         service-name : CUSTOM_SERVICE_NAME # default is ${CIRCLE_PROJECT_REPONAME}
