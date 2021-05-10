@@ -570,6 +570,147 @@ jobs:
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
+  build_and_release_version:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git_user_email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git_user_email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - run:
+          name: "Build Docker image and release a new version"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
+      - run:
+          name: "Store Docker image in a file"
+          command: |
+            # sbt unconditionally builds image tagged as nonprod
+            docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage <<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
+      - snyk_monitor
+      - persist_workspace:
+          to: <<parameters.workspace-dir>>
+
+  push_docker_image:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      google-compute-zone:
+        description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
+        type: string
+        default: europe-west1-b
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
+      gcp-project-id:
+        description: "The GCP project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: GCP_PROJECT_ID
+      gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the GCP project"
+        type: env_var_name
+        default: GCLOUD_ACCOUNT_AUTH
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Configure dockerhub auth"
+          command: |
+            docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
+      - run:
+          name: "Load Docker image from a file"
+          command: |
+            docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
+      - gcloud_auth:
+          gcloud-service-key: <<parameters.gcloud-service-key>>
+          project-id: <<parameters.gcp-project-id>>
+          google-compute-zone: <<parameters.google-compute-zone>>
+      - run:
+          name: "Configure Docker to use gcloud as a credential helper"
+          command: |
+            mkdir -p "$HOME/.docker"
+            gcloud auth configure-docker --quiet --project $<<parameters.gcp-project-id>>
+      - run:
+          name: "Tag and push container to GCR"
+          command: |
+            export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
+            IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${IMAGE_ROOT}:latest"
+            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${IMAGE_ROOT}:$(cat version.txt)"
+            docker push "${IMAGE_ROOT}"
+
   release_library:
     parameters:
       executor:
