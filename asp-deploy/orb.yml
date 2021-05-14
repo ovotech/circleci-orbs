@@ -16,8 +16,7 @@ commands:
         default: ${CIRCLE_PROJECT_REPONAME}
       image-tag:
         type: string
-        description: "[Description] Tag of the service to be deployed"
-        default: "" # Check the "Set Tag" step below
+        description: "[Description] Tag of the service to be deployed" # Check the "Set Tag - *" step below
       gitops-repo:
         description: "[Description] URL for repository containing kubernetes manifests."
         type: string
