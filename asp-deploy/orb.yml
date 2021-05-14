@@ -17,7 +17,7 @@ commands:
       image-tag:
         type: string
         description: "[Description] Tag of the service to be deployed"
-        default: $(git describe --tags)
+        default: "" # Check the "Set Tag" step below
       gitops-repo:
         description: "[Description] URL for repository containing kubernetes manifests."
         type: string
@@ -48,6 +48,17 @@ commands:
             sudo chmod u+x /usr/local/bin/kustomize
             kustomize version
 
+      - when:
+          name: Set Tag to the one provided by user
+          condition: << parameters.image-tag >>
+          steps:
+            - run: echo 'export TAG=<<parameters.image-tag>>' >> $BASH_ENV
+      - unless:
+          name: Set Tag to default
+          condition: << parameters.image-tag >>
+          steps:
+            - run: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
+
       - run:
           name: Clone gitops repo
           command: |
@@ -58,7 +69,7 @@ commands:
           name: Patch deployment
           command: |
             cd  ~/gitops/<<parameters.env>>
-            kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:<<parameters.image-tag>>
+            kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$TAG
 
       - run:
           name: Commit and push
@@ -70,7 +81,7 @@ commands:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version <<parameters.image-tag>>"
+              git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version $TAG"
               git push origin <<parameters.gitops-deploy-branch>>
             fi
 
