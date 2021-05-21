@@ -1,0 +1,1 @@
+ovotech/argocd@0.1.0
