@@ -255,6 +255,20 @@ commands:
             npx -p @semantic-release/changelog -p @semantic-release/git -p semantic-release semantic-release --debug=true --tag-format=\${version} --branches='master' --plugins='@semantic-release/commit-analyzer' '@semantic-release/release-notes-generator' '@semantic-release/changelog' '@semantic-release/git' '@semantic-release/github' --repositoryUrl="https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
           name: Run semantic versioning
 
+  github-repo-login:
+    description: "Log into github repo"
+    parameters:
+      username:
+        type: string
+      token:
+        type: string
+    steps:
+      - run:
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/github_docker_login.sh
+          name: Github Docker Repo Login
+
   tf:
     parameters:
       <<: *tf-common-parameters
@@ -404,6 +418,12 @@ jobs:
       persist_to_workspace:
         type: boolean
         default: true
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -440,6 +460,9 @@ jobs:
       - when:
           condition: << parameters.publish >>
           steps:
+            - github-repo-login:
+                username: << parameters.username >>
+                token: << parameters.token >>
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
@@ -534,7 +557,10 @@ jobs:
 
   create-release:
     executor: node
+    working_directory: ~/working
     steps:
+      - attach_workspace:
+          at: ~/working
       - create-release
 
   tf-plan:

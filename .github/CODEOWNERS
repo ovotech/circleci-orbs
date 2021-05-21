@@ -14,3 +14,4 @@
 /jaws-journey-deploy      @ovotech/jaws-library-maintainers
 /oot-deploy/              @ovotech/orion-ops-tooling
 /sbt-deploy/              @ovotech/smart-bookings
+/asp-deploy/              @ovotech/asp-team
