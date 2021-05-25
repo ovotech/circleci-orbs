@@ -6,6 +6,7 @@ mkdir -p ~/test-results/junit/
 find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
 mkdir -p ./reports/jacoco/
 mkdir -p ./reports/jacoco/"$SERVICE_NAME"/
+rm -rf ./reports/jacoco/
 
 REPORT_FOLDER=""
 if [[ "$IS_LIB" = true ]] ; then
