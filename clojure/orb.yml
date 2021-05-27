@@ -21,6 +21,7 @@ commands:
       coveralls-report-path:
         description: "If specified, will upload the specified coveralls report to coveralls.io. Requires COVERALLS_REPO_TOKEN env var to be set."
         type: string
+        default: ""
     steps:
       - checkout
       - restore_cache:
