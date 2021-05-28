@@ -17,7 +17,7 @@ commands:
       image-tag:
         type: string
         description: "[Description] Tag of the service to be deployed" # Check the "Set Tag - *" step below
-        default: echo $(git describe --tags)
+        default: echo $(git describe --tags) # I don't think this works (check below)
       gitops-repo:
         description: "[Description] URL for repository containing kubernetes manifests."
         type: string
