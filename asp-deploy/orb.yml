@@ -48,16 +48,16 @@ commands:
             sudo chmod u+x /usr/local/bin/kustomize
             kustomize version
 
-      # - when:
-      #     name: Set Tag to the one provided by user
-      #     condition: << parameters.image-tag >>
-      #     steps:
-      #       - run: echo 'export TAG=<<parameters.image-tag>>' >> $BASH_ENV
-      # - unless:
-      #     name: Set Tag to default
-      #     condition: << parameters.image-tag >>
-      #     steps:
-      #       - run: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
+      - when:
+          name: Set Tag to the one provided by user
+          condition: << parameters.image-tag >>
+          steps:
+            - run: echo 'export TAG=<<parameters.image-tag>>' >> $BASH_ENV
+      - unless:
+          name: Set Tag to default
+          condition: << parameters.image-tag >>
+          steps:
+            - run: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
 
       - run:
           name: Clone gitops repo
