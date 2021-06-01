@@ -182,10 +182,10 @@ commands:
             include ./scripts/calculate_version.sh
 
   make-gradle-executable:
-    description: "Run commands to make gradle executable"
+    description: "Make gradle executable"
     steps:
       - run:
-          name: "make gradle executable"
+          name: "Make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/make_gradle_executable.sh
