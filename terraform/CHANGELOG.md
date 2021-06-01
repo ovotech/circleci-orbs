@@ -4,6 +4,10 @@ Orbs are immutable, some orb versions with no significant changes are
 not listed
 
 
+## ovotech/terraform@1.8.8
+## Added
+- Added Terraform provider Aiven Kafka Users v1.0.2 to all executors
+
 ## ovotech/terraform@1.8.7
 ## Added
 - Added Terraform provider Aiven Kafka Users v1.0.1
