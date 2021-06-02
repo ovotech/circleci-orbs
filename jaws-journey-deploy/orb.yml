@@ -8,7 +8,7 @@ orbs:
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
-  argocd: ovotech/argocd@dev:feat_add-argocd-orb
+  argocd: ovotech/argocd@dev:add-argocd-orb
 
 executors:
   kotlin:
