@@ -11,7 +11,7 @@ def is_cluster_insync(endpoint, token, application, target_revision):
 
     try:
         headers = { 'Authorization' : 'Bearer %s' % token }
-        res = requests.get(endpoint + f'/api/v1/applications/{application}', headers=headers, timeout = 10, verify=True)
+        res = requests.get(endpoint.rstrip("/") + f'/api/v1/applications/{application}', headers=headers, timeout = 10, verify=True)
         if res.status_code != 200:
             print(f"ERROR: Non-200 response ({res.status_code}): {res.json()}.")
             return False
