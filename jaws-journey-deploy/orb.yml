@@ -626,7 +626,7 @@ jobs:
         default: "Journeys CircleCI Orb"
       ssh_key_fingerprint:
         type: string
-      argocd_server_url: 
+      argocd_url:
         type: string
         default: ""
       argocd_token: 
@@ -654,7 +654,7 @@ jobs:
       - when:
           condition: 
             and:
-              - << parameters.argocd_server_url >>
+              - << parameters.argocd_url >>
               - << parameters.argocd_token >>
           steps:
             - run:  
