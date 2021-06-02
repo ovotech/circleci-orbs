@@ -4,8 +4,7 @@ Interacts with an ArgoCD API (currently only provides ability to wait for ArgoCD
 
 ## Prerequisites
 
-You will need to use a context with `ARGOCD_TOKEN` populated with a token from the project your application resides in. To generate a token, in ArgoCD UI got to *Projects* > *Your team name* > *Roles* > *read-only* and create a JWT token at the bottom. Give it a sensible ID, such as `circleci`. This token can be re-used amongst all applications in your team's project; it provides read-only access to your project and its application.
-
+You will need to use a context with `ARGOCD_TOKEN` populated with a token from the project your application resides in. See below on how to generate a token. This token can be re-used amongst all applications in your team's project; the role used should only provide read-only access to your project and its applications.
 
 ## Example Usage
 
@@ -28,3 +27,23 @@ jobs:
         target: $ARGO_TARGET_REVISION
     - run-test
 ```
+
+## Generating a token
+
+This assumes you have an existing role associated with your project. This should just need read access.
+
+In ArgoCD UI go to *Settings*
+![](./argocd-token-1.png)
+
+Click *Projects* and select your project name (i.e. your team name). 
+
+![](./argocd-token-2.png)
+
+
+On the *Roles* table, select the desire role and create a JWT token at the bottom.
+
+![](./argocd-token-3.png)
+
+**Important:** Give the token a name that indicates its purpose but it must be unique within your project: if you create a token with the same name as a previously deleted one, the deleted token will be considered valid (unless expired). A token ID of the form `circle-<unix timestamp>` is recommended.
+
+When created the token will appear at the bottom of the right-hand panel (you will have to scroll to see it). Copy the token; it will not be shown again.
