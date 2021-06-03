@@ -18,6 +18,7 @@ orbs:
 
 jobs:
   deploy-to-uat:
+    executor: python
     context: jaws-nonprod # Must have ARGOCD_TOKEN in the context
     steps:
     - gitops-deploy # Deploys to manifest repo, persists as commit hash as ARGO_TARGET_REVISION in $BASH_ENV
