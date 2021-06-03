@@ -183,34 +183,35 @@ commands:
             include ./scripts/calculate_version.sh
 
   make-gradle-executable:
-    description: "Run commands to make gradle executable"
+    description: "Make gradle executable"
     steps:
       - run:
-          name: "make gradle executable"
+          name: "Make gradle executable"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/make_gradle_executable.sh
 
   run-automated-tests:
-    description: "Run commands to make gradle executable"
+    description: "Run automated tests"
     parameters:
       <<: *environment
     steps:
       - run:
-          name: "make gradle executable"
+          name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/set_profile.sh
             include ./scripts/automated_test_run.sh
 
   save-automated-tests:
-    description: "Run commands to make gradle executable"
+    description: "Save automated tests"
     steps:
       - run:
-          name: "make gradle executable"
+          name: "Save automated tests"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/automated_test_save.sh
+          when: always
 
   report-code-coverage:
     description: "Add code coverage report"
