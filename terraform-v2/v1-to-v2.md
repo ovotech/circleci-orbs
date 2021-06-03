@@ -50,7 +50,7 @@ orbs:
 ```
 
 This will use the latest 2.x.x version of the v2 orb, you can pin to a more
-precise version, e.g. 2.0 or 2.0.0 if required.
+precise version, e.g. 2.1 or 2.1.0 if required.
 
 Ensure you specify the default executor:
 
