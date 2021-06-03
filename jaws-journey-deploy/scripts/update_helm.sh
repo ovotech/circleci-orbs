@@ -1,7 +1,7 @@
 MAX_RETRY=3
 COUNTER=0
 
-function deply_manifest {
+function deploy_manifest {
 
   # Ensure /tmp/gitops is empty
   cd ~/
@@ -20,13 +20,20 @@ function deply_manifest {
   git config user.name '<<parameters.git_name>>'
   git config user.email '<<parameters.git_email>>'
   git commit -m "[skip ci] <<parameters.environment>>: CircleCI deploy ${CIRCLE_PROJECT_REPONAME}" -m  "Deployment to <<parameters.environment>>. Build URL: ${CIRCLE_BUILD_URL}" -a
-  git push origin '<<parameters.deploy_branch>>'
+
+  if '${CIRCLE_BRANCH}' === '<<parameters.deploy_branch>>'
+    git tag -d sandbox
+    git tag sandbox
+    git push origin :sandbox
+    git push origin sandbox
+    git push origin '<<parameters.deploy_branch>>'
+  fi
 
   return $?
 }
 
 
-until deply_manifest
+until deploy_manifest
 do
    sleep 1
    [[ COUNTER -eq $MAX_RETRY ]] && echo "Failed!" && exit 1
