@@ -1,6 +1,7 @@
 MAX_RETRY=3
 COUNTER=0
 
+
 function deply_manifest {
 
   # Ensure /tmp/gitops is empty
@@ -33,4 +34,6 @@ do
 done
 
 cd /tmp/gitops
-echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/master)" >> /tmp/workspace/env
+mkdir -p /tmp/argocd
+touch /tmp/argocd/env
+echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/master)" >> /tmp/argocd/env
