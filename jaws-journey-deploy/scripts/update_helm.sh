@@ -1,3 +1,4 @@
+
 MAX_RETRY=3
 COUNTER=0
 
@@ -26,8 +27,8 @@ function deploy_manifest {
     git tag sandbox
     git push origin :sandbox
     git push origin sandbox
-    git push origin '<<parameters.deploy_branch>>'
   fi
+  git push origin '<<parameters.deploy_branch>>'
 
   return $?
 }
