@@ -15,8 +15,7 @@ if hash tfswitch 2>/dev/null; then
 fi
 
 # Check the terraform version is >= 0.14
-tf_minor_version=$(terraform version -json | jq -r .terraform_version | cut -b 3,4)
-if ! terraform version -help | grep -e "-json" >/dev/null || [ ${tf_minor_version} -lt 14 ]; then
+if ! terraform version -help | grep -e "-json" >/dev/null || [ $(terraform version -json | jq -r .terraform_version | cut -b 3,4) -lt 14 ]; then
     echo "Your version of terraform is too old. The terraform v2 orb only supports terraform >= 0.14"
     exit 1
 fi
