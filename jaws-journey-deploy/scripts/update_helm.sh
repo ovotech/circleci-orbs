@@ -1,6 +1,8 @@
 MAX_RETRY=3
 COUNTER=0
 
+ssh-keyscan github.com >> ~/.ssh/known_hosts
+chmod 644 ~/.ssh/known_hosts
 
 function deply_manifest {
 
