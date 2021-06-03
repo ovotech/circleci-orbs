@@ -613,7 +613,7 @@ jobs:
 
   gitops-deploy:
     working_directory: ~/working
-    machine: true
+    executor: python
     parameters:
       manifest_directory:
         type: string
