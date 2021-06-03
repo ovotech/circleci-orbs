@@ -1,6 +1,7 @@
 MAX_RETRY=3
 COUNTER=0
 
+
 function deply_manifest {
 
   # Ensure /tmp/gitops is empty
