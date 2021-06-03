@@ -25,7 +25,7 @@ commands:
         description: "Commit hash to check for"
     steps:
       - run:
-          name: "Run  Avro check commands"
+          name: "Wait for ArgoCD to sync"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/wait_for_sync.sh
