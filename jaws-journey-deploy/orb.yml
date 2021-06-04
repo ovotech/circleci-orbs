@@ -635,6 +635,12 @@ jobs:
       yq_version: 
         type: string
         default: "v4.6.2"
+      commit_tag_name:
+        type: string
+        default: ""
+      deploy_branch_name:
+        type: string
+        default: 'master'
       <<: *environment
     description: Deploy to << parameters.environment >>
     environment:
