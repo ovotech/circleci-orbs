@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "name": "default",
+    "namespace": "argo",
+    "selfLink": "/apis/argoproj.io/v1alpha1/namespaces/argo/applications/default",
+    "uid": "16deabf1-3955-4a41-81ff-5e4c7bb81fa4",
+    "resourceVersion": "34927080",
+    "generation": 40953,
+    "creationTimestamp": "2021-01-08T15:57:15Z",
+    "labels": {
+      "app.kubernetes.io/managed-by": "Helm"
+    },
+    "annotations": {
+      "meta.helm.sh/release-name": "argocd",
+      "meta.helm.sh/release-namespace": "argo"
+    }
+  },
+  "spec": {
+    "source": {
+      "repoURL": "git@github.com:ovotech/example.git",
+      "path": "overlays/prod",
+      "targetRevision": "main"
+    },
+    "destination": {
+      "server": "https://kubernetes.default.svc",
+      "namespace": "default"
+    },
+    "project": "default",
+    "syncPolicy": {
+      "automated": {}
+    }
+  },
+  "status": {
+    "resources": [
+      {
+        "version": "v1",
+        "kind": "ConfigMap",
+        "namespace": "default",
+        "name": "aiven-config",
+        "status": "Synced"
+      },
+      {
+        "group": "apps",
+        "version": "v1",
+        "kind": "Deployment",
+        "namespace": "default",
+        "name": "smart-meter-status-update-service",
+        "status": "Synced",
+        "health": {
+          "status": "Progressing",
+          "message": "Waiting for rollout to finish: 0 of 2 updated replicas are available..."
+        }
+      }
+    ],
+    "sync": {
+      "status": "Synced",
+      "comparedTo": {
+        "source": {
+          "repoURL": "git@github.com:ovotech/example.git",
+          "path": "overlays/prod",
+          "targetRevision": "main"
+        },
+        "destination": {
+          "server": "https://kubernetes.default.svc",
+          "namespace": "default"
+        }
+      },
+      "revision": "140c6627d2ea1ac683770accbd0adb8700c51d58"
+    },
+    "health": {
+      "status": "Progressing"
+    },
+    "history": [
+      {
+        "revision": "11368bf4ef87b51b8a3a0242bb2979d01f70de01",
+        "deployedAt": "2021-02-25T15:35:48Z",
+        "id": 68,
+        "source": {
+          "repoURL": "git@github.com:ovotech/example.git",
+          "path": "overlays/prod",
+          "targetRevision": "main"
+        },
+        "deployStartedAt": "2021-02-25T15:35:22Z"
+      }
+    ],
+    "reconciledAt": "2021-02-27T16:14:18Z",
+    "operationState": {
+      "operation": {
+        "sync": {
+          "revision": "11368bf4ef87b51b8a3a0242bb2979d01f70de01"
+        },
+        "initiatedBy": {
+          "automated": true
+        },
+        "retry": {
+          "limit": 5
+        }
+      },
+      "phase": "Succeeded",
+      "message": "successfully synced (all tasks run)",
+      "syncResult": {
+        "resources": [
+          {
+            "group": "",
+            "version": "v1",
+            "kind": "ConfigMap",
+            "namespace": "default",
+            "name": "datadog-installinfo",
+            "status": "Synced",
+            "message": "configmap/datadog-installinfo unchanged",
+            "hookPhase": "Running",
+            "syncPhase": "Sync"
+          },
+          {
+            "group": "",
+            "version": "v1",
+            "kind": "Service",
+            "namespace": "default",
+            "name": "smart-meter-status-update-service",
+            "status": "Synced",
+            "message": "service/smart-meter-status-update-service unchanged",
+            "hookPhase": "Running",
+            "syncPhase": "Sync"
+          }
+        ],
+        "revision": "11368bf4ef87b51b8a3a0242bb2979d01f70de01",
+        "source": {
+          "repoURL": "git@github.com:ovotech/example.git",
+          "path": "overlays/prod",
+          "targetRevision": "main"
+        }
+      },
+      "startedAt": "2021-02-25T15:35:22Z",
+      "finishedAt": "2021-02-25T15:35:48Z"
+    },
+    "sourceType": "Kustomize",
+    "summary": {
+      "externalURLs": [],
+      "images": [
+        "999999999999.dkr.ecr.eu-west-1.amazonaws.com/smart-meter-status-update-service:0.1.43"
+      ]
+    }
+  }
+}
