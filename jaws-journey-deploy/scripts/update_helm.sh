@@ -21,7 +21,7 @@ function deply_manifest {
   git config user.email '<<parameters.git_email>>'
   git commit -m "[skip ci] <<parameters.environment>>: CircleCI deploy ${CIRCLE_PROJECT_REPONAME}" -m  "Deployment to <<parameters.environment>>. Build URL: ${CIRCLE_BUILD_URL}" -a
 
-  if [[ "<< parameters.commit_tag_name >>" != "" ]]
+  if [[ "<< parameters.commit_tag_name >>" != "" ]]; then
     git push origin :refs/tags/<< parameters.commit_tag_name >>
     git tag -f '<< parameters.commit_tag_name >>' -a -m "$CIRCLE_BUILD_URL"
   fi
