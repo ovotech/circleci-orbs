@@ -1,6 +1,9 @@
 MAX_RETRY=3
 COUNTER=0
 
+ssh-keyscan github.com >> ~/.ssh/known_hosts
+chmod 644 ~/.ssh/known_hosts
+
 function deply_manifest {
 
   # Ensure /tmp/gitops is empty
@@ -31,7 +34,6 @@ function deply_manifest {
   return $?
 }
 
-
 until deply_manifest
 do
    sleep 1
@@ -39,3 +41,8 @@ do
    echo "Trying again. Try #$COUNTER"
    ((COUNTER++))
 done
+
+cd /tmp/gitops
+mkdir -p /tmp/argocd
+touch /tmp/argocd/env
+echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/master)" >> /tmp/argocd/env
