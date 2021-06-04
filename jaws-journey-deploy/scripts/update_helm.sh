@@ -12,7 +12,7 @@ function deply_manifest {
   mkdir -p /tmp/gitops
   
   # Clone manifest repo
-  git clone git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} /tmp/gitops
+  git clone -b << parameters.deploy_branch_name >> git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} /tmp/gitops
   cd /tmp/gitops
   
   # Update helm chart
@@ -23,7 +23,14 @@ function deply_manifest {
   git config user.name '<<parameters.git_name>>'
   git config user.email '<<parameters.git_email>>'
   git commit -m "[skip ci] <<parameters.environment>>: CircleCI deploy ${CIRCLE_PROJECT_REPONAME}" -m  "Deployment to <<parameters.environment>>. Build URL: ${CIRCLE_BUILD_URL}" -a
-  git push origin master  
+
+  if [[ "<< parameters.commit_tag_name >>" != "" ]]; then
+    git push origin :refs/tags/<< parameters.commit_tag_name >>
+    git tag -f '<< parameters.commit_tag_name >>' -a -m "$CIRCLE_BUILD_URL"
+  fi
+
+  git push origin '<< parameters.deploy_branch_name >>' --tags
+
   return $?
 }
 
