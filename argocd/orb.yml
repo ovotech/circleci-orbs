@@ -1,0 +1,55 @@
+version: 2.1
+description: "Defines jobs for interacting with an ArgoCD instance"
+
+executors:
+  python:
+    docker:
+      - image: circleci/python:3.8
+
+commands:
+  wait_for_sync:
+    description: "Waits for an Argo applications to become in sync with a target revision. Expects ARGOCD_TOKEN environment variable to be set."
+    parameters:
+      wait_for:
+        type: integer
+        default: 600
+        description: "Maximum time to wait for sync in seconds. Default 600."
+      application:
+        type: string
+        description: "Application ID"
+      argocd_url:
+        type: string
+        description: "URL of ArgoCD server"
+      target:
+        type: string
+        description: "Commit hash to check for"
+    steps:
+      - run:
+          name: "Wait for ArgoCD to sync"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/wait_for_sync.sh
+
+jobs:
+  wait_for_sync:
+    executor: python
+    parameters:
+      wait_for:
+        type: integer
+        default: 600
+        description: "Maximum time to wait for in seconds. Default 600."
+      application:
+        type: string
+        description: "Application ID"
+      argocd_url:
+        type: string
+        description: "URL of ArgoCD server"
+      target:
+        type: string
+        description: "Commit hash to check for"
+    steps:
+      - wait_for_sync:
+          wait_for: << parameters.wait_for >>
+          argocd_url: << parameters.argocd_url >>
+          application: << parameters.application >>
+          target: << parameters.target >>
