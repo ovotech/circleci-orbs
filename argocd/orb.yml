@@ -13,7 +13,7 @@ commands:
       wait_for:
         type: integer
         default: 600
-        description: "Maximum time to wait for in seconds. Default 600."
+        description: "Maximum time to wait for sync in seconds. Default 600."
       application:
         type: string
         description: "Application ID"
