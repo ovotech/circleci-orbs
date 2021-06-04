@@ -1,6 +1,9 @@
 MAX_RETRY=3
 COUNTER=0
 
+ssh-keyscan github.com >> ~/.ssh/known_hosts
+chmod 644 ~/.ssh/known_hosts
+
 function deply_manifest {
 
   # Ensure /tmp/gitops is empty
@@ -20,11 +23,9 @@ function deply_manifest {
   git config user.name '<<parameters.git_name>>'
   git config user.email '<<parameters.git_email>>'
   git commit -m "[skip ci] <<parameters.environment>>: CircleCI deploy ${CIRCLE_PROJECT_REPONAME}" -m  "Deployment to <<parameters.environment>>. Build URL: ${CIRCLE_BUILD_URL}" -a
-  git push origin master
-
+  git push origin master  
   return $?
 }
-
 
 until deply_manifest
 do
@@ -33,3 +34,8 @@ do
    echo "Trying again. Try #$COUNTER"
    ((COUNTER++))
 done
+
+cd /tmp/gitops
+mkdir -p /tmp/argocd
+touch /tmp/argocd/env
+echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/master)" >> /tmp/argocd/env
