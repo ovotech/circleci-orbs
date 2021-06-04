@@ -21,7 +21,7 @@ jobs:
     executor: python
     context: jaws-nonprod # Must have ARGOCD_TOKEN in the context
     steps:
-    - gitops-deploy # Deploys to manifest repo, persists as commit hash as ARGO_TARGET_REVISION in $BASH_ENV
+    - gitops-deploy # Deploys to manifest repo, persists deployed commit hash as ARGO_TARGET_REVISION in $BASH_ENV
     - argocd/wait_for_sync:
         application: journey-meter-tariff-extractor
         argocd_url: https://argocd.metering-shared-non-prod.ovotech.org.uk/
