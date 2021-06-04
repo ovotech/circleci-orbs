@@ -23,7 +23,7 @@ function deply_manifest {
 
   if [[ "<< parameters.commit_tag_name >>" != "" ]]
     git push origin :refs/tags/'<< parameters.commit_tag_name >>'
-    git tag -f '<< parameters.commit_tag_name >>' -a -m "$CIRCLE_BUILD_URL"
+    git tag -f '<< parameters.commit_tag_name >>'
   fi
 
   git push origin '<< parameters.deploy_branch_name >>'
