@@ -26,7 +26,7 @@ function deply_manifest {
     git tag -f '<< parameters.commit_tag_name >>' -a -m "$CIRCLE_BUILD_URL"
   fi
 
-  git push origin '<< parameters.deploy_branch_name >>'
+  git push origin '<< parameters.deploy_branch_name >>' --tags
 
   return $?
 }
