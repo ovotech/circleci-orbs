@@ -45,4 +45,4 @@ done
 cd /tmp/gitops
 mkdir -p /tmp/argocd
 touch /tmp/argocd/env
-echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/master)" >> /tmp/argocd/env
+echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/<< parameters.deploy_branch_name >>)" >> /tmp/argocd/env
