@@ -563,6 +563,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
+      - checkout
       - create-release
 
   tf-plan:
