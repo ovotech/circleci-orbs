@@ -16,6 +16,7 @@ fi
 if terraform version -help | grep -e "-json" >/dev/null; then
     if  $(terraform version -json | jq -r .terraform_version | cut -b 3,4) -gt 14 ; then
         echo "The terraform orb does not support terraform 0.15+. Please use the terraform-v2 orb."
+        echo "https://circleci.com/developer/orbs/orb/ovotech/terraform-v2"
         exit 1
     fi
 fi
