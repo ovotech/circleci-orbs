@@ -1,7 +1,7 @@
 # Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform-v2)](https://circleci.com/orbs/registry/orb/ovotech/terraform-v2)
 
 This orb can be used to plan and apply terraform modules.
-It is published as `ovotech/terraform-v2@1`.
+It is published as `ovotech/terraform-v2@2`.
 
 **Note: this orb only supports terraform `>=0.14`.**
 
@@ -74,7 +74,7 @@ to the open PR. If that PR is then merged, the plan is applied.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@1
+  terraform: ovotech/terraform-v2@2
 
 workflows:
   test:
@@ -105,7 +105,7 @@ terraform helm provider.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@1
+  terraform: ovotech/terraform-v2@2
 
 jobs:
   terraform_plan:
@@ -225,7 +225,7 @@ The `helm` command will use `helm3` by default.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@1
+  terraform: ovotech/terraform-v2@2
 
 jobs:
   terraform_plan:
@@ -256,7 +256,7 @@ detected to any of the terraform resources the build is failed.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@1
+  terraform: ovotech/terraform-v2@2
 
 workflows:
   nightly:
