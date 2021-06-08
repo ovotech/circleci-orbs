@@ -669,7 +669,7 @@ jobs:
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - argocd/wait_for_sync:
-                application: journey-meter-tariff-extractor
+                application: ${CIRCLE_PROJECT_REPONAME}
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
   run-automation-test:
