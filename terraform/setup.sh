@@ -12,10 +12,15 @@ if hash tfswitch 2>/dev/null; then
   (cd "$module_path" && echo "" | tfswitch | grep -e Switched -e Reading | sed 's/^.*Switched/Switched/')
 fi
 
-terraform version
-jq
-cut
-grep
+# Check that the terraform version isn't greater than 0.14
+if terraform version -help | grep -e "-json" >/dev/null; then
+    tf_version=$(terraform version -json | jq -r .terraform_version)
+    if  [ $(echo -n ${tf_version} | sed 's/^\([0-9]\).*/\1/') -ge 1 ] || [ $(echo -n ${tf_version} | sed 's/^[0-9]\.\([0-9][0-9]\)\.[0-9]*/\1/') -ge 15 ] ; then
+        echo "The terraform orb does not support terraform 0.15+. Please use the terraform-v2 orb."
+        echo "https://circleci.com/developer/orbs/orb/ovotech/terraform-v2"
+        exit 1
+    fi
+fi
 
 if [ -n "$TF_REGISTRY_TOKEN" ]; then
     echo "credentials \"$TF_REGISTRY_HOST\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
@@ -72,13 +77,4 @@ fi
 COMPACT_PLAN=compact_plan
 if ! hash $COMPACT_PLAN 2>/dev/null; then
     COMPACT_PLAN=cat
-fi
-
-# Check the terraform version is <= 0.14
-if terraform version -help | grep -e "-json" >/dev/null; then
-    if  $(terraform version -json | jq -r .terraform_version | cut -b 3,4) -gt 14 ; then
-        echo "The terraform orb does not support terraform 0.15+. Please use the terraform-v2 orb."
-        echo "https://circleci.com/developer/orbs/orb/ovotech/terraform-v2"
-        exit 1
-    fi
 fi
