@@ -476,9 +476,12 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
-    executor: kotlin
     working_directory: ~/working
+    machine:
+      docker_layer_caching: false
     steps:
+      - openjdk-install/openjdk:
+          version: 11
       - attach_workspace:
           at: ~/working
       - restore_cache:
