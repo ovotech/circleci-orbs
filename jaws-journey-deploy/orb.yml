@@ -406,6 +406,12 @@ jobs:
   publish-image:
     parameters:
       <<: *serviceName
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
     executor: kotlin
     working_directory: ~/working
     steps:
