@@ -513,6 +513,11 @@ jobs:
                 destination: ~/reports/diagrams
             - store_artifacts:
                 path: ~/reports/jacoco
+            - when:
+                condition: << parameters.runIntegrationTest >>
+                steps:
+                  - store_test_results:
+                      path: << parameters.serviceName >>/build/test-results/integrationTest
       - when:
           condition: << parameters.publish >>
           steps:
