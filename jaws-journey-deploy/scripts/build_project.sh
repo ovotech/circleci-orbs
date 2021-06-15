@@ -10,14 +10,14 @@ fi
 
 if [[ "$SAVE_TOPOLOGY" = true ]] ; then
   if [[ "$RUN_INTEGRATION_TEST" = true ]] ; then
-    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask :"<< parameters.serviceName >>":integrationTest -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}"
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask :"<< parameters.serviceName >>":integrationTest -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE}
   else
-    ./gradlew :"$SERVICE":clean :"<< parameters.serviceName >>":saveTopologyTask -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}" -x integrationTest
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE} -x integrationTest
   fi
 else
   if [[ "$RUN_INTEGRATION_TEST" = true ]] ; then
-    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build :"<< parameters.serviceName >>":integrationTest -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}"
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build :"<< parameters.serviceName >>":integrationTest -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE}
   else
-    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}" -x integrationTest
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE} -x integrationTest
   fi
 fi
