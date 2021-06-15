@@ -14,6 +14,12 @@ if hash tfswitch 2>/dev/null; then
   (cd "$module_path" && echo "" | tfswitch | grep -e Switched -e Reading | sed 's/^.*Switched/Switched/')
 fi
 
+# Check the terraform version is >= 0.14
+if ! terraform version -help | grep -e "-json" >/dev/null || [ $(terraform version -json | jq -r .terraform_version | cut -b 3,4) -lt 14 ]; then
+    echo "Your version of terraform is too old. The terraform v2 orb only supports terraform >= 0.14"
+    exit 1
+fi
+
 if [ -n "$TF_REGISTRY_TOKEN" ]; then
     echo "credentials \"$TF_REGISTRY_HOST\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
 fi

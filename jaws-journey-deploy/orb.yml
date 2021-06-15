@@ -8,6 +8,7 @@ orbs:
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
+  argocd: ovotech/argocd@1.0.0
 
 executors:
   kotlin:
@@ -402,6 +403,50 @@ jobs:
             - << parameters.lib >>/*
             - ./reports/jacoco/*
 
+  publish-image:
+    parameters:
+      <<: *serviceName
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+      - github-repo-login:
+          username: << parameters.username >>
+          token: << parameters.token >>
+      - aws-ecr/build-and-push-image:
+          setup-remote-docker: true
+          checkout: false
+          account-url: AWS_ACCOUNT_URL
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          dockerfile: ./<< parameters.serviceName >>/Dockerfile
+          path: ./<< parameters.serviceName >>
+          create-repo: false
+          region: AWS_DEFAULT_REGION
+          repo: << parameters.serviceName >>
+          tag: "latest,$CIRCLE_SHA1"
+      - snyk/scan:
+          docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:$CIRCLE_SHA1
+          fail-on-issues: true
+          monitor-on-build: true
+          project: << parameters.serviceName >>
+          severity-threshold: high
+          target-file: ./<< parameters.serviceName >>/Dockerfile
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
 
   build-and-test:
     parameters:
@@ -612,7 +657,7 @@ jobs:
 
   gitops-deploy:
     working_directory: ~/working
-    machine: true
+    executor: python
     parameters:
       manifest_directory:
         type: string
@@ -625,9 +670,21 @@ jobs:
         default: "Journeys CircleCI Orb"
       ssh_key_fingerprint:
         type: string
+      argocd_url:
+        type: string
+        default: ""
+      argocd_token: 
+        type: string
+        default: ""
       yq_version: 
         type: string
         default: "v4.6.2"
+      commit_tag_name:
+        type: string
+        default: ""
+      deploy_branch_name:
+        type: string
+        default: 'master'
       <<: *environment
     description: Deploy to << parameters.environment >>
     environment:
@@ -644,7 +701,21 @@ jobs:
           name: "Update helm values"
           command: |   
             include ./scripts/update_helm.sh
-  
+      - when:
+          condition: 
+            and:
+              - << parameters.argocd_url >>
+              - << parameters.argocd_token >>
+          steps:
+            - run:  
+                name: "Set environment variables"
+                command: |   
+                  echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
+                  cat /tmp/argocd/env >> $BASH_ENV
+            - argocd/wait_for_sync:
+                application: $CIRCLE_PROJECT_REPONAME
+                argocd_url: << parameters.argocd_url >>
+                target: $ARGOCD_TARGET_REVISION
   run-automation-test:
     parameters:
       <<: *environment

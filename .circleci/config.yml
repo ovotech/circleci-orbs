@@ -147,6 +147,7 @@ workflows:
           matrix:
             parameters:
               path:
+                - argocd
                 - aws-get-parameters
                 - aws-rotate-keys
                 - clair-scanner

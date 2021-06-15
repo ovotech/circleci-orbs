@@ -19,6 +19,7 @@ ENV TF_INPUT=false
 ENV TF_PLUGIN_CACHE_DIR=/usr/local/share/terraform/plugin-cache
 
 RUN apt-get update && apt-get install -y \
+    git \
     ssh \
     tar \
     gzip \
