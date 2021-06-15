@@ -9,14 +9,14 @@ else
   EXCLUDE=""
 fi
 
-if [[ "RUN_INTEGRATION_TEST" = true ]] ; then
+if [[ "$RUN_INTEGRATION_TEST" = true ]] ; then
   INTEGRATION_TEST=":$SERVICE:integrationTest"
 else
   INTEGRATION_TEST="-x integrationTest"
 fi
 
 if [[ "$SAVE_TOPOLOGY" = true ]] ; then
-  ./gradlew :"<< parameters.serviceName >>":clean :"$SERVICE":saveTopologyTask -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}" "${INTEGRATION_TEST}"
+  ./gradlew :"<< parameters.serviceName >>":clean :"$SERVICE":saveTopologyTask "${INTEGRATION_TEST}" -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}"
 else
   ./gradlew :"<< parameters.serviceName >>":clean :"$SERVICE":build -Pprofile="${PROFILE}" --no-daemon --full-stacktrace "${EXCLUDE}" "${INTEGRATION_TEST}"
 fi
