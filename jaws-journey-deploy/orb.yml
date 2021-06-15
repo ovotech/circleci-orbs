@@ -435,7 +435,7 @@ jobs:
           repo: << parameters.serviceName >>
           tag: "latest,$CIRCLE_SHA1"
       - snyk/scan:
-          docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
+          docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:$CIRCLE_SHA1
           fail-on-issues: true
           monitor-on-build: true
           project: << parameters.serviceName >>
