@@ -9,7 +9,7 @@ else
 fi
 
 if [[ "RUN_INTEGRATION_TEST" = true ]] ; then
-  INTEGRATION_TEST=":integrationTest"
+  INTEGRATION_TEST=":< parameters.serviceName >>:integrationTest"
 else
   INTEGRATION_TEST="-x integrationTest"
 fi
