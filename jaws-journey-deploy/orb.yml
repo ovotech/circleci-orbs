@@ -114,6 +114,9 @@ commands:
       saveTopology:
         type: boolean
         default: false
+      runIntegrationTest:
+        type: boolean
+        default: false
       <<: *environment
     steps:
       - run:
@@ -461,6 +464,9 @@ jobs:
       saveTopology:
         type: boolean
         default: false
+      runIntegrationTest:
+        type: boolean
+        default: false
       persist_to_workspace:
         type: boolean
         default: true
@@ -482,6 +488,7 @@ jobs:
           environment: << parameters.environment >>
           skipUnitTests: << parameters.skipUnitTests >>
           saveTopology: << parameters.saveTopology >>
+          runIntegrationTest: << parameters.runIntegrationTest >>
       - save_cache:
           paths:
             - .gradle
