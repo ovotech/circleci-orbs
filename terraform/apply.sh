@@ -1,5 +1,3 @@
-set -x
-
 cat >/tmp/github.py <<"EOF"
 include github.py
 EOF
@@ -29,7 +27,7 @@ function apply() {
     # because when running "terraform init $module_path", the .terraform directory is created in
     # the working directory. When running "terraform -chdir=blah init", the .terraform
     # directory is created in blah, so the terraform apply also needs to be run from blah with chdir.
-    terraform $chdir apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    terraform $chdir apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out $APPLY_ARGS | $TFMASK
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
