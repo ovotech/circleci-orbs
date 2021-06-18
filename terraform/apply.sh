@@ -1,5 +1,3 @@
-set -x
-
 cat >/tmp/github.py <<"EOF"
 include github.py
 EOF
