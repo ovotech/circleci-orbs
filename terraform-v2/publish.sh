@@ -60,6 +60,13 @@ if [[ "$REGISTRY_URL" == "" ]]; then
     exit 2
 fi
 
+EXISTING_VERSION=$(curl "${REGISTRY_URL}${MODULE_NAME}/versions" | jq -c '.modules[0].versions[] | select(.version == '\"$VERSION\"')')
+
+if [[ ! -z "$EXISTING_VERSION" ]]; then
+    echo "Version $VERSION already exists"
+    exit 2
+fi
+
 curl -L --fail -X PUT "$REGISTRY_URL$MODULE_NAME/$VERSION/upload" \
  --data-binary "@/tmp/$VERSION.tar.gz" \
  -H "Content-Type: application/x-tar" \
