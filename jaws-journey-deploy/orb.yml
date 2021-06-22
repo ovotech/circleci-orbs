@@ -146,7 +146,7 @@ commands:
           name: "Run Kafka cleanup script"
           shell: /bin/bash -eo pipefail
           command: |
-            include ./scripts/kafka_cleanup.sh << parameters.app-id-common >> << parameters.app-id-version >> << parameters.kube-namespace >> << parameters.preview-mode >>
+            include ./scripts/kafka_cleanup.sh
   integration-test:
     description: "Run integration tests"
     parameters:
