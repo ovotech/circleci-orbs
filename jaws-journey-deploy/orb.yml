@@ -9,7 +9,7 @@ orbs:
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
   argocd: ovotech/argocd@1.0.0
-  aws-cli: circleci/aws-cli@2.2.13
+  aws-cli: circleci/aws-cli@2.0.3
   kubernetes: circleci/kubernetes@0.12.0
 
 executors:
