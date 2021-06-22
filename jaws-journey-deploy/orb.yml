@@ -90,7 +90,6 @@ commands:
             include ./scripts/avro.sh
 
   cleanup-kafka-state:
-    working_directory: ~/working
     description: "Get parameter list from aws"
     parameters:
       app-id-common:
