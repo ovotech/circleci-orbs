@@ -147,7 +147,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/cleanup_kafka.sh
-  
+
   integration-test:
     description: "Run integration tests"
     parameters:
