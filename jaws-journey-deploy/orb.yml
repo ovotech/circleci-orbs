@@ -9,6 +9,8 @@ orbs:
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
   argocd: ovotech/argocd@1.0.0
+  aws-cli: circleci/aws-cli@2.2.13
+  kubernetes: circleci/kubernetes@0.12.0
 
 executors:
   kotlin:
@@ -59,7 +61,6 @@ aliases:
     destroy_first: << parameters.destroy_first >>
     environment: << parameters.environment >>
 
-
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
     backend_config_file: env/<< parameters.environment >>.tf
@@ -68,7 +69,7 @@ aliases:
 
   slack-notification: &slack-notification
     event: fail
-    mentions: '@jaws-support'
+    mentions: "@jaws-support"
     template: basic_fail_1
 
 commands:
@@ -88,6 +89,65 @@ commands:
             include ./scripts/make_gradle_executable.sh
             include ./scripts/avro.sh
 
+  cleanup-kafka-state:
+    working_directory: ~/working
+    description: "Get parameter list from aws"
+    parameters:
+      app-id-common:
+        description: |
+          the common part of your journey\'s application id (eg:
+          internal_jaws_journey_tariff_configuration_streamx-v)
+        type: string
+      app-id-version:
+        description: |
+          the current version of the application id (eg: 5)
+        type: string
+      kube-namespace:
+        description: |
+          the journey\'s kube namespace (eg:
+          jaws-tariff-configuration-journey)
+        type: string
+      preview-mode:
+        description: |
+          whether the changes will be executed or just previewed
+        default: "false"
+        type: string
+      aws-access-key-id:
+        default: AWS_ACCESS_KEY_ID
+        description: |
+          AWS access key id for IAM role. Set this to the name of
+          the environment variable you will use to hold this
+          value, i.e. AWS_ACCESS_KEY.
+        type: env_var_name
+      aws-region:
+        default: AWS_DEFAULT_REGION
+        description: |
+          Env var of AWS region to operate in
+          (defaults to AWS_DEFAULT_REGION)
+        type: env_var_name
+      aws-secret-access-key:
+        default: AWS_SECRET_ACCESS_KEY
+        description: |
+          AWS secret key for IAM role. Set this to the name of
+          the environment variable you will use to hold this
+          value, i.e. $AWS_SECRET_ACCESS_KEY.
+        type: env_var_name
+      profile-name:
+        default: default
+        description: Profile name to be configured.
+        type: string
+    steps:
+      - kubernetes/install-kubectl
+      - aws-cli/setup:
+          aws-access-key-id: << parameters.aws-access-key-id >>
+          aws-secret-access-key: << parameters.aws-secret-access-key >>
+          profile-name: << parameters.profile-name >>
+          aws-region: << parameters.aws-region >>
+      - run:
+        name: "Run Kafka cleanup script"
+        shell: /bin/bash -eo pipefail
+        command: |
+          include ./scripts/kafka_cleanup.sh << parameters.app-id-common >> << parameters.app-id-version >> << parameters.kube-namespace >> << parameters.preview-mode >>
   integration-test:
     description: "Run integration tests"
     parameters:
@@ -135,7 +195,7 @@ commands:
       command:
         description: indicate whether to build or publish
         type: "enum"
-        enum: [ build, publish ]
+        enum: [build, publish]
       <<: *environment
     steps:
       - run:
@@ -145,7 +205,6 @@ commands:
             include ./scripts/set_profile.sh
             include ./scripts/make_gradle_executable.sh
             include ./scripts/build_lib.sh
-
 
   save-test-result:
     description: "Run commands to save test results"
@@ -276,7 +335,7 @@ commands:
       <<: *tf-common-parameters
       command:
         type: "enum"
-        enum: [ "plan", "apply" ]
+        enum: ["plan", "apply"]
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -293,12 +352,12 @@ commands:
           path: terraform/<< parameters.path >>
       - when:
           condition:
-            equal: [ "plan", << parameters.command >> ]
+            equal: ["plan", << parameters.command >>]
           steps:
             - terraform/plan: *tf-parameters
       - when:
           condition:
-            equal: [ "apply", << parameters.command >> ]
+            equal: ["apply", << parameters.command >>]
           steps:
             - when:
                 condition: << parameters.destroy_first >>
@@ -310,7 +369,7 @@ commands:
                 <<: *tf-parameters
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -361,7 +420,7 @@ jobs:
       command:
         description: indicate whether to build or publish
         type: "enum"
-        enum: [ build, publish ]
+        enum: [build, publish]
         default: build
     machine:
       docker_layer_caching: false
@@ -392,7 +451,7 @@ jobs:
           path: ./reports/jacoco
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -443,7 +502,7 @@ jobs:
           target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -530,7 +589,7 @@ jobs:
                 target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -573,7 +632,7 @@ jobs:
 
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -590,7 +649,7 @@ jobs:
           severity-threshold: high
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -673,10 +732,10 @@ jobs:
       argocd_url:
         type: string
         default: ""
-      argocd_token: 
+      argocd_token:
         type: string
         default: ""
-      yq_version: 
+      yq_version:
         type: string
         default: "v4.6.2"
       commit_tag_name:
@@ -684,7 +743,7 @@ jobs:
         default: ""
       deploy_branch_name:
         type: string
-        default: 'master'
+        default: "master"
       <<: *environment
     description: Deploy to << parameters.environment >>
     environment:
@@ -697,19 +756,19 @@ jobs:
           name: "Install yq"
           command: |
             include ./scripts/install_yq.sh
-      - run:  
+      - run:
           name: "Update helm values"
-          command: |   
+          command: |
             include ./scripts/update_helm.sh
       - when:
-          condition: 
+          condition:
             and:
               - << parameters.argocd_url >>
               - << parameters.argocd_token >>
           steps:
-            - run:  
+            - run:
                 name: "Set environment variables"
-                command: |   
+                command: |
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - argocd/wait_for_sync:
@@ -734,7 +793,7 @@ jobs:
           path: ~/test-results/junit
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -750,11 +809,10 @@ jobs:
           path: ./reports/jacoco
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
-
 
   topology-describe:
     executor: python
@@ -767,7 +825,7 @@ jobs:
           path: ./reports/diagrams
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -787,7 +845,7 @@ jobs:
           key: npm-build-dependencies-cache-({checksum "package-lock.json"})
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -810,7 +868,7 @@ jobs:
             - docs/*
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
