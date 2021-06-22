@@ -143,10 +143,10 @@ commands:
           profile-name: << parameters.profile-name >>
           aws-region: << parameters.aws-region >>
       - run:
-        name: "Run Kafka cleanup script"
-        shell: /bin/bash -eo pipefail
-        command: |
-          include ./scripts/kafka_cleanup.sh << parameters.app-id-common >> << parameters.app-id-version >> << parameters.kube-namespace >> << parameters.preview-mode >>
+          name: "Run Kafka cleanup script"
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/kafka_cleanup.sh << parameters.app-id-common >> << parameters.app-id-version >> << parameters.kube-namespace >> << parameters.preview-mode >>
   integration-test:
     description: "Run integration tests"
     parameters:
