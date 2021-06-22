@@ -1,4 +1,5 @@
-from kafka import KafkaAdminClient
+from confluent_kafka.admin import AdminClient
+from confluent_kafka.schema_registry import SchemaRegistryClient
 import base64
 import boto3
 import subprocess
@@ -52,7 +53,8 @@ def get_parameter(parameterName):
 
 def create_file(parameterName, fileName):
     fileContents = base64.b64decode(
-        get_parameter(parameterName)).decode('utf-8')
+        get_parameter(parameterName)
+    ).decode('utf-8')
 
     writeFile = open(fileName, "w")
     writeFile.write(fileContents)
@@ -66,38 +68,68 @@ create_file('/aiven/service_key', 'service.key')
 print('kafka credentials created!\n')
 
 print('connecting to kafka...')
-admin_client = KafkaAdminClient(
-    client_id='Kafka-Cleanup-Tool',
-    security_protocol='SSL',
-    ssl_cafile='ca.cert',
-    ssl_certfile='service.cert',
-    ssl_keyfile='service.key',
-    bootstrap_servers=get_parameter('/aiven/cluster_uri'),
-)
+admin_client = AdminClient({
+    'bootstrap.servers': get_parameter('/aiven/cluster_uri'),
+    'client.id': 'Kafka-Cleanup-Tool',
+    'security.protocol': 'SSL',
+    'ssl.ca.location': 'ca.cert',
+    'ssl.certificate.location': 'service.cert',
+    'ssl.key.location': 'service.key',
+})
+schema_client = SchemaRegistryClient({
+    'basic.auth.user.info': f'{get_parameter("/aiven/service_username")}:{get_parameter("/aiven/service_password")}',
+    'url': get_parameter('/aiven/schema_uri')
+})
 print('connected to kafka!\n')
 
 
-def close_admin_client():
-    admin_client.close()
+def remove_certs():
     os.remove('service.cert')
     os.remove('service.key')
     os.remove('ca.cert')
 
 
+application_id = f'{args.app_id_common}{args.app_id_version}'
+
+
+def get_entities_to_delete(entities):
+    return [entity for entity in entities
+            if args.app_id_common in entity
+            and application_id not in entity]
+
+
+print('fetching schema registry subjects...')
+all_subjects = schema_client.get_subjects()
+print('schema registry subjects have been fetched!\n')
+
+subjects_to_delete = get_entities_to_delete(all_subjects)
+
+
+def close_if_nothing_to_delete(entities_to_delete, entity_name):
+    if (len(entities_to_delete) == 0):
+        print(f'there are no {entity_name} to delete')
+        print('hooray! kafka state is already clean, no action required!')
+        remove_certs()
+        sys.exit()
+
+
+close_if_nothing_to_delete(subjects_to_delete, 'subjects')
+
+print('the subjects to be deleted are:')
+print('\n'.join(subjects_to_delete))
+
+if not args.dry_run:
+    print('deleting subjects...')
+    for subject in subjects_to_delete:
+        schema_client.delete_subject(subject)
+    print('subjects have been deleted!\n')
+
 print("fetching kafka topics...")
-all_topics = admin_client.list_topics()
+all_topics = [topic for topic in admin_client.list_topics().topics]
 print("topics have been fetched!\n")
 
-application_id = f'{args.app_id_common}{args.app_id_version}'
-topics_to_delete = [topic for topic in all_topics
-                    if args.app_id_common in topic
-                    and application_id not in topic]
-
-if (len(topics_to_delete) == 0):
-    print('there are no topics to delete')
-    print('hooray! kafka state is already clean, no action required!')
-    close_admin_client()
-    sys.exit()
+topics_to_delete = get_entities_to_delete(all_topics)
+close_if_nothing_to_delete(topics_to_delete, 'topics')
 
 print('the topics to be deleted are:')
 print('\n'.join(topics_to_delete))
@@ -107,7 +139,7 @@ if not args.dry_run:
     admin_client.delete_topics(topics_to_delete)
     print('topics have been deleted!\n')
 
-close_admin_client()
+remove_certs()
 
 subprocess.getoutput(
     'aws eks --region eu-west-1 update-kubeconfig --name jaws'
