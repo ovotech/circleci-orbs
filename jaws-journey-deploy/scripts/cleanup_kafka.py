@@ -76,6 +76,14 @@ admin_client = KafkaAdminClient(
 )
 print('connected to kafka!\n')
 
+
+def close_admin_client():
+    admin_client.close()
+    os.remove('service.cert')
+    os.remove('service.key')
+    os.remove('ca.cert')
+
+
 print("fetching kafka topics...")
 all_topics = admin_client.list_topics()
 print("topics have been fetched!\n")
@@ -84,6 +92,13 @@ application_id = f'{args.app_id_common}{args.app_id_version}'
 topics_to_delete = [topic for topic in all_topics
                     if args.app_id_common in topic
                     and application_id not in topic]
+
+if (len(topics_to_delete) == 0):
+    print('there are no topics to delete')
+    print('hooray! kafka state is already clean, no action required!')
+    close_admin_client()
+    sys.exit()
+
 print('the topics to be deleted are:')
 print('\n'.join(topics_to_delete))
 
@@ -92,10 +107,7 @@ if not args.dry_run:
     admin_client.delete_topics(topics_to_delete)
     print('topics have been deleted!\n')
 
-admin_client.close()
-os.remove('service.cert')
-os.remove('service.key')
-os.remove('ca.cert')
+close_admin_client()
 
 subprocess.getoutput(
     'aws eks --region eu-west-1 update-kubeconfig --name jaws'
