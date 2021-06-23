@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.10
+## Changed
+- Updated `tfswitch` to 0.12.1097 for all executors
+
 ## ovotech/terraform@1.8.9
 ## Fixed
 - Added apply stage specific args to enable parallelism flag to be used in apply cmd
