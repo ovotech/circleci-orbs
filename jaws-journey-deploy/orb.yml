@@ -90,7 +90,7 @@ commands:
             include ./scripts/avro.sh
 
   cleanup-kafka-state:
-    description: "Get parameter list from aws"
+    description: "Removes previous app id kafka topics, schema subjects and local state"
     parameters:
       app-id-common:
         description: |
@@ -100,7 +100,7 @@ commands:
       app-id-version:
         description: |
           the current version of the application id (eg: 5)
-        type: string
+        type: integer
       kube-namespace:
         description: |
           the journey\'s kube namespace (eg:
@@ -109,8 +109,8 @@ commands:
       preview-mode:
         description: |
           whether the changes will be executed or just previewed
-        default: "false"
-        type: string
+        default: false
+        type: boolean
       aws-access-key-id:
         default: AWS_ACCESS_KEY_ID
         description: |
@@ -878,17 +878,23 @@ jobs:
       app-id-common:
         type: string
       app-id-version:
-        type: string
+        type: integer
       kube-namespace:
         type: string
       preview-mode:
-        default: "false"
-        type: string
+        default: false
+        type: boolean
     executor: python
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
+      - run:
+          name: "Install python dependencies"
+          command: |
+            sudo pip install awscli
+            sudo pip install confluent-kafka
+            sudo pip install boto3
       - cleanup-kafka-state:
           app-id-common: << parameters.app-id-common >>
           app-id-version: << parameters.app-id-version >>
