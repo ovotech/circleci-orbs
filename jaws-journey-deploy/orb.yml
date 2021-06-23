@@ -872,3 +872,11 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
+
+  cleanup-kafka-state:
+    executor: python
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - cleanup-kafka-state
