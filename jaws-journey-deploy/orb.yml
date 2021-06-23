@@ -874,9 +874,23 @@ jobs:
                 <<: *slack-notification
 
   cleanup-kafka-state:
+    parameters:
+      app-id-common:
+        type: string
+      app-id-version:
+        type: string
+      kube-namespace:
+        type: string
+      preview-mode:
+        default: "false"
+        type: string
     executor: python
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
-      - cleanup-kafka-state
+      - cleanup-kafka-state:
+          app-id-common: << parameters.app-id-common >>
+          app-id-version: << parameters.app-id-version >>
+          kube-namespace: << parameters.kube-namespace >>
+          preview-mode: << parameters.preview-mode >>
