@@ -114,6 +114,9 @@ commands:
       saveTopology:
         type: boolean
         default: false
+      runIntegrationTest:
+        type: boolean
+        default: false
       <<: *environment
     steps:
       - run:
@@ -461,6 +464,9 @@ jobs:
       saveTopology:
         type: boolean
         default: false
+      runIntegrationTest:
+        type: boolean
+        default: false
       persist_to_workspace:
         type: boolean
         default: true
@@ -470,9 +476,12 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
-    executor: kotlin
     working_directory: ~/working
+    machine:
+      docker_layer_caching: false
     steps:
+      - openjdk-install/openjdk:
+          version: 11
       - attach_workspace:
           at: ~/working
       - restore_cache:
@@ -482,6 +491,7 @@ jobs:
           environment: << parameters.environment >>
           skipUnitTests: << parameters.skipUnitTests >>
           saveTopology: << parameters.saveTopology >>
+          runIntegrationTest: << parameters.runIntegrationTest >>
       - save_cache:
           paths:
             - .gradle
@@ -503,6 +513,11 @@ jobs:
                 destination: ~/reports/diagrams
             - store_artifacts:
                 path: ~/reports/jacoco
+            - when:
+                condition: << parameters.runIntegrationTest >>
+                steps:
+                  - store_test_results:
+                      path: << parameters.serviceName >>/build/test-results/integrationTest
       - when:
           condition: << parameters.publish >>
           steps:

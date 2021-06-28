@@ -1,5 +1,7 @@
 SKIP_UNIT_TESTS="<< parameters.skipUnitTests >>"
 SAVE_TOPOLOGY="<< parameters.saveTopology >>"
+RUN_INTEGRATION_TEST="<< parameters.runIntegrationTest >>"
+
 if [[ "$SKIP_UNIT_TESTS" = true ]] ; then
   EXCLUDE="-x test"
 else
@@ -7,7 +9,15 @@ else
 fi
 
 if [[ "$SAVE_TOPOLOGY" = true ]] ; then
-  ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask -Pprofile=${PROFILE} --no-daemon -x integrationTest --full-stacktrace ${EXCLUDE}
+  if [[ "$RUN_INTEGRATION_TEST" = true ]] ; then
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE}
+  else
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":saveTopologyTask -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE} -x integrationTest
+  fi
 else
-  ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build -Pprofile=${PROFILE} --no-daemon -x integrationTest --full-stacktrace ${EXCLUDE}
+  if [[ "$RUN_INTEGRATION_TEST" = true ]] ; then
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE}
+  else
+    ./gradlew :"<< parameters.serviceName >>":clean :"<< parameters.serviceName >>":build -Pprofile=${PROFILE} --no-daemon --full-stacktrace ${EXCLUDE} -x integrationTest
+  fi
 fi
