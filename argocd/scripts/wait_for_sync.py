@@ -5,7 +5,7 @@ import argparse
 import os
 
 #
-# python3 wait_for_sync.py --wait-for=30 --application=default --target=3f9c8c3c02d8573901bd4c4e0c9ddfe7d7dcddf5 --argocd-url http://argocd.metering-shared-non-prod.ovotech.org.uk/
+# python3 wait_for_sync.py --wait-for=30 --application=default --target=3f9c8c3c02d8573901bd4c4e0c9ddfe7d7dcddf5 --argocd-url https://argocd.metering-shared-non-prod.ovotech.org.uk/
 #
 def is_cluster_insync(endpoint, token, application, target_revision):
 
@@ -20,8 +20,12 @@ def is_cluster_insync(endpoint, token, application, target_revision):
         cluster_revision = data['status']['operationState']['operation']['sync']['revision']
         cluster_phase = data['status']['operationState']['phase']
         cluster_sync_status = data['status']['sync']['status']
+        app_health = data['status']['health']['status']
 
-        if cluster_revision == target_revision and cluster_phase == "Succeeded":
+        if os.environ.get('ARGOCD_ORB_DEBUG'):
+            print_debug(data)
+        
+        if cluster_revision == target_revision and cluster_phase == "Succeeded" and app_health != "Progressing":
             if cluster_sync_status == "Synced":
                 return True;
             
@@ -46,6 +50,29 @@ def is_cluster_insync(endpoint, token, application, target_revision):
         print(f'ERROR: Request failed: {e}')
         return False
     
+
+def print_debug(application):
+    operation_state_rev = application['status']['operationState']['operation']['sync']['revision']
+    operation_state_syncResult_rev = application['status']['operationState']['syncResult']['revision']
+    operation_state_phase = application['status']['operationState']['phase']
+    operation_state_message = application['status']['operationState']['message']
+    operation_state_startedAt = application['status']['operationState']['startedAt']
+    operation_state_finishedAt = application['status']['operationState']['finishedAt']
+    app_sync_revision = application['status']['sync']['revision']
+    app_health = application['status']['health']
+    app_sync_status = application['status']['sync']['status']
+
+    print(f'''
+        operation_state_rev {operation_state_rev};
+        operation_state_syncResult_rev {operation_state_syncResult_rev};
+        operation_state_phase: {operation_state_phase};
+        operation_state_message: {operation_state_message}
+        operation_state_startedAt {operation_state_startedAt};
+        operation_state_finishedAt {operation_state_finishedAt};
+        app_sync_revision: {app_sync_revision};
+        app_sync_status: {app_sync_status};
+        app_health: {app_health['status']};
+        ''')
 
 if __name__ == '__main__':
 
