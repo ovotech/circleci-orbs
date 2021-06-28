@@ -68,7 +68,9 @@ commands:
       - run:
           name: Patch deployment
           command: |
+            echo "${TAG} - BEFORE CD"
             cd  ~/gitops/<<parameters.env>>
+            echo "${TAG} - AFTER CD"
             kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$TAG
 
       - run:
@@ -81,6 +83,7 @@ commands:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
+              echo "${TAG} - BEFORE COMMIT"
               git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version $TAG"
               git push origin <<parameters.gitops-deploy-branch>>
             fi
