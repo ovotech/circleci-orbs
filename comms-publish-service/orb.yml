@@ -1,0 +1,57 @@
+version: 2.1
+description: "Orb for deploying a service (adapted to the Comms team only)"
+
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/openjdk:14.0.2-jdk-buster
+
+commands:
+  generate_sbt_cache_key:
+    description: "Generate sbt cache key"
+    steps:
+      - run: md5sum project/build.properties project/plugins.sbt build.sbt > .sbt_cache_key
+
+  restore_sbt_cache:
+    description: "Restore sbt cache"
+    steps:
+      - generate_sbt_cache_key
+      - restore_cache:
+          keys:
+            - sbt-{{ checksum ".sbt_cache_key" }}
+            - sbt
+
+jobs:
+  publish_service:
+    parameters:
+      docker_user:
+        description: The docker user name for logging in
+        type: string
+      docker_user_password:
+        description: The docker user password for logging in
+        type: string
+      ecr_aws_account:
+        description: The AWS account id where we the ECR repositories live
+        type: string
+      publish_commit_sha:
+        description: The git commit SHA to be published
+        type: string
+    executor: docker-executor
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run: docker login --username << parameters.docker_user >> --password << parameters.docker_user_password >>
+      - attach_workspace:
+          at: .
+      - restore_sbt_cache
+      - run:
+          name: Publish docker image to ECR
+          command: |
+            sbt service/publish
+            docker tag \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/comms-templates-api:latest \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/comms-templates-api:<< parameters.publish_commit_sha >>
+            docker push \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/comms-templates-api:<< parameters.publish_commit_sha >>
+          no_output_timeout: 20m
