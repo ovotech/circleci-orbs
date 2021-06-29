@@ -76,6 +76,7 @@ commands:
       - run:
           name: Commit and push
           command: |
+            TAG=<<parameters.image-tag>>
             cd  ~/gitops
             git config user.email "<<parameters.gitops-email>>"
             git config user.name "<<parameters.gitops-username>>"
@@ -83,8 +84,8 @@ commands:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              echo "<<parameters.image-tag>> - BEFORE COMMIT"
-              git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version <<parameters.image-tag>>"
+              echo "$TAG - BEFORE COMMIT"
+              git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version $TAG"
               git push origin <<parameters.gitops-deploy-branch>>
             fi
 
