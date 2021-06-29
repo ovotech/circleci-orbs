@@ -1,1 +1,1 @@
-ovotech/asp-deploy@1.0.0
+ovotech/asp-deploy@1.0.1
