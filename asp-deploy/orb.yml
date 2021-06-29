@@ -70,9 +70,10 @@ commands:
           name: Patch deployment
           command: |
             echo "<<parameters.image-tag>> - BEFORE CD"
+            TAG=<<parameters.image-tag>>
             cd  ~/gitops/<<parameters.env>>
             echo "<<parameters.image-tag>> - AFTER CD"
-            kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:<<parameters.image-tag>>
+            kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$TAG
       - run:
           name: Commit and push
           command: |
