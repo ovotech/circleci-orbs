@@ -49,7 +49,7 @@ commands:
       - run:
           name: Publish docker image to ECR
           command: |
-            sbt << parameters.sbt_module >>publish
+            sbt << parameters.sbt_module >>publishLocal
             docker tag \
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:latest \
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
