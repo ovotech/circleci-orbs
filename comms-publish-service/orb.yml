@@ -1,11 +1,6 @@
 version: 2.1
 description: "Orb for deploying a service (adapted to the Comms team only)"
 
-executors:
-  docker-executor:
-    docker:
-      - image: circleci/openjdk:14.0.2-jdk-buster
-
 commands:
   generate_sbt_cache_key:
     description: "Generate sbt cache key"
@@ -21,9 +16,12 @@ commands:
             - sbt-{{ checksum ".sbt_cache_key" }}
             - sbt
 
-jobs:
   publish_service:
+    description: "Publishes a service"
     parameters:
+      service_name:
+        description: The name of the service (used as the name of the ECR repository)
+        type: string
       docker_user:
         description: The docker user name for logging in
         type: string
@@ -40,7 +38,6 @@ jobs:
         description: (Optional) The path to the sbt module (i.e. service/)
         type: string
         default: ""
-    executor: docker-executor
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
@@ -52,10 +49,10 @@ jobs:
       - run:
           name: Publish docker image to ECR
           command: |
-            sbt << parameters.sbt_module >>publish
+            sbt << parameters.sbt_module >>publishLocal
             docker tag \
-              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/comms-templates-api:latest \
-              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/comms-templates-api:<< parameters.publish_commit_sha >>
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:latest \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
             docker push \
-              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/comms-templates-api:<< parameters.publish_commit_sha >>
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
           no_output_timeout: 20m
