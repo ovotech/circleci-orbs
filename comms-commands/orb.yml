@@ -7,6 +7,17 @@ commands:
     steps:
       - run: md5sum project/build.properties project/plugins.sbt build.sbt > .sbt_cache_key
 
+  store_sbt_cache:
+    description: "Store sbt cache"
+    steps:
+      - generate_sbt_cache_key
+      - save_cache:
+          key: sbt-{{ checksum ".sbt_cache_key" }}
+          paths:
+            - /home/circleci/.ivy2
+            - /home/circleci/.sbt
+            - /home/circleci/.cache/coursier
+
   restore_sbt_cache:
     description: "Restore sbt cache"
     steps:
