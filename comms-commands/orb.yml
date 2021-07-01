@@ -1,11 +1,22 @@
 version: 2.1
-description: "Orb for deploying a service (adapted to the Comms team only)"
+description: "Orb with commonly used commands by the Comms Platform Service pipelines"
 
 commands:
   generate_sbt_cache_key:
     description: "Generate sbt cache key"
     steps:
       - run: md5sum project/build.properties project/plugins.sbt build.sbt > .sbt_cache_key
+
+  store_sbt_cache:
+    description: "Store sbt cache"
+    steps:
+      - generate_sbt_cache_key
+      - save_cache:
+          key: sbt-{{ checksum ".sbt_cache_key" }}
+          paths:
+            - /home/circleci/.ivy2
+            - /home/circleci/.sbt
+            - /home/circleci/.cache/coursier
 
   restore_sbt_cache:
     description: "Restore sbt cache"
@@ -16,7 +27,26 @@ commands:
             - sbt-{{ checksum ".sbt_cache_key" }}
             - sbt
 
-  publish_service:
+  add_github_host_ssh_key:
+    description: "Add the github host SSH key"
+    steps:
+      - run:
+          name: Adding the github host SSH key
+          command: |
+            echo 'Adding the github host SSH key...'
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+  configure_git_credentials:
+    description: "Configure git credentials"
+    steps:
+      - run:
+          name: Configure git credentials
+          command: |
+            git config user.name ovo-comms-circleci
+            git config user.email "hello.comms@ovoenergy.com"
+
+  publish:
     description: "Publishes a service"
     parameters:
       service_name:
@@ -56,3 +86,31 @@ commands:
             docker push \
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
           no_output_timeout: 20m
+
+  tag:
+    description: "Tags a service"
+    parameters:
+      docker_user:
+        description: The docker user name for logging in
+        type: string
+      docker_user_password:
+        description: The docker user password for logging in
+        type: string
+      build_tag_script:
+        description: The sh script that will tag the commit
+        type: string
+    steps:
+      - checkout
+      - run: docker login --username << parameters.docker_user >> --password << parameters.docker_user_password >>
+      - attach_workspace:
+          at: .
+      - restore_sbt_cache
+      - add_github_host_ssh_key
+      - configure_git_credentials
+      - run:
+          name: Tag the commit
+          command: << parameters.build_tag_script >>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .git
