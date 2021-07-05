@@ -1,6 +1,36 @@
 version: 2.1
 description: "Orb with commonly used commands by the Comms Platform Service pipelines"
 
+orbs:
+  terraform: ovotech/terraform-v2@2
+
+jobs:
+  terraform_apply:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      environment:
+        description: "This can be either one of (prd, uat or lt)"
+        type: enum
+        enum: [ "prd", "uat", "lt" ]
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/apply:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+          var_file: "./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars"
+          var: "image_version=$CIRCLE_SHA1"
+      - when:
+          condition:
+            equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - shipit/shipit:
+                silence-errors: true
+                team-name: comms
+
 commands:
   generate_sbt_cache_key:
     description: "Generate sbt cache key"
