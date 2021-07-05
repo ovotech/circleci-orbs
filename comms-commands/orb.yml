@@ -1,6 +1,72 @@
 version: 2.1
 description: "Orb with commonly used commands by the Comms Platform Service pipelines"
 
+orbs:
+  terraform: ovotech/terraform-v2@2
+  shipit: ovotech/shipit@1.4.11
+
+jobs:
+  terraform_plan:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      environment:
+        description: "This can be either one of (prd, uat or lt)"
+        type: enum
+        enum: [ "prd", "uat", "lt" ]
+      backend_config_file:
+        description: "The path to the backend config file if different from default"
+        type: string
+        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+      var_file:
+        description: "The path to the var file if different from default"
+        type: string
+        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/plan:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: << parameters.backend_config_file >>
+          var_file: << parameters.var_file >>
+          var: "image_version=$CIRCLE_SHA1"
+
+  terraform_apply:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      environment:
+        description: "This can be either one of (prd, uat or lt)"
+        type: enum
+        enum: [ "prd", "uat", "lt" ]
+      backend_config_file:
+        description: "The path to the backend config file if different from default"
+        type: string
+        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+      var_file:
+        description: "The path to the var file if different from default"
+        type: string
+        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/apply:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: << parameters.backend_config_file >>
+          var_file: << parameters.var_file >>
+          var: "image_version=$CIRCLE_SHA1"
+      - when:
+          condition:
+            equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - shipit/shipit:
+                silence-errors: true
+                team-name: comms
+
 commands:
   generate_sbt_cache_key:
     description: "Generate sbt cache key"
