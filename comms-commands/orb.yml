@@ -165,6 +165,7 @@ commands:
             - .git
 
   restart_ecs_service:
+    description: "Restart an ECS service w/o updating task definition"
     parameters:
       cluster:
         type: string
