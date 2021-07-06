@@ -23,7 +23,8 @@ do
   then
     echo "=== Deployment successful ==="
     exit 0
-  else if [ $deploy_status == "FAILED" ]
+  elif [ $deploy_status == "FAILED" ]
+  then
     echo "=== Deployment FAILED ==="
     exit 1
   else
