@@ -17,13 +17,10 @@ jobs:
         enum: [ "prd", "uat", "lt" ]
     executor: terraform/default
     steps:
-      - checkout
-      - terraform/plan:
+      - terraform_plan:
           path: << parameters.path >>
-          workspace: main
           backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
           var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
-          var: "image_version=$CIRCLE_SHA1"
 
   terraform_apply_default:
     parameters:
@@ -36,20 +33,11 @@ jobs:
         enum: [ "prd", "uat", "lt" ]
     executor: terraform/default
     steps:
-      - checkout
-      - terraform/apply:
+      - terraform_apply:
           path: << parameters.path >>
-          workspace: main
+          environment: << parameters.environment >>
           backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
           var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
-          var: "image_version=$CIRCLE_SHA1"
-      - when:
-          condition:
-            equal: [ "prd", << parameters.environment >> ]
-          steps:
-            - shipit/shipit:
-                silence-errors: true
-                team-name: comms
 
 commands:
   generate_sbt_cache_key:
@@ -185,10 +173,6 @@ commands:
       path:
         description: "The path to the terraform code (usually ./terraform/)"
         type: string
-      environment:
-        description: "This can be either one of (prd, uat or lt)"
-        type: enum
-        enum: [ "prd", "uat", "lt" ]
       backend_config_file:
         description: "The path to the backend config file"
         type: string
