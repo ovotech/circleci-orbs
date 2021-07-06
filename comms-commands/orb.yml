@@ -33,11 +33,25 @@ jobs:
         enum: [ "prd", "uat", "lt" ]
     executor: terraform/default
     steps:
-      - terraform_apply:
-          path: << parameters.path >>
-          environment: << parameters.environment >>
-          backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-          var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+      - when:
+          condition:
+            equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - terraform_apply:
+                path: << parameters.path >>
+                run_shipit: true
+                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+      - when:
+          condition:
+            not:
+              equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - terraform_apply:
+                path: << parameters.path >>
+                run_shipit: false
+                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
 
 commands:
   generate_sbt_cache_key:
@@ -193,16 +207,16 @@ commands:
       path:
         description: "The path to the terraform code (usually ./terraform/)"
         type: string
-      environment:
-        description: "This can be either one of (prd, uat or lt)"
-        type: enum
-        enum: [ "prd", "uat", "lt" ]
       backend_config_file:
         description: "The path to the backend config file"
         type: string
       var_file:
         description: "The path to the var file"
         type: string
+      run_shipit:
+        description: "Whether or not to run shipit on this apply (usually this is done in Prod envs)"
+        type: boolean
+        default: false
     steps:
       - checkout
       - terraform/apply:
@@ -213,7 +227,7 @@ commands:
           var: "image_version=$CIRCLE_SHA1"
       - when:
           condition:
-            equal: [ "prd", << parameters.environment >> ]
+            equal: [ true, << parameters.run_shipit >> ]
           steps:
             - shipit/shipit:
                 silence-errors: true
