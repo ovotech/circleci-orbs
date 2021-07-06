@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.8.9
+## Fixed
+- Added apply stage specific args to enable parallelism flag to be used in apply cmd
 
 ## ovotech/terraform@1.8.8
 ## Added
