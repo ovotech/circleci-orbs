@@ -200,7 +200,6 @@ commands:
           workspace: main
           backend_config_file: << parameters.backend_config_file >>
           var_file: << parameters.var_file >>
-          var: "image_version=$CIRCLE_SHA1"
 
   terraform_apply:
     parameters:
@@ -224,7 +223,6 @@ commands:
           workspace: main
           backend_config_file: << parameters.backend_config_file >>
           var_file: << parameters.var_file >>
-          var: "image_version=$CIRCLE_SHA1"
       - when:
           condition:
             equal: [ true, << parameters.run_shipit >> ]
