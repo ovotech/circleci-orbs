@@ -180,3 +180,19 @@ commands:
           root: .
           paths:
             - .git
+
+  restart_ecs_service:
+    parameters:
+      cluster:
+        type: string
+      service:
+        type: string
+    steps:
+      - checkout
+      - run:
+          environment:
+            - ECS_CLUSTER: << parameters.cluster >>
+            - ECS_SERVICE: << parameters.service >>
+          command: |
+            include restart_ecs_service.sh
+
