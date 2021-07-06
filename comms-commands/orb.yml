@@ -6,7 +6,7 @@ orbs:
   shipit: ovotech/shipit@1.4.11
 
 jobs:
-  terraform_plan:
+  terraform_plan_default:
     parameters:
       path:
         description: "The path to the terraform code (usually ./terraform/)"
@@ -15,25 +15,14 @@ jobs:
         description: "This can be either one of (prd, uat or lt)"
         type: enum
         enum: [ "prd", "uat", "lt" ]
-      backend_config_file:
-        description: "The path to the backend config file if different from default"
-        type: string
-        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-      var_file:
-        description: "The path to the var file if different from default"
-        type: string
-        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
     executor: terraform/default
     steps:
-      - checkout
-      - terraform/plan:
+      - terraform_plan:
           path: << parameters.path >>
-          workspace: main
-          backend_config_file: << parameters.backend_config_file >>
-          var_file: << parameters.var_file >>
-          var: "image_version=$CIRCLE_SHA1"
+          backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+          var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
 
-  terraform_apply:
+  terraform_apply_default:
     parameters:
       path:
         description: "The path to the terraform code (usually ./terraform/)"
@@ -42,30 +31,27 @@ jobs:
         description: "This can be either one of (prd, uat or lt)"
         type: enum
         enum: [ "prd", "uat", "lt" ]
-      backend_config_file:
-        description: "The path to the backend config file if different from default"
-        type: string
-        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-      var_file:
-        description: "The path to the var file if different from default"
-        type: string
-        default: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
     executor: terraform/default
     steps:
-      - checkout
-      - terraform/apply:
-          path: << parameters.path >>
-          workspace: main
-          backend_config_file: << parameters.backend_config_file >>
-          var_file: << parameters.var_file >>
-          var: "image_version=$CIRCLE_SHA1"
       - when:
           condition:
             equal: [ "prd", << parameters.environment >> ]
           steps:
-            - shipit/shipit:
-                silence-errors: true
-                team-name: comms
+            - terraform_apply:
+                path: << parameters.path >>
+                run_shipit: true
+                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+      - when:
+          condition:
+            not:
+              equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - terraform_apply:
+                path: << parameters.path >>
+                run_shipit: false
+                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
 
 commands:
   generate_sbt_cache_key:
@@ -196,3 +182,53 @@ commands:
           command: |
             include restart_ecs_service.sh
 
+  terraform_plan:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      backend_config_file:
+        description: "The path to the backend config file"
+        type: string
+      var_file:
+        description: "The path to the var file"
+        type: string
+    steps:
+      - checkout
+      - terraform/plan:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: << parameters.backend_config_file >>
+          var_file: << parameters.var_file >>
+          var: "image_version=$CIRCLE_SHA1"
+
+  terraform_apply:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      backend_config_file:
+        description: "The path to the backend config file"
+        type: string
+      var_file:
+        description: "The path to the var file"
+        type: string
+      run_shipit:
+        description: "Whether or not to run shipit on this apply (usually this is done in Prod envs)"
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - terraform/apply:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: << parameters.backend_config_file >>
+          var_file: << parameters.var_file >>
+          var: "image_version=$CIRCLE_SHA1"
+      - when:
+          condition:
+            equal: [ true, << parameters.run_shipit >> ]
+          steps:
+            - shipit/shipit:
+                silence-errors: true
+                team-name: comms
