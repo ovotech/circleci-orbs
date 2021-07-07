@@ -222,6 +222,7 @@ commands:
           workspace: main
           backend_config_file: << parameters.backend_config_file >>
           var_file: << parameters.var_file >>
+          auto_approve: true
       - when:
           condition:
             equal: [ true, << parameters.run_shipit >> ]
