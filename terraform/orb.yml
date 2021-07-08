@@ -179,6 +179,7 @@ commands:
             include init.sh
             include select_workspace.sh
             include set_plan_args.sh
+            include set_apply_args.sh
             include apply.sh
             include output.sh
 

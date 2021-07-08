@@ -29,6 +29,10 @@ jobs:
     - run-test
 ```
 
+## Debugging issues
+
+If you encounter any issues with the orb, set the environment to `ARGOCD_ORB_DEBUG` to `true` to have the orb print out the state of the target application.
+
 ## Generating a token
 
 This assumes you have an existing role associated with your project. This should just need read access.

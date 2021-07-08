@@ -167,3 +167,4 @@ workflows:
                 - sbt-deploy
                 - pipeline-utils
                 - asp-deploy
+                - comms-commands

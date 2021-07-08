@@ -1,0 +1,232 @@
+version: 2.1
+description: "Orb with commonly used commands by the Comms Platform Service pipelines"
+
+orbs:
+  terraform: ovotech/terraform-v2@2
+  shipit: ovotech/shipit@1.4.11
+
+jobs:
+  terraform_plan_default:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      environment:
+        description: "This can be either one of (prd, uat or lt)"
+        type: enum
+        enum: [ "prd", "uat", "lt" ]
+    executor: terraform/default
+    steps:
+      - terraform_plan:
+          path: << parameters.path >>
+          backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+          var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+
+  terraform_apply_default:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      environment:
+        description: "This can be either one of (prd, uat or lt)"
+        type: enum
+        enum: [ "prd", "uat", "lt" ]
+    executor: terraform/default
+    steps:
+      - when:
+          condition:
+            equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - terraform_apply:
+                path: << parameters.path >>
+                run_shipit: true
+                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+      - when:
+          condition:
+            not:
+              equal: [ "prd", << parameters.environment >> ]
+          steps:
+            - terraform_apply:
+                path: << parameters.path >>
+                run_shipit: false
+                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
+                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+
+commands:
+  generate_sbt_cache_key:
+    description: "Generate sbt cache key"
+    steps:
+      - run: md5sum project/build.properties project/plugins.sbt build.sbt > .sbt_cache_key
+
+  store_sbt_cache:
+    description: "Store sbt cache"
+    steps:
+      - generate_sbt_cache_key
+      - save_cache:
+          key: sbt-{{ checksum ".sbt_cache_key" }}
+          paths:
+            - /home/circleci/.ivy2
+            - /home/circleci/.sbt
+            - /home/circleci/.cache/coursier
+
+  restore_sbt_cache:
+    description: "Restore sbt cache"
+    steps:
+      - generate_sbt_cache_key
+      - restore_cache:
+          keys:
+            - sbt-{{ checksum ".sbt_cache_key" }}
+            - sbt
+
+  add_github_host_ssh_key:
+    description: "Add the github host SSH key"
+    steps:
+      - run:
+          name: Adding the github host SSH key
+          command: |
+            echo 'Adding the github host SSH key...'
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+  configure_git_credentials:
+    description: "Configure git credentials"
+    steps:
+      - run:
+          name: Configure git credentials
+          command: |
+            git config user.name ovo-comms-circleci
+            git config user.email "hello.comms@ovoenergy.com"
+
+  publish:
+    description: "Publishes a service"
+    parameters:
+      service_name:
+        description: The name of the service (used as the name of the ECR repository)
+        type: string
+      docker_user:
+        description: The docker user name for logging in
+        type: string
+      docker_user_password:
+        description: The docker user password for logging in
+        type: string
+      ecr_aws_account:
+        description: The AWS account id where we the ECR repositories live
+        type: string
+      publish_commit_sha:
+        description: The git commit SHA to be published
+        type: string
+      sbt_module:
+        description: (Optional) The path to the sbt module (i.e. service/)
+        type: string
+        default: ""
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run: docker login --username << parameters.docker_user >> --password << parameters.docker_user_password >>
+      - attach_workspace:
+          at: .
+      - restore_sbt_cache
+      - run:
+          name: Publish docker image to ECR
+          command: |
+            sbt << parameters.sbt_module >>publishLocal
+            docker push \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:latest
+          no_output_timeout: 20m
+
+  tag:
+    description: "Tags a service"
+    parameters:
+      docker_user:
+        description: The docker user name for logging in
+        type: string
+      docker_user_password:
+        description: The docker user password for logging in
+        type: string
+      build_tag_script:
+        description: The sh script that will tag the commit
+        type: string
+    steps:
+      - checkout
+      - run: docker login --username << parameters.docker_user >> --password << parameters.docker_user_password >>
+      - attach_workspace:
+          at: .
+      - restore_sbt_cache
+      - add_github_host_ssh_key
+      - configure_git_credentials
+      - run:
+          name: Tag the commit
+          command: << parameters.build_tag_script >>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .git
+
+  restart_ecs_service:
+    description: "Restart an ECS service w/o updating task definition"
+    parameters:
+      cluster:
+        type: string
+      service:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Restart ecs service
+          environment:
+            - ECS_CLUSTER: << parameters.cluster >>
+            - ECS_SERVICE: << parameters.service >>
+          command: |
+            include restart_ecs_service.sh
+
+  terraform_plan:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      backend_config_file:
+        description: "The path to the backend config file"
+        type: string
+      var_file:
+        description: "The path to the var file"
+        type: string
+    steps:
+      - checkout
+      - terraform/plan:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: << parameters.backend_config_file >>
+          var_file: << parameters.var_file >>
+
+  terraform_apply:
+    parameters:
+      path:
+        description: "The path to the terraform code (usually ./terraform/)"
+        type: string
+      backend_config_file:
+        description: "The path to the backend config file"
+        type: string
+      var_file:
+        description: "The path to the var file"
+        type: string
+      run_shipit:
+        description: "Whether or not to run shipit on this apply (usually this is done in Prod envs)"
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - terraform/apply:
+          path: << parameters.path >>
+          workspace: main
+          backend_config_file: << parameters.backend_config_file >>
+          var_file: << parameters.var_file >>
+          auto_approve: true
+      - when:
+          condition:
+            equal: [ true, << parameters.run_shipit >> ]
+          steps:
+            - shipit/shipit:
+                silence-errors: true
+                team-name: comms

@@ -47,33 +47,24 @@ commands:
             sudo mv kustomize /usr/local/bin/kustomize
             sudo chmod u+x /usr/local/bin/kustomize
             kustomize version
-
-      - when:
-          name: Set Tag to the one provided by user
-          condition: << parameters.image-tag >>
-          steps:
-            - run: echo 'export TAG=<<parameters.image-tag>>' >> $BASH_ENV
-      - unless:
-          name: Set Tag to default
-          condition: << parameters.image-tag >>
-          steps:
-            - run: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
-
+      - run:
+          name: "Setup custom environment variables"
+          command: echo 'export TAG=$(git describe --tags)' >> $BASH_ENV
       - run:
           name: Clone gitops repo
           command: |
             rm -rf ~/gitops
             git clone <<parameters.gitops-repo>> ~/gitops
-
       - run:
           name: Patch deployment
           command: |
+            TAG=<<parameters.image-tag>>
             cd  ~/gitops/<<parameters.env>>
             kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$TAG
-
       - run:
           name: Commit and push
           command: |
+            TAG=<<parameters.image-tag>>
             cd  ~/gitops
             git config user.email "<<parameters.gitops-email>>"
             git config user.name "<<parameters.gitops-username>>"
@@ -98,6 +89,10 @@ commands:
         type: string
         description: "[Description] Name of the image to be pushed to ECR"
         default: ${CIRCLE_PROJECT_REPONAME}:$(git rev-parse --short HEAD)
+      image-tag:
+        type: string
+        description: "[Description] Tag of the service to be deployed"
+        default: $(git describe --tags)
       aws-account-url:
         type: env_var_name
         description: "[Description] URL for the ECR AWS Account"
@@ -120,8 +115,8 @@ commands:
           command: docker load -i image
       - run:
           name: Tag image for docker push
-          command: docker tag <<parameters.image-name>> ${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$(git describe --tags)
+          command: docker tag <<parameters.image-name>> ${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:<<parameters.image-tag>>
       - aws-ecr/push-image:
           account-url: <<parameters.aws-account-url>>
           repo: <<parameters.service-name>>-<<parameters.env>>
-          tag: $(git describe --tags)
+          tag: <<parameters.image-tag>>

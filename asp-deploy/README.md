@@ -33,6 +33,7 @@ Check the [ASP Team's Gitops repo](https://github.com/ovotech/asp-gitops) for an
 | env                   |   Yes    |                             -                              | Which env to deploy within                            |
 | service-name          |    No    |                `${CIRCLE_PROJECT_REPONAME}`                | Service name used when pushing to ECR repo            |
 | image-name            |    No    | `${CIRCLE_PROJECT_REPONAME}:$(git rev-parse --short HEAD)` | Name of the image to be pushed to ECR                 |
+| image-tag             |    No    |                  `$(git describe --tags)`                  | Git tag of the service to be deployed                 |
 | aws-account-url       |   Yes    |                             -                              | URL for the ECR AWS Account used to push the image to |
 | aws-access-key-id     |   Yes    |                             -                              | Key ID for the ECR AWS Account                        |
 | aws-secret-access-key |   Yes    |                             -                              | Access Key for the ECR AWS Account                    |
