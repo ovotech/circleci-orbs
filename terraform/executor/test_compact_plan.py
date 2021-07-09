@@ -256,3 +256,62 @@ This should protect against the output changing again."""
     output = '\n'.join(compact_plan(input.splitlines()))
     assert output == expected_output
 
+def test_plan_1_0():
+    input_one = """
+STATE_REFRESH_1
+STATE_REFRESH_2
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+
+# random_string.my_string will be created
++ random_string.my_string
+      + id:          <computed>
+      + length:      "11"
+      + lower:       "true"
+      + min_lower:   "0"
+      + min_numeric: "0"
+      + min_special: "0"
+      + min_upper:   "0"
+      + number:      "true"
+      + result:      <computed>
+      + special:     "true"
+      + upper:       "true"
+
+Plan: 1 to add, 0 to change, 0 to destroy."""
+
+    input_two = """
+STATE_REFRESH_2
+STATE_REFRESH_1
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+
+# random_string.my_string will be created
++ random_string.my_string
+      + id:          <computed>
+      + length:      "11"
+      + lower:       "true"
+      + min_lower:   "0"
+      + min_numeric: "0"
+      + min_special: "0"
+      + min_upper:   "0"
+      + number:      "true"
+      + result:      <computed>
+      + special:     "true"
+      + upper:       "true"
+
+Plan: 1 to add, 0 to change, 0 to destroy."""
+
+    clipped_output_one = list(compact_plan(input_one.splitlines()))
+    clipped_output_two = list(compact_plan(input_two.splitlines()))
+    assert clipped_output_one == clipped_output_two
+    assert len(clipped_output_one) > 0
