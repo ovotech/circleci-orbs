@@ -5,7 +5,7 @@ not listed
 
 ## ovotech/terraform@1.9.0
 ## Added
-- Added Terraform provider Aiven Kafka Users v1.0.2 to all executors
+- Added Terraform provider Aiven Kafka Users v1.0.2 and v1.0.3 to all executors
 
 ## ovotech/terraform@1.8.9
 ## Fixed
