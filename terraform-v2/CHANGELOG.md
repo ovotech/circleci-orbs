@@ -5,7 +5,7 @@ not listed
 
 ## ovotech/terraform@2.1.1
 ## Added
-- Added Terraform provider Aiven Kafka Users v1.0.2
+Added Terraform provider Aiven Kafka Users v1.0.2 v1.0.3
 
 ## ovotech/terraform-v2@2.1.0
 Add terraform version check that fails the build with a helpful
