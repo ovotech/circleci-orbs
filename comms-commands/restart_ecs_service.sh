@@ -7,6 +7,7 @@ aws ecs update-service \
   --cluster "${ECS_CLUSTER}" \
   --service "${ECS_SERVICE}" \
   --query "service.deployments[?status=='PRIMARY'][]" \
+  --no-cli-pager
 
 while :
 do
@@ -15,13 +16,15 @@ do
       --cluster "${ECS_CLUSTER}" \
       --services "${ECS_SERVICE}" \
       --query "services[0].deployments[?status=='PRIMARY'].rolloutState" \
-      --output text
+      --output text \
+      --no-cli-pager
   )
   if [ $deploy_status == "COMPLETED" ]
   then
     echo "=== Deployment successful ==="
     exit 0
-  else if [ $deploy_status == "FAILED" ]
+  elif [ $deploy_status == "FAILED" ]
+  then
     echo "=== Deployment FAILED ==="
     exit 1
   else
