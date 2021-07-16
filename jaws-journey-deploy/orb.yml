@@ -428,7 +428,7 @@ jobs:
           account-url: AWS_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          dockerfile: ./<< parameters.serviceName >>/Dockerfile
+          dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
           region: AWS_DEFAULT_REGION
