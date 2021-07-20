@@ -142,7 +142,7 @@ commands:
           command: |
             sbt << parameters.sbt_module >>publishLocal
             docker tag \
-              << parameters.service_name >>:<< parameters.publish_commit_sha >> \
+              << parameters.service_name >>:latest \
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
             docker push \
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:latest
