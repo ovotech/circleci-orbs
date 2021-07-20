@@ -22,8 +22,8 @@ jobs:
     steps:
       - terraform_plan:
           path: << parameters.path >>
-          backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-          var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+          backend_config_file: ./backends/<< parameters.environment >>.backend
+          var_file: ./variables/<< parameters.environment >>.tfvars
           image_version: << parameters.image_version >>
 
   terraform_apply_default:
@@ -47,8 +47,8 @@ jobs:
             - terraform_apply:
                 path: << parameters.path >>
                 run_shipit: true
-                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+                backend_config_file: ./backends/<< parameters.environment >>.backend
+                var_file: ./variables/<< parameters.environment >>.tfvars
                 image_version: << parameters.image_version >>
       - when:
           condition:
