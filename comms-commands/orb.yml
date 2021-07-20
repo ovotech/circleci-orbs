@@ -38,10 +38,6 @@ jobs:
       image_version:
         description: "Docker image tag to use"
         type: string
-      auto_approve:
-        description: "If true then ignore any differences between plan and apply"
-        type: boolean
-        default: true
     executor: terraform/default
     steps:
       - when:
@@ -54,7 +50,6 @@ jobs:
                 backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
                 var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
                 image_version: << parameters.image_version >>
-                auto_approve: << parameters.auto_approve >>
       - when:
           condition:
             not:
@@ -66,7 +61,6 @@ jobs:
                 backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
                 var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
                 image_version: << parameters.image_version >>
-                auto_approve: << parameters.auto_approve >>
 
 commands:
   generate_sbt_cache_key:
@@ -214,10 +208,6 @@ commands:
       image_version:
         description: "Docker image tag to use"
         type: string
-      auto_approve:
-        description: "If true then ignore any differences between plan and apply"
-        type: boolean
-        default: true
     steps:
       - checkout
       - terraform/apply:
@@ -226,7 +216,7 @@ commands:
           backend_config_file: << parameters.backend_config_file >>
           var_file: << parameters.var_file >>
           var: image_version=<< parameters.image_version >>
-          auto_approve: << parameters.auto_approve >>
+          auto_approve: true
       - when:
           condition:
             equal: [ true, << parameters.run_shipit >> ]
