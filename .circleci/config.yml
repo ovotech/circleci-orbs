@@ -1,0 +1,37 @@
+version: 2.1
+
+setup: true
+
+orbs:
+  path-filtering: circleci/path-filtering@0.0.2
+
+workflows:
+  setup-workflow:
+    jobs:
+      - path-filtering/filter:
+          config-path: .circleci/continue_config.yml
+          base-revision: master
+          mapping: |
+            argocd/.* run-argocd true
+            asp-deploy/.* run-asp-deploy true
+            aws-get-parameters/.* run-aws-get-parameters true
+            aws-rotate-keys/.* run-aws-rotate-keys true
+            clair-scanner/.* run-clair-scanner true
+            clojure/.* run-clojure true
+            comms-commands/.* run-comms-commands true
+            gcp-rotate-keys/.* run-gcp-rotate-keys true
+            jaws-journey-deploy/.* run-jaws-journey-deploy true
+            oot-deploy/.* run-oot-deploy true
+            oot-eks/.* run-oot-eks true
+            pipeline-utils/.* run-pipeline-utils true
+            rac-gcp-deploy/.* run-rac-gcp-deploy true
+            sbt-deploy/.* run-sbt-deploy true
+            set-current-environment/.* run-set-current-environment true
+            ssh-proxy/.* run-ssh-proxy true
+            terraform/.* run-terraform true
+            terraform-v2/.* run-terraform-v2 true
+            tools/.* run-tools true
+            tools-install/.* run-tools-install true
+            versioned-lambda/.* run-versioned-lambda true
+            with-git-deploy-key/.* run-with-git-deploy-key true
+

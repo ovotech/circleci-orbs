@@ -21,7 +21,9 @@ Orbs follow the conventions:
 * An entry in [CODEOWNERS](./.github/CODEOWNERS) indicating which team maintains the orb - they will be responsible for reviewing
 any changes to the orb.
 
-* The orb will need to be added to the list published by Circle at the bottom of the [Circle config](./.circleci/config.yml)
+* This project uses CircleCI path filtering. The publish job only runs for orbs with file changes.
+  
+* Any new orb needs to be added to the [path filter mapping](.circleci/config.yml) and to the top and bottom of the [Circle config](.circleci/continue_config.yml)
 
 ## Published Orbs
 
