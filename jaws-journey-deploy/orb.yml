@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@6.3.0
+  aws-ecr: circleci/aws-ecr@7.0.0
   terraform: ovotech/terraform@1.8.2
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
@@ -428,7 +428,7 @@ jobs:
           account-url: AWS_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          dockerfile: ./<< parameters.serviceName >>/Dockerfile
+          dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
           region: AWS_DEFAULT_REGION
@@ -515,7 +515,7 @@ jobs:
                 account-url: AWS_ACCOUNT_URL
                 aws-access-key-id: AWS_ACCESS_KEY_ID
                 aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-                dockerfile: ./<< parameters.serviceName >>/Dockerfile
+                dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
                 region: AWS_DEFAULT_REGION
