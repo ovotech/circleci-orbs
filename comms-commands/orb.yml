@@ -150,6 +150,24 @@ commands:
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
           no_output_timeout: 20m
 
+  wait_for_ecs_deployment:
+    description: "Waits for the active deployment to complete"
+    parameters:
+      cluster:
+        type: string
+      service:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Wait for ecs deployment
+          environment:
+            - WAIT_ONLY: "true"
+            - ECS_CLUSTER: << parameters.cluster >>
+            - ECS_SERVICE: << parameters.service >>
+          command: |
+            include restart_ecs_service.sh
+
   restart_ecs_service:
     description: "Restart an ECS service w/o updating task definition"
     parameters:
