@@ -8,8 +8,8 @@ orbs:
 jobs:
   terraform_plan_default:
     parameters:
-      path:
-        description: "The path to the terraform code (usually ./terraform/)"
+      module_name:
+        description: "Name of the module (terraform code must be located in ./terraform/{module_name}/"
         type: string
       environment:
         description: "This can be either one of (prd, uat or lt)"
@@ -21,15 +21,15 @@ jobs:
     executor: terraform/default
     steps:
       - terraform_plan:
-          path: << parameters.path >>
+          path: ./terraform/<< parameters.module_name >>/
           backend_config_file: ../terraform-backends/<< parameters.environment >>.backend
           var_file: ./variables/<< parameters.environment >>.tfvars
           image_version: << parameters.image_version >>
 
   terraform_apply_default:
     parameters:
-      path:
-        description: "The path to the terraform code (usually ./terraform/)"
+      module_name:
+        description: "Name of the module (terraform code must be located in ./terraform/{module_name}/"
         type: string
       environment:
         description: "This can be either one of (prd, uat or lt)"
@@ -45,7 +45,7 @@ jobs:
             equal: [ "prd", << parameters.environment >> ]
           steps:
             - terraform_apply:
-                path: << parameters.path >>
+                path: ./terraform/<< parameters.module_name >>/
                 run_shipit: true
                 backend_config_file: ../terraform-backends/<< parameters.environment >>.backend
                 var_file: ./variables/<< parameters.environment >>.tfvars
@@ -56,7 +56,7 @@ jobs:
               equal: [ "prd", << parameters.environment >> ]
           steps:
             - terraform_apply:
-                path: << parameters.path >>
+                path: ./terraform/<< parameters.module_name >>/
                 run_shipit: false
                 backend_config_file: ../terraform-backends/<< parameters.environment >>.backend
                 var_file: ./variables/<< parameters.environment >>.tfvars
