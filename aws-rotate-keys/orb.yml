@@ -2,7 +2,7 @@ version: 2.1
 description: An orb to rotate AWS keys
 
 orbs:
-  aws-cli: circleci/aws-cli@1.0.0
+  aws-cli: circleci/aws-cli@2.0.3
 
 executors:
   default: aws-cli/default

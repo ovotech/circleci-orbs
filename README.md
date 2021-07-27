@@ -27,7 +27,7 @@ any changes to the orb.
 
  - [ovotech/argocd](argocd) - Interact with an ArgoCD API.
  - [ovotech/aws-get-parameters@1](aws-get-parameters) - Get parameters from AWS Parameter Store.
- - [ovotech/aws-rotate-keys@1](aws-rotate-keys) - Rotate AWS access keys and update corresponding CircleCI environment variables.
+ - [ovotech/aws-rotate-keys@2](aws-rotate-keys) - Rotate AWS access keys and update corresponding CircleCI environment variables.
  - [ovotech/clair-scanner@1](clair-scanner) - Scan Docker images for vulnerabilities.
  - [ovotech/rac-gcp-deply@1](rac-gcp-deploy) - Deploy Scala services to a Kubernetes cluster running in Google Cloud.
  - [ovotech/set-current-environment@1](set-current-environment) - Set current environment (master branch, tag or other) to environmental variable.
