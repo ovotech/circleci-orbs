@@ -160,7 +160,7 @@ commands:
     steps:
       - checkout
       - run:
-          name: Restart ecs service
+          name: Wait for ecs deployment
           environment:
             - WAIT_ONLY: "true"
             - ECS_CLUSTER: << parameters.cluster >>
