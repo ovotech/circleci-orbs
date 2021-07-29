@@ -107,6 +107,24 @@ commands:
             git config user.name ovo-comms-circleci
             git config user.email "hello.comms@ovoenergy.com"
 
+  ecr_login:
+    description: Login to ECR
+    parameters:
+      aws_account_id:
+        type: string
+      aws_region:
+        type: string
+        default: "eu-west-1"
+    steps:
+      - run:
+          name: ECR Login
+          command: |
+            aws ecr get-login-password | \
+              docker login \
+                -u AWS \
+                --password-stdin \
+                << parameters.aws_account_id >>.dkr.ecr.<< parameters.aws_region >>.amazonaws.com
+
   publish:
     description: "Publishes a service"
     parameters:
