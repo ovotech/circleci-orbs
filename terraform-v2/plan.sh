@@ -1,3 +1,4 @@
+# comment to test CircleCI path filtering
 set -x
 
 cat >/tmp/github.py <<"EOF"
