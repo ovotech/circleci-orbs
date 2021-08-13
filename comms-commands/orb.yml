@@ -8,29 +8,36 @@ orbs:
 jobs:
   terraform_plan_default:
     parameters:
-      path:
-        description: "The path to the terraform code (usually ./terraform/)"
+      module_name:
+        description: "Name of the module (terraform code must be located in ./terraform/{module_name}/"
         type: string
       environment:
         description: "This can be either one of (prd, uat or lt)"
         type: enum
         enum: [ "prd", "uat", "lt" ]
+      image_version:
+        description: "Docker image tag to use"
+        type: string
     executor: terraform/default
     steps:
       - terraform_plan:
-          path: << parameters.path >>
-          backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-          var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+          path: ./terraform/<< parameters.module_name >>/
+          backend_config_file: ../terraform-backends/<< parameters.environment >>.backend
+          var_file: ./variables/<< parameters.environment >>.tfvars
+          image_version: << parameters.image_version >>
 
   terraform_apply_default:
     parameters:
-      path:
-        description: "The path to the terraform code (usually ./terraform/)"
+      module_name:
+        description: "Name of the module (terraform code must be located in ./terraform/{module_name}/"
         type: string
       environment:
         description: "This can be either one of (prd, uat or lt)"
         type: enum
         enum: [ "prd", "uat", "lt" ]
+      image_version:
+        description: "Docker image tag to use"
+        type: string
     executor: terraform/default
     steps:
       - when:
@@ -38,20 +45,22 @@ jobs:
             equal: [ "prd", << parameters.environment >> ]
           steps:
             - terraform_apply:
-                path: << parameters.path >>
+                path: ./terraform/<< parameters.module_name >>/
                 run_shipit: true
-                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+                backend_config_file: ../terraform-backends/<< parameters.environment >>.backend
+                var_file: ./variables/<< parameters.environment >>.tfvars
+                image_version: << parameters.image_version >>
       - when:
           condition:
             not:
               equal: [ "prd", << parameters.environment >> ]
           steps:
             - terraform_apply:
-                path: << parameters.path >>
+                path: ./terraform/<< parameters.module_name >>/
                 run_shipit: false
-                backend_config_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.backend
-                var_file: ./environments/<< parameters.environment >>/<< parameters.environment >>.tfvars
+                backend_config_file: ../terraform-backends/<< parameters.environment >>.backend
+                var_file: ./variables/<< parameters.environment >>.tfvars
+                image_version: << parameters.image_version >>
 
 commands:
   generate_sbt_cache_key:
@@ -98,6 +107,34 @@ commands:
             git config user.name ovo-comms-circleci
             git config user.email "hello.comms@ovoenergy.com"
 
+  ecr_login:
+    description: Login to ECR
+    parameters:
+      aws_account_id:
+        type: string
+      aws_region:
+        type: string
+        default: "eu-west-1"
+    steps:
+      - run:
+          name: ECR Login
+          command: |
+            aws ecr get-login-password | \
+              docker login \
+                -u AWS \
+                --password-stdin \
+                << parameters.aws_account_id >>.dkr.ecr.<< parameters.aws_region >>.amazonaws.com
+
+  write-aws-credentials-file:
+    description: Write down AWS credentials file
+    steps:
+      - run:
+          command: |
+            mkdir ~/.aws
+            echo "[default]" >> ~/.aws/credentials
+            echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+            echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+
   publish:
     description: "Publishes a service"
     parameters:
@@ -132,37 +169,32 @@ commands:
           name: Publish docker image to ECR
           command: |
             sbt << parameters.sbt_module >>publishLocal
+            docker tag \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:latest \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
             docker push \
               << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:latest
+            docker push \
+              << parameters.ecr_aws_account >>.dkr.ecr.eu-west-1.amazonaws.com/<< parameters.service_name >>:<< parameters.publish_commit_sha >>
           no_output_timeout: 20m
 
-  tag:
-    description: "Tags a service"
+  wait_for_ecs_deployment:
+    description: "Waits for the active deployment to complete"
     parameters:
-      docker_user:
-        description: The docker user name for logging in
+      cluster:
         type: string
-      docker_user_password:
-        description: The docker user password for logging in
-        type: string
-      build_tag_script:
-        description: The sh script that will tag the commit
+      service:
         type: string
     steps:
       - checkout
-      - run: docker login --username << parameters.docker_user >> --password << parameters.docker_user_password >>
-      - attach_workspace:
-          at: .
-      - restore_sbt_cache
-      - add_github_host_ssh_key
-      - configure_git_credentials
       - run:
-          name: Tag the commit
-          command: << parameters.build_tag_script >>
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .git
+          name: Wait for ecs deployment
+          environment:
+            - WAIT_ONLY: "true"
+            - ECS_CLUSTER: << parameters.cluster >>
+            - ECS_SERVICE: << parameters.service >>
+          command: |
+            include restart_ecs_service.sh
 
   restart_ecs_service:
     description: "Restart an ECS service w/o updating task definition"
@@ -192,6 +224,9 @@ commands:
       var_file:
         description: "The path to the var file"
         type: string
+      image_version:
+        description: "Docker image tag to use"
+        type: string
     steps:
       - checkout
       - terraform/plan:
@@ -199,6 +234,7 @@ commands:
           workspace: main
           backend_config_file: << parameters.backend_config_file >>
           var_file: << parameters.var_file >>
+          var: image_version=<< parameters.image_version >>
 
   terraform_apply:
     parameters:
@@ -215,6 +251,9 @@ commands:
         description: "Whether or not to run shipit on this apply (usually this is done in Prod envs)"
         type: boolean
         default: false
+      image_version:
+        description: "Docker image tag to use"
+        type: string
     steps:
       - checkout
       - terraform/apply:
@@ -222,6 +261,7 @@ commands:
           workspace: main
           backend_config_file: << parameters.backend_config_file >>
           var_file: << parameters.var_file >>
+          var: image_version=<< parameters.image_version >>
           auto_approve: true
       - when:
           condition:
