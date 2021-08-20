@@ -5,7 +5,7 @@ executors:
   default:
     description: "Terraform executor"
     docker:
-      - image: ovotech/terraform:terraform-1.0.X-compact-plan_19-07-2021
+      - image: ovotech/terraform:latest
 
 aliases:
   parameters:
