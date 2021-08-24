@@ -23,6 +23,10 @@ if [[ -n "<< parameters.backend_config >>" ]]; then
     done
 fi
 
+if [[ "<< parameters.init_reconfigure >>" == "yes" ]]; then
+    INIT_ARGS="$INIT_ARGS -reconfigure"
+fi
+
 export INIT_ARGS
 
 # Set workspace from parameter, allowing it to be overridden by TF_WORKSPACE.
