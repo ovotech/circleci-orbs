@@ -784,7 +784,7 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: npm-build-dependencies-cache-({checksum "package-lock.json"})
+          key: npm-build-dependencies-cache-{{ checksum "package-lock.json" }}
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -800,7 +800,7 @@ jobs:
           at: ~/working
       - restore_cache:
           keys:
-            - npm-build-dependencies-cache-({checksum "package-lock.json"})
+            - npm-build-dependencies-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Build docs
           command: npm run build
