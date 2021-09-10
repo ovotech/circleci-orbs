@@ -13,7 +13,7 @@ orbs:
 executors:
   kotlin:
     docker:
-      - image: circleci/openjdk:11.0.7-jdk-buster
+      - image: cimg/openjdk:11.0.12
   python:
     docker:
       - image: circleci/python:3.8

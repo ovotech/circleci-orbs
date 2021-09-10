@@ -1,1 +1,1 @@
-ovotech/jaws-journey-deploy@1.11.8
+ovotech/jaws-journey-deploy@1.11.9
