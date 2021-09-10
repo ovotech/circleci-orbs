@@ -13,13 +13,13 @@ orbs:
 executors:
   kotlin:
     docker:
-      - image: circleci/openjdk:11.0.7-jdk-buster
+      - image: cimg/openjdk:11.0.12
   python:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
   node:
     docker:
-      - image: circleci/node:14.15.3
+      - image: cimg/node:14.15.3
   terraform:
     docker:
       - image: ovotech/terraform:0.13
