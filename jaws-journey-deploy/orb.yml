@@ -13,13 +13,13 @@ orbs:
 executors:
   kotlin:
     docker:
-      - image: circleci/openjdk:11.0.7-jdk-buster
+      - image: cimg/openjdk:11.0.12
   python:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
   node:
     docker:
-      - image: circleci/node:14.15.3
+      - image: cimg/node:14.15.3
   terraform:
     docker:
       - image: ovotech/terraform:0.13
@@ -784,7 +784,7 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: npm-build-dependencies-cache-({checksum "package-lock.json"})
+          key: npm-build-dependencies-cache-{{ checksum "package-lock.json" }}
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -800,7 +800,7 @@ jobs:
           at: ~/working
       - restore_cache:
           keys:
-            - npm-build-dependencies-cache-({checksum "package-lock.json"})
+            - npm-build-dependencies-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Build docs
           command: npm run build
