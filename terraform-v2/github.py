@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 import os
-import pprint
+import comment_util
 import sys
 from typing import Optional, Dict, Iterable
 
 import requests
-
-import comment_util
 
 github_username = os.environ['GITHUB_USERNAME']
 github_token = os.environ['GITHUB_TOKEN']
@@ -70,15 +68,9 @@ class TerraformComment:
 
         self._comment_url = None
         for comment in response.json():
-            print("Examining comment")
-            pprint.pprint(comment)
-            pprint.pprint(comment['user'])
             if comment['user']['login'] == github_username:
-                print("Examining comment I made")
-                print(comment['body'])
                 match = comment_util.re_comment_match(self._comment_identifier,
                                                       comment['body'])
-                print(match)
                 if match:
                     self._comment_url = comment['url']
                     self._plan = match.group(1).strip()
