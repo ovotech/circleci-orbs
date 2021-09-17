@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import difflib
 import sys
 import re
 
@@ -19,15 +18,7 @@ plan_from_pr = re.sub(
     r"(?m)^\s+~ latest_restorable_time\s+=.+$", "", plan_from_pr.strip()
 )
 
-diff = list(
-    difflib.ndiff(
-        generated_plan.splitlines(keepends=True), plan_from_pr.splitlines(keepends=True)
-    )
-)
-non_matching_lines = [line for line in diff if line[0] != " "]
-if non_matching_lines:
-    print("Plan has changed!")
-    print("".join(diff))
-    exit(1)
-else:
+if generated_plan == plan_from_pr:
     exit(0)
+
+exit(1)
