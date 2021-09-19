@@ -36,8 +36,10 @@ For the AWS provider, set the AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY
 environment variables.
 
 For the gcloud provider, set GCLOUD_SERVICE_KEY to be a GCP service
-account key as a base64 encoded or plain text string. You can also
-optionally set GOOGLE_PROJECT_ID and GOOGLE_COMPUTE_ZONE.
+account key as a base64 encoded or plain text string.
+You may optionally set GOOGLE_PROJECT_ID to the ID of the project
+running the cluster. If you have provided the project ID then you
+may set GOOGLE_COMPUTE_ZONE too — **you cannot set zone on its own**.
 
 If GITHUB_USERNAME and GITHUB_TOKEN environment variables are set,
 the `plan` command will add a comment on an open PR with the plan.

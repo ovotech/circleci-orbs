@@ -2,12 +2,15 @@
 
 set -eo pipefail
 
-aws ecs update-service \
-  --force-new-deployment \
-  --cluster "${ECS_CLUSTER}" \
-  --service "${ECS_SERVICE}" \
-  --query "service.deployments[?status=='PRIMARY'][]" \
-  --no-cli-pager
+if [[ "${WAIT_ONLY}" != "true" ]]
+then
+  aws ecs update-service \
+    --force-new-deployment \
+    --cluster "${ECS_CLUSTER}" \
+    --service "${ECS_SERVICE}" \
+    --query "service.deployments[?status=='PRIMARY'][]" \
+    --no-cli-pager
+fi
 
 while :
 do
