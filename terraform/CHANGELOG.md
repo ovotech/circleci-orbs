@@ -5,9 +5,9 @@ not listed
 
 
 ## ovotech/terraform@1.10.1
-- Add terraform v1 string match for plan operations (`custom_plan.py`) exists
+- Add terraform v1 string match for plan operations (`custom_plan.py` exists
   in the executor that's built here in v1 of the orb, so this version bump is
-  unfortunately required. TODO: consider moving executor out of v1 of the orb
+  unfortunately required). TODO: consider moving executor out of v1 of the orb
   dir
 
 ## ovotech/terraform@1.10.0
