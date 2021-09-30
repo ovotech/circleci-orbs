@@ -4,7 +4,6 @@ description: "Defines the core steps required for a smart journey deployment pip
 orbs:
   aws-ecr: circleci/aws-ecr@7.0.0
   terraform: ovotech/terraform@1.8.2
-  openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@0.0.10
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
@@ -552,8 +551,7 @@ jobs:
       run_integration_tests:
         type: boolean
         default: true
-    machine:
-      docker_layer_caching: false
+    executor: kotlin
     working_directory: ~/working
     steps:
       - attach_workspace:
@@ -561,8 +559,6 @@ jobs:
       - when:
           condition: << parameters.run_integration_tests >>
           steps:
-            - openjdk-install/openjdk:
-                version: 11
             - restore_cache:
                 key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
             - integration-test:
