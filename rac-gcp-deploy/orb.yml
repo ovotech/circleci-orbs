@@ -170,6 +170,27 @@ commands:
           fail-on-issues: false
           monitor-on-build: true
 
+  snyk_scan_image:
+    description: "Scan docker image with Snyk"
+    parameters:
+      docker-image-name:
+        description: "Fully qualified name & tag of the image to scan"
+        type: string
+      snyk-project-name:
+        description: "Name of the target Snyk project"
+        type: string
+    steps:
+      - snyk/scan:
+          # Do not fail builds while we bed this command in - but note that it may be enforced at some point.
+          # Kaluza policy states that monitor-on-build must be set to true, but currently this is likely to
+          # result in a duplicate Snyk project for the image, as our Kubernetes integration uses a project
+          # name that incorporates the namespace & object type (and so is likely to differ from snyk-project-name).
+          docker-image-name: <<parameters.docker-image-name>>
+          fail-on-issues: false
+          severity-threshold: high
+          monitor-on-build: false
+          project: <<parameters.snyk-project-name>>
+
 jobs:
   compile:
     parameters:
@@ -567,6 +588,9 @@ jobs:
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${PRD_IMAGE_ROOT}"
       - snyk_monitor
+      - snyk_scan_image:
+          docker-image-name: <<parameters.registry-url>>/<<parameters.prd-project-id>>/<<parameters.container-name>>:latest
+          snyk-project-name: <<parameters.container-name>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -710,6 +734,9 @@ jobs:
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${IMAGE_ROOT}:$(cat version.txt)"
             docker push "${IMAGE_ROOT}"
+      - snyk_scan_image:
+          docker-image-name: <<parameters.registry-url>>/<<parameters.gcp-project-id>>/<<parameters.container-name>>:latest
+          snyk-project-name: <<parameters.container-name>>
 
   release_library:
     parameters:
