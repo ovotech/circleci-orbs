@@ -27,7 +27,7 @@ export INIT_ARGS
 
 # Set workspace from parameter, allowing it to be overridden by TF_WORKSPACE.
 # If TF_WORKSPACE is set we don't want terraform init to use the value, in the case we are running new_workspace.sh this would cause an error
-# REMOVE ME: Publish dev orb
+# REMOVE ME: Publish dev orb again
 readonly workspace_parameter="<< parameters.workspace >>"
 readonly workspace="${TF_WORKSPACE:-$workspace_parameter}"
 export workspace

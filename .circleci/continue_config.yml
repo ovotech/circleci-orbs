@@ -176,7 +176,7 @@ jobs:
             circleci orb list ovotech | grep -q -F "ovotech/${ORB} " || circleci orb create ovotech/"${ORB}" --no-prompt --token "$CIRCLECI_PROD_TOKEN"
 
             echo "Publishing branch development-version: ovotech/${ORB}@$DEV_VERSION"
-            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$TEST_CIRCLECI_TOKEN"
+            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               echo "Publishing master to ovotech/${ORB}"
