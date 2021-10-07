@@ -59,6 +59,7 @@ terraform $chdir plan -input=false -no-color -detailed-exitcode -lock-timeout=30
 TF_EXIT=${PIPESTATUS[0]}
 set -e
 
+# build pls
 if [[ $TF_EXIT -eq 1 ]]; then
     update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
     exit 1
