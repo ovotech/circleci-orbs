@@ -559,7 +559,7 @@ jobs:
           name: "Release"
           command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
       - run: |
-          # sbt unconditionally builds image tagges as nonprod
+          # sbt unconditionally builds image tagged as nonprod
           echo "export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>" >> "$BASH_ENV"
       - gcloud_auth: *gcloud_auth_uat
       - run:
@@ -568,11 +568,20 @@ jobs:
             mkdir -p "$HOME/.docker"
             gcloud auth configure-docker --quiet --project $<<parameters.uat-project-id>>
       - run:
-          name: "Tag and push container to GCR UAT"
+          name: "Tag container for GCR UAT"
           command: |
             UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
+      - snyk_scan_image:
+          # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
+          # may fail build upon detection of vulnerabilities (once configured to do so)
+          docker-image-name: <<parameters.registry-url>>/<<parameters.uat-project-id>>/<<parameters.container-name>>:latest
+          snyk-project-name: <<parameters.container-name>>
+      - run:
+          name: "Push container to GCR UAT"
+          command: |
+            UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker push "${UAT_IMAGE_ROOT}"
       - gcloud_auth: *gcloud_auth_prd
       - run:
@@ -588,9 +597,6 @@ jobs:
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${PRD_IMAGE_ROOT}:$(cat version.txt)"
             docker push "${PRD_IMAGE_ROOT}"
       - snyk_monitor
-      - snyk_scan_image:
-          docker-image-name: <<parameters.registry-url>>/<<parameters.prd-project-id>>/<<parameters.container-name>>:latest
-          snyk-project-name: <<parameters.container-name>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -727,16 +733,22 @@ jobs:
             mkdir -p "$HOME/.docker"
             gcloud auth configure-docker --quiet --project $<<parameters.gcp-project-id>>
       - run:
-          name: "Tag and push container to GCR"
+          name: "Tag container for GCR"
           command: |
             export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
             IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${IMAGE_ROOT}:$(cat version.txt)"
-            docker push "${IMAGE_ROOT}"
       - snyk_scan_image:
+          # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
+          # may fail build upon detection of vulnerabilities (once configured to do so)
           docker-image-name: <<parameters.registry-url>>/<<parameters.gcp-project-id>>/<<parameters.container-name>>:latest
           snyk-project-name: <<parameters.container-name>>
+      - run:
+          name: "Push container to GCR"
+          command: |
+            IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
+            docker push "${IMAGE_ROOT}"
 
   release_library:
     parameters:
