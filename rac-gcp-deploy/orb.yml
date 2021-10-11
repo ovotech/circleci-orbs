@@ -576,8 +576,8 @@ jobs:
       - snyk_scan_image:
           # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
           # may fail build upon detection of vulnerabilities (once configured to do so)
-          docker-image-name: <<parameters.registry-url>>/<<parameters.uat-project-id>>/<<parameters.container-name>>:latest
-          snyk-project-name: <<parameters.container-name>>
+          docker-image-name: <<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest
+          snyk-project-name: $<<parameters.container-name>>
       - run:
           name: "Push container to GCR UAT"
           command: |
