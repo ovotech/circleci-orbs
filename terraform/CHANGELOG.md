@@ -3,12 +3,14 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
-
-## ovotech/terraform@1.10.1
+## ovotech/terraform@1.11.1
 - Add terraform v1 string match for plan operations (`custom_plan.py` exists
   in the executor that's built here in v1 of the orb, so this version bump is
   unfortunately required). TODO: consider moving executor out of v1 of the orb
   dir
+
+## ovotech/terraform@1.11.0
+- Update terraform publish to upload to S3 presigned URL
 
 ## ovotech/terraform@1.10.0
 - Prevent module versions being overwritten
