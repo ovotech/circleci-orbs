@@ -570,9 +570,10 @@ jobs:
       - run:
           name: "Tag container for GCR UAT"
           command: |
-            echo "export UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>" >> "$BASH_ENV"
+            UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
+            echo "export UAT_IMAGE_ROOT=${UAT_IMAGE_ROOT}" >> "$BASH_ENV"
       - snyk_scan_image:
           # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
           # may fail build upon detection of vulnerabilities (once configured to do so)
