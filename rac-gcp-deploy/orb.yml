@@ -82,20 +82,6 @@ commands:
             - ~/.embedpostgresql
             - ~/.cache/coursier
 
-  bintray_credentials:
-    description: "Create Bintray credentials file"
-    parameters:
-      username:
-        description: "Name of the environment variable storing the bintray username"
-        type: env_var_name
-      api-key:
-        description: "Name of the environment variable storing the bintray api key"
-        type: env_var_name
-    steps:
-      - run:
-          name: "Create Bintray credentials file"
-          command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
-
   artifactory_credentials:
     description: "Create Artifactory credentials file"
     parameters:
@@ -205,14 +191,6 @@ jobs:
       ssh-key-fingerprint:
         description: "The fingerprint of the ssh key with permissions to checkout"
         type: string
-      bintray-username:
-        description: "Name of the environment variable storing the bintray username"
-        default: BINTRAY_USERNAME
-        type: env_var_name
-      bintray-api-key:
-        description: "Name of the environment variable storing the bintray api key"
-        default: BINTRAY_API_KEY
-        type: env_var_name
       artifactory-username:
         description: "Name of the environment variable storing the artifactory username"
         default: ARTIFACTORY_USERNAME
@@ -241,9 +219,6 @@ jobs:
       - load_cache:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - bintray_credentials:
-          username: <<parameters.bintray-username>>
-          api-key: <<parameters.bintray-api-key>>
       - artifactory_credentials:
           username: <<parameters.artifactory-username>>
           api-key: <<parameters.artifactory-api-key>>
