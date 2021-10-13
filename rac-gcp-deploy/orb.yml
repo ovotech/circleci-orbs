@@ -570,19 +570,17 @@ jobs:
       - run:
           name: "Tag container for GCR UAT"
           command: |
-            UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
+            echo "export UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>" >> "$BASH_ENV"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
       - snyk_scan_image:
           # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
           # may fail build upon detection of vulnerabilities (once configured to do so)
-          docker-image-name: <<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>:latest
+          docker-image-name: "${UAT_IMAGE_ROOT}:latest"
           snyk-project-name: $<<parameters.container-name>>
       - run:
           name: "Push container to GCR UAT"
-          command: |
-            UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
-            docker push "${UAT_IMAGE_ROOT}"
+          command: docker push "${UAT_IMAGE_ROOT}"
       - gcloud_auth: *gcloud_auth_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
