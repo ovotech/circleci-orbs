@@ -170,6 +170,27 @@ commands:
           fail-on-issues: false
           monitor-on-build: true
 
+  snyk_scan_image:
+    description: "Scan docker image with Snyk"
+    parameters:
+      docker-image-name:
+        description: "Fully qualified name & tag of the image to scan"
+        type: string
+      snyk-project-name:
+        description: "Name of the target Snyk project"
+        type: string
+    steps:
+      - snyk/scan:
+          # Do not fail builds while we bed this command in - but note that it may be enforced at some point.
+          # Kaluza policy states that monitor-on-build must be set to true, but currently this is likely to
+          # result in a duplicate Snyk project for the image, as our Kubernetes integration uses a project
+          # name that incorporates the namespace & object type (and so is likely to differ from snyk-project-name).
+          docker-image-name: <<parameters.docker-image-name>>
+          fail-on-issues: false
+          severity-threshold: high
+          monitor-on-build: false
+          project: <<parameters.snyk-project-name>>
+
 jobs:
   compile:
     parameters:
@@ -538,7 +559,7 @@ jobs:
           name: "Release"
           command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
       - run: |
-          # sbt unconditionally builds image tagges as nonprod
+          # sbt unconditionally builds image tagged as nonprod
           echo "export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>" >> "$BASH_ENV"
       - gcloud_auth: *gcloud_auth_uat
       - run:
@@ -547,12 +568,20 @@ jobs:
             mkdir -p "$HOME/.docker"
             gcloud auth configure-docker --quiet --project $<<parameters.uat-project-id>>
       - run:
-          name: "Tag and push container to GCR UAT"
+          name: "Tag container for GCR UAT"
           command: |
             UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
-            docker push "${UAT_IMAGE_ROOT}"
+            echo "export UAT_IMAGE_ROOT=${UAT_IMAGE_ROOT}" >> "$BASH_ENV"
+      - snyk_scan_image:
+          # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
+          # may fail build upon detection of vulnerabilities (once configured to do so)
+          docker-image-name: "${UAT_IMAGE_ROOT}:latest"
+          snyk-project-name: $<<parameters.container-name>>
+      - run:
+          name: "Push container to GCR UAT"
+          command: docker push "${UAT_IMAGE_ROOT}"
       - gcloud_auth: *gcloud_auth_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
@@ -703,12 +732,21 @@ jobs:
             mkdir -p "$HOME/.docker"
             gcloud auth configure-docker --quiet --project $<<parameters.gcp-project-id>>
       - run:
-          name: "Tag and push container to GCR"
+          name: "Tag container for GCR"
           command: |
             export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
             IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${IMAGE_ROOT}:$(cat version.txt)"
+      - snyk_scan_image:
+          # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
+          # may fail build upon detection of vulnerabilities (once configured to do so)
+          docker-image-name: <<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>:latest
+          snyk-project-name: $<<parameters.container-name>>
+      - run:
+          name: "Push container to GCR"
+          command: |
+            IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
             docker push "${IMAGE_ROOT}"
 
   release_library:
