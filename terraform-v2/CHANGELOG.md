@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.4.2
+- Disabled printing of commands in the publish script
+
 ## ovotech/terraform-v2@2.4.1
 - Add string to match terraform plans on with version 1+
 
