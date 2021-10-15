@@ -2,7 +2,6 @@
 
 set -e
 set -o pipefail
-set -x
 
 readonly MODULE_PATH="<< parameters.path >>"
 readonly MODULE_NAME="<< parameters.module_name >>"
