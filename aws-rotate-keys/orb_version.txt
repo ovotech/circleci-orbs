@@ -1,1 +1,1 @@
-ovotech/aws-rotate-keys@2.0.0
+ovotech/aws-rotate-keys@2.0.1
