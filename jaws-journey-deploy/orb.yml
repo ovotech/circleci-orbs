@@ -448,6 +448,53 @@ jobs:
             - slack/notify:
                 <<: *slack-notification
 
+  publish:
+    parameters:
+      <<: *serviceName
+      <<: *environment
+      persist_to_workspace:
+        type: boolean
+        default: true
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+    executor: kotlin
+      working_directory: ~/working
+      steps:
+        - attach_workspace:
+            at: ~/working
+        - github-repo-login:
+            username: << parameters.username >>
+            token: << parameters.token >>
+        - aws-ecr/build-and-push-image:
+            setup-remote-docker: true
+            checkout: false
+            account-url: AWS_ACCOUNT_URL
+            aws-access-key-id: AWS_ACCESS_KEY_ID
+            aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+            dockerfile: Dockerfile
+            path: ./<< parameters.serviceName >>
+            create-repo: false
+            region: AWS_DEFAULT_REGION
+            repo: << parameters.serviceName >>
+            tag: "latest,$CIRCLE_SHA1"
+        - snyk/scan:
+            docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
+            fail-on-issues: true
+            monitor-on-build: true
+            project: << parameters.serviceName >>
+            severity-threshold: high
+            target-file: ./<< parameters.serviceName >>/Dockerfile
+        - when:
+            condition:
+              equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            steps:
+              - slack/notify:
+                  <<: *slack-notification
+
   build-and-test:
     parameters:
       <<: *serviceName
