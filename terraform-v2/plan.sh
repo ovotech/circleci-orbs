@@ -4,13 +4,11 @@ cat >/tmp/github.py <<"EOF"
 include github.py
 
 EOF
-echo "" >> /tmp/github.py
 
 cat >/tmp/comment_util.py <<"EOF"
 include comment_util.py
 
 EOF
-echo "" >> /tmp/comment_util.py
 
 exec 3>&1
 
