@@ -9,4 +9,4 @@ def re_comment_match(comment_id, comment_body):
 
 def comment_for_pr(comment_id, plan):
     """Returns a formatted markdown string containing comment_id and plan"""
-    return f'{comment_id}\n<details><summary>View Terraform Plan</summary>\n```terraform\nOutput is limited to 1000 lines and may be truncated. See CircleCI for full details.\n{plan}```\n</details>'
+    return f'{comment_id}\n<details>\n<summary>View Terraform Plan</summary>\n```terraform\nOutput is limited to 1000 lines and may be truncated. See CircleCI for full details.\n{plan}```\n</details>'
