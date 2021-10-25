@@ -51,6 +51,10 @@ aliases:
       destroy_first:
         type: boolean
         default: false
+      var:
+        type: string
+        description: "Comma separated list of vars to set, e.g. 'foo=bar'"
+        default: ""
       <<: *environment
 
   tf-command-parameters: &tf-command-parameters
@@ -59,12 +63,12 @@ aliases:
     destroy_first: << parameters.destroy_first >>
     environment: << parameters.environment >>
 
-
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
     backend_config_file: env/<< parameters.environment >>.tf
     var_file: << parameters.environment >>.tfvars
     label: << parameters.environment >>
+    var: << parameters.var >>
 
   slack-notification: &slack-notification
     event: fail
@@ -370,6 +374,7 @@ jobs:
       - install-adoptopenjdk
       - attach_workspace:
           at: ~/working
+      - checkout
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
       - build-test-lib:
@@ -475,6 +480,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
+      - checkout
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - build-test:
