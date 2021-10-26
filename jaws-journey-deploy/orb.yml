@@ -346,6 +346,8 @@ jobs:
         type: boolean
         default: false
       <<: *environment
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     steps:
       - attach_workspace:
           at: ~/working
@@ -375,6 +377,8 @@ jobs:
         type: "enum"
         enum: [ build, publish ]
         default: build
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
     working_directory: ~/working
@@ -425,6 +429,8 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -483,6 +489,8 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -566,6 +574,8 @@ jobs:
       run_integration_tests:
         type: boolean
         default: true
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
     working_directory: ~/working
@@ -700,6 +710,8 @@ jobs:
         type: string
         default: 'master'
       <<: *environment
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     description: Deploy to << parameters.environment >>
     environment:
       <<: *tf-mask
@@ -733,6 +745,8 @@ jobs:
   run-automation-test:
     parameters:
       <<: *environment
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
