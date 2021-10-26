@@ -34,6 +34,10 @@ aliases:
     serviceName: &serviceName
       serviceName:
         type: "string"
+    resourceClass: &resourceClass
+      type: "enum"
+      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+      default: "medium"
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
@@ -322,6 +326,9 @@ commands:
 jobs:
   checkout-code:
     executor: kotlin
+    parameters:
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     working_directory: ~/working
     steps:
       - checkout
@@ -338,6 +345,8 @@ jobs:
         type: boolean
         default: false
       <<: *environment
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     steps:
       - attach_workspace:
           at: ~/working
@@ -367,6 +376,8 @@ jobs:
         type: "enum"
         enum: [ build, publish ]
         default: build
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
     working_directory: ~/working
