@@ -34,6 +34,15 @@ aliases:
     serviceName: &serviceName
       serviceName:
         type: "string"
+    resourceClass: &resourceClass
+      resourceClass:
+        type: "enum"
+        enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+        default: "medium"
+    parallelism: &parallelism
+       parallelism:
+         type: integer
+         default: 1
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
@@ -322,6 +331,11 @@ commands:
 jobs:
   checkout-code:
     executor: kotlin
+    parameters:
+      <<: *resourceClass
+      <<: *parallelism
+    resource_class: << parameters.resourceClass >>
+    parallelism: << parameters.parallelism >>
     working_directory: ~/working
     steps:
       - checkout
@@ -338,6 +352,10 @@ jobs:
         type: boolean
         default: false
       <<: *environment
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
     steps:
       - attach_workspace:
           at: ~/working
@@ -367,6 +385,10 @@ jobs:
         type: "enum"
         enum: [ build, publish ]
         default: build
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
     working_directory: ~/working
@@ -417,6 +439,10 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -475,6 +501,10 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
@@ -558,6 +588,10 @@ jobs:
       run_integration_tests:
         type: boolean
         default: true
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
     working_directory: ~/working
@@ -692,6 +726,8 @@ jobs:
         type: string
         default: 'master'
       <<: *environment
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     description: Deploy to << parameters.environment >>
     environment:
       <<: *tf-mask
@@ -725,6 +761,8 @@ jobs:
   run-automation-test:
     parameters:
       <<: *environment
+      <<: *resourceClass
+    resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
