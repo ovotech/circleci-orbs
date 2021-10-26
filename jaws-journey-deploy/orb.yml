@@ -329,7 +329,7 @@ jobs:
     executor: kotlin
     parameters:
       <<: *resourceClass
-    resource_class: << parameters >>
+    resource_class: << parameters.resourceClass >>
     working_directory: ~/working
     steps:
       - checkout
