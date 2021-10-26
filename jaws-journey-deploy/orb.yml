@@ -328,7 +328,7 @@ jobs:
     executor: kotlin
     parameters:
       <<: *resourceClass
-    resource_class: << parameters.resourceClass >>
+    resource_class: << parameters >>
     working_directory: ~/working
     steps:
       - checkout
@@ -345,8 +345,6 @@ jobs:
         type: boolean
         default: false
       <<: *environment
-      <<: *resourceClass
-    resource_class: << parameters.resourceClass >>
     steps:
       - attach_workspace:
           at: ~/working
@@ -376,8 +374,6 @@ jobs:
         type: "enum"
         enum: [ build, publish ]
         default: build
-      <<: *resourceClass
-    resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
     working_directory: ~/working
