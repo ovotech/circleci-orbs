@@ -560,6 +560,7 @@ jobs:
         default: true
     machine:
       docker_layer_caching: false
+    parallelism: 4
     working_directory: ~/working
     steps:
       - attach_workspace:
