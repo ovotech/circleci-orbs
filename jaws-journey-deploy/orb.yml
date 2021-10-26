@@ -35,9 +35,10 @@ aliases:
       serviceName:
         type: "string"
     resourceClass: &resourceClass
-      type: "enum"
-      enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
-      default: "medium"
+      resourceClass:
+        type: "enum"
+        enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+        default: "medium"
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
