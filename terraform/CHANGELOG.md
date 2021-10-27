@@ -3,6 +3,8 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.11.2
+- Plan comments in github PR now appear in a collapsed `<details>` markdown tag which reduces PR comment thread noise (while still being able to view the whole plan if needed)
 ## ovotech/terraform@1.11.1
 - Add terraform v1 string match for plan operations (`custom_plan.py` exists
   in the executor that's built here in v1 of the orb, so this version bump is
