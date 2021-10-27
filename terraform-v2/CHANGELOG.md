@@ -3,7 +3,7 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
-## ovotech/terraform-v2@2.4.2
+## ovotech/terraform-v2@2.4.3
 - Plan comments in github PR now appear in a collapsed `<details>` markdown tag which reduces PR comment thread noise (while still being able to view the whole plan if needed)
 ## ovotech/terraform-v2@2.4.2
 - Disabled printing of commands in the publish script
