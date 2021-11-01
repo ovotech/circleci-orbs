@@ -71,6 +71,18 @@ parameters:
     default: false
 
 jobs:
+  test_python:
+    description: Tests python code within an orb
+    parameters:
+      path:
+        type: string
+        description: The path to the orb
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - checkout
+      - run: pip install pytest
+      - run: python -m pytest << parameters.path >>
   validate_orb:
     description: Validate an orb
     parameters:
@@ -357,20 +369,26 @@ workflows:
   terraform:
     when: << pipeline.parameters.run-terraform >>
     jobs:
+      - test_python:
+          path: terraform
       - validate_orb:
           path: terraform
       - publish_orb:
           path: terraform
           requires:
+            - test_python
             - validate_orb
   terraform-v2:
     when: << pipeline.parameters.run-terraform-v2 >>
     jobs:
+      - test_python:
+          path: terraform
       - validate_orb:
           path: terraform-v2
       - publish_orb:
           path: terraform-v2
           requires:
+            - test_python
             - validate_orb
   tools:
     when: << pipeline.parameters.run-tools >>
