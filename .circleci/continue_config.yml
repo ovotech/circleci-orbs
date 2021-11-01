@@ -382,7 +382,7 @@ workflows:
     when: << pipeline.parameters.run-terraform-v2 >>
     jobs:
       - test_python:
-          path: terraform
+          path: terraform-v2
       - validate_orb:
           path: terraform-v2
       - publish_orb:
