@@ -30,9 +30,8 @@ commands:
           you will use to hold this value, i.e. AWS_SECRET_ACCESS_KEY.
         default: AWS_SECRET_ACCESS_KEY
     steps:
-      - aws-cli/install:
-          # This only installs the cli if it is missing from $PATH
-          version: '2'
+        # This step only installs the cli if it is missing from the $PATH
+      - aws-cli/install
       - run:
           name: Rotate AWS keys
           command: |
