@@ -11,7 +11,6 @@ current_template = (
 )
 previous_templates = [
     "```hcl\n{plan}\n```",
-    "```\n{plan}\n```",
 ]
 
 
