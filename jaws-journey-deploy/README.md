@@ -337,6 +337,7 @@ workflows:
           <<: *all-lib-matrix
           name: << matrix.lib >>-build-and-test-lib
           lib: << matrix.lib >>
+          store_jacoco_artifacts: true
           requires:
             - checkout-code
 
@@ -390,6 +391,7 @@ workflows:
             serviceName: << matrix.serviceName >>
             publish: true
             skipUnitTests: true
+            store_jacoco_artifacts: true
             requires:
               - checkout-code-e2e-tests
               - tf-apply--test
