@@ -59,9 +59,27 @@ if [[ "$REGISTRY_URL" == "" ]]; then
     exit 2
 fi
 
-curl -L --fail -X PUT "$REGISTRY_URL$MODULE_NAME/$VERSION/upload" \
- --data-binary "@/tmp/$VERSION.tar.gz" \
- -H "Content-Type: application/x-tar" \
- -H "Authorization: Bearer $TF_REGISTRY_TOKEN"
+
+EXISTING_VERSION=$(curl "${REGISTRY_URL}${MODULE_NAME}/versions" | jq -c '.modules[0].versions[] | select(.version == '\"$VERSION\"')')
+
+if [[ ! -z "$EXISTING_VERSION" ]]; then
+    echo "Version $VERSION already exists"
+    exit 2
+fi
+
+readonly PRESIGNED_URL="$(curl -Ls -o /dev/null --fail -X PUT "$REGISTRY_URL$MODULE_NAME/$VERSION/upload" \
+  -H "Authorization: Bearer $TF_REGISTRY_TOKEN" \
+  -H "Content-Length: 0" \
+  -w %{url_effective}
+)"
+
+if [[ "$PRESIGNED_URL" == "" ]]; then
+  echo "Failed to get presigned URL"
+  exit 2
+fi
+
+curl -L --fail -X PUT "$PRESIGNED_URL" \
+  --data-binary "@/tmp/$VERSION.tar.gz" \
+  -H "Content-Type: application/x-tar"
 
 echo "Published $TF_REGISTRY_HOST/$MODULE_NAME@$VERSION"

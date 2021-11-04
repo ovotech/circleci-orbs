@@ -2,7 +2,7 @@ version: 2.1
 description: An orb to rotate AWS keys
 
 orbs:
-  aws-cli: circleci/aws-cli@1.0.0
+  aws-cli: circleci/aws-cli@2.0.3
 
 executors:
   default: aws-cli/default
@@ -30,9 +30,8 @@ commands:
           you will use to hold this value, i.e. AWS_SECRET_ACCESS_KEY.
         default: AWS_SECRET_ACCESS_KEY
     steps:
-      - aws-cli/install:
-          # This only installs the cli if it is missing from $PATH
-          version: '2'
+        # This step only installs the cli if it is missing from the $PATH
+      - aws-cli/install
       - run:
           name: Rotate AWS keys
           command: |

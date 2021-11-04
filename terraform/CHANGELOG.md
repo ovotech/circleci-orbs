@@ -3,10 +3,46 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.11.4
+- Reimplements release 1.11.2 and fixes bug which caused comparing apply-time plan to PR plan to fail
+
+## ovotech/terraform@1.11.3
+- Revert collapsed plans (1.11.2)
+
+## ovotech/terraform@1.11.2
+- Plan comments in github PR now appear in a collapsed `<details>` markdown tag which reduces PR comment thread noise (while still being able to view the whole plan if needed)
+
+## ovotech/terraform@1.11.1
+- Add terraform v1 string match for plan operations (`custom_plan.py` exists
+  in the executor that's built here in v1 of the orb, so this version bump is
+  unfortunately required). TODO: consider moving executor out of v1 of the orb
+  dir
+
+## ovotech/terraform@1.11.0
+- Update terraform publish to upload to S3 presigned URL
+
+## ovotech/terraform@1.10.0
+- Prevent module versions being overwritten
+
+## ovotech/terraform@1.9.0
+## Added
+- Added Terraform provider Aiven Kafka Users v1.0.2 and v1.0.3 to all executors
+
+## ovotech/terraform@1.8.9
+## Fixed
+- Added apply stage specific args to enable parallelism flag to be used in apply cmd
+
+## ovotech/terraform@1.8.8
+## Added
+- Added explicit version check, signposting terraform >0.14 users to v2 orb
+
+## ovotech/terraform@1.8.7
+## Added
+- Added Terraform provider Aiven Kafka Users v1.0.1
+
 ## ovotech/terraform@1.8.6
 ## Fixed
 - Reverted 1.8.5 - causing apply to fail as logic to compare apply-time plan to PR plan not updated
-
 
 ## ovotech/terraform@1.8.5
 ## Changed

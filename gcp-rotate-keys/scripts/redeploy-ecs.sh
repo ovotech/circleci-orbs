@@ -28,11 +28,16 @@ redeploy_ecs() {
 
     _UPDATED=$(
       AWS_PAGER="" aws ecs describe-services --cluster "${_CLUSTER}" --service "${_SERVICE}" \
-        | jq --arg now "${_START}" --arg name "${_SERVICE}" \
+        | TZ=UTC jq --arg now "${_START}" --arg name "${_SERVICE}" \
           '.services[]
           | select(.serviceName == $name).events
           | map(select(
-            (.createdAt | sub("\\.[0-9]+\\+00:00"; "Z") | fromdate >= ($now | tonumber))
+            (.createdAt
+              | sub("(?<time>T[0-9:]+)(\\.\\d+)?(?<tz>Z|[+\\-]\\d{2}:?(\\d{2})?)$"; .time + .tz)
+              | sub("Z$"; "+00:00")
+              | sub("(?<h>[+\\-]\\d{2}):?(?<m>\\d{2})$"; .h + .m)
+              | strptime("%Y-%m-%dT%H:%M:%S%z")
+              | mktime >= ($now | tonumber))
             and
             (.message | contains("reached a steady state"))
           ))

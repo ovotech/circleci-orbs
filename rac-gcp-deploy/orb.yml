@@ -2,8 +2,7 @@ version: 2.1
 description: An orb to build scala services and deploy them to a Kubernetes cluster running on Google Cloud
 
 aliases:
-  # Once all projects are using sbt >=1.4.0 we can remove this as the plugin is now part of sbt
-  - &sbt-dependency-graph echo 'addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")' > project/sbt-dependency-graph.sbt
+  - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
 .gcloud_auth_uat: &gcloud_auth_uat
   gcloud-service-key: <<parameters.uat-gcloud-service-key>>
@@ -51,6 +50,9 @@ commands:
   load_cache:
     description: "Restore cached dependencies"
     parameters:
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -58,21 +60,43 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
+            - <<parameters.cache-key>><<parameters.cache-suffix>>
 
-  bintray_credentials:
-    description: "Create Bintray credentials file"
+  store_cache:
+    parameters:
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+    description: "Save dependencies into cache"
+    steps:
+      - save_cache:
+          key: <<parameters.cache-key>><<parameters.cache-suffix>>
+          paths:
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.embedpostgresql
+            - ~/.cache/coursier
+
+  artifactory_credentials:
+    description: "Create Artifactory credentials file"
     parameters:
       username:
-        description: "Name of the environment variable storing the bintray username"
+        description: "Name of the environment variable storing artifactory username"
+        default: ARTIFACTORY_USERNAME
         type: env_var_name
       api-key:
-        description: "Name of the environment variable storing the bintray api key"
+        description: "Name of the environment variable storing artifactory api key"
+        default: ARTIFACTORY_API_KEY
         type: env_var_name
     steps:
       - run:
-          name: "Create Bintray credentials file"
-          command: echo "credentials += Credentials(\"Bintray\", \"dl.bintray.com\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" > credentials.sbt
+          name: "Create Artifactory credentials file"
+          command: echo "credentials += Credentials(\"Artifactory Realm\", \"kaluza.jfrog.io\", \"$<<parameters.username>>\", \"$<<parameters.api-key>>\")" >> credentials.sbt
 
   gcloud_auth:
     description: "Initialize the `gcloud` CLI"
@@ -127,11 +151,31 @@ commands:
 
   snyk_monitor:
     steps:
-      - run: *sbt-dependency-graph
       - snyk/scan:
           project: $CIRCLE_PROJECT_REPONAME
           fail-on-issues: false
           monitor-on-build: true
+
+  snyk_scan_image:
+    description: "Scan docker image with Snyk"
+    parameters:
+      docker-image-name:
+        description: "Fully qualified name & tag of the image to scan"
+        type: string
+      snyk-project-name:
+        description: "Name of the target Snyk project"
+        type: string
+    steps:
+      - snyk/scan:
+          # Do not fail builds while we bed this command in - but note that it may be enforced at some point.
+          # Kaluza policy states that monitor-on-build must be set to true, but currently this is likely to
+          # result in a duplicate Snyk project for the image, as our Kubernetes integration uses a project
+          # name that incorporates the namespace & object type (and so is likely to differ from snyk-project-name).
+          docker-image-name: <<parameters.docker-image-name>>
+          fail-on-issues: false
+          severity-threshold: high
+          monitor-on-build: false
+          project: <<parameters.snyk-project-name>>
 
 jobs:
   compile:
@@ -147,16 +191,23 @@ jobs:
       ssh-key-fingerprint:
         description: "The fingerprint of the ssh key with permissions to checkout"
         type: string
-      bintray-username:
-        description: "Name of the environment variable storing the bintray username"
-        default: BINTRAY_USERNAME
+      artifactory-username:
+        description: "Name of the environment variable storing the artifactory username"
+        default: ARTIFACTORY_USERNAME
         type: env_var_name
-      bintray-api-key:
-        description: "Name of the environment variable storing the bintray api key"
-        default: BINTRAY_API_KEY
+      artifactory-api-key:
+        description: "Name of the environment variable storing the artifactory api key"
+        default: ARTIFACTORY_API_KEY
         type: env_var_name
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -166,28 +217,23 @@ jobs:
             - <<parameters.ssh-key-fingerprint>>
       - checkout
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - bintray_credentials:
-          username: <<parameters.bintray-username>>
-          api-key: <<parameters.bintray-api-key>>
+      - artifactory_credentials:
+          username: <<parameters.artifactory-username>>
+          api-key: <<parameters.artifactory-api-key>>
       - run:
           name: "Compile"
-          command: sbt update compile test:compile evicted
+          command: sbt -v +update +compile +test:compile +evicted <<parameters.sbt-extra-options>>
       - run:
           name: "avoid unnecessary cache updates"
           command: |
             rm -fv ~/.ivy2/.sbt.ivy.lock
             find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
             find ~/.sbt -name "*.lock" -print -delete
-      - save_cache:
-          key: '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}<<parameters.cache-suffix>>'
-          paths:
-            - ~/.m2
-            - ~/.ivy2
-            - ~/.sbt
-            - ~/.embedpostgresql
-            - ~/.cache/coursier
-
+      - store_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -201,8 +247,15 @@ jobs:
         description: "Path to persist the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -210,10 +263,11 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Compile docs"
-          command: sbt docs/compile
+          command: sbt -v docs/compile <<parameters.sbt-extra-options>>
       - persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -227,8 +281,15 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -236,8 +297,9 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: sbt test:test
+      - run: sbt -v +test:test <<parameters.sbt-extra-options>>
 
   service-tests-with-docker:
     parameters:
@@ -249,8 +311,15 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -258,17 +327,18 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: Update SBT launcher
-          command: cd /tmp && curl  -L -O https://dl.bintray.com/sbt/debian/sbt-1.4.1.deb && sudo apt-get update; sudo dpkg -i  ./sbt-1.4.1.deb
+          command: cd /tmp && curl  -L -O https://repo.scala-sbt.org/scalasbt/debian/sbt-1.5.1.deb && sudo apt-get update; sudo dpkg -i  ./sbt-1.5.1.deb
       - run:
           name: "Configure dockerhub auth"
           command: |
             docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
       - run:
           name: Service Tests
-          command: sbt service-test:test
+          command: sbt -v service-test:test <<parameters.sbt-extra-options>>
           no_output_timeout: 20m
 
   snyk_test:
@@ -281,6 +351,9 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
         default: ""
@@ -294,8 +367,8 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: *sbt-dependency-graph
       - when:
           condition: <<parameters.enable-pr-comment>>
           steps:
@@ -319,8 +392,15 @@ jobs:
         description: "Path to restore the workspace"
         type: string
         default: ~/project
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -328,8 +408,9 @@ jobs:
       - attach_workspace:
           at: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
-      - run: sbt scalafmtCheckAll
+      - run: sbt -v scalafmtCheckAll  <<parameters.sbt-extra-options>>
 
   notify_shipit:
     parameters:
@@ -416,8 +497,15 @@ jobs:
         description: "Name of environment variable storing the PRD Google project ID to connect with via the gcloud CLI"
         type: env_var_name
         default: PRD_PROJECT_ID
+      cache-key:
+        type: string
+        default: *cache-key
       cache-suffix:
         description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
     executor: <<parameters.executor>>
@@ -426,6 +514,7 @@ jobs:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
+          cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
           name: "Setup git config"
@@ -443,9 +532,9 @@ jobs:
             docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
       - run:
           name: "Release"
-          command: sbt "release with-defaults"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
       - run: |
-          # sbt unconditionally builds image tagges as nonprod
+          # sbt unconditionally builds image tagged as nonprod
           echo "export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>" >> "$BASH_ENV"
       - gcloud_auth: *gcloud_auth_uat
       - run:
@@ -454,12 +543,20 @@ jobs:
             mkdir -p "$HOME/.docker"
             gcloud auth configure-docker --quiet --project $<<parameters.uat-project-id>>
       - run:
-          name: "Tag and push container to GCR UAT"
+          name: "Tag container for GCR UAT"
           command: |
             UAT_IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.uat-project-id>>/$<<parameters.container-name>>
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:latest"
             docker tag "${NONPROD_IMAGE_ROOT}:latest" "${UAT_IMAGE_ROOT}:$(cat version.txt)"
-            docker push "${UAT_IMAGE_ROOT}"
+            echo "export UAT_IMAGE_ROOT=${UAT_IMAGE_ROOT}" >> "$BASH_ENV"
+      - snyk_scan_image:
+          # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
+          # may fail build upon detection of vulnerabilities (once configured to do so)
+          docker-image-name: "${UAT_IMAGE_ROOT}:latest"
+          snyk-project-name: $<<parameters.container-name>>
+      - run:
+          name: "Push container to GCR UAT"
+          command: docker push "${UAT_IMAGE_ROOT}"
       - gcloud_auth: *gcloud_auth_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
@@ -476,3 +573,218 @@ jobs:
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
+
+  build_and_release_version:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git_user_email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git_user_email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - run:
+          name: "Build Docker image and release a new version"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
+      - run:
+          name: "Store Docker image in a file"
+          command: |
+            # sbt unconditionally builds image tagged as nonprod
+            docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage <<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
+      - snyk_monitor
+      - persist_workspace:
+          to: <<parameters.workspace-dir>>
+
+  push_docker_image:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      google-compute-zone:
+        description: "The Google compute zone to connect with via the gcloud CLI. Defaults to europe-west1-b"
+        type: string
+        default: europe-west1-b
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
+      gcp-project-id:
+        description: "The GCP project ID to connect with via the gcloud CLI"
+        type: env_var_name
+        default: GCP_PROJECT_ID
+      gcloud-service-key:
+        description: "Name of environment variable storing the full service key JSON file for the GCP project"
+        type: env_var_name
+        default: GCLOUD_ACCOUNT_AUTH
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Configure dockerhub auth"
+          command: |
+            docker login -u "${OVO_DOCKERHUB_USER:?add ovo-internal-public context}" -p "${OVO_DOCKERHUB_PASSWORD:?add ovo-internal-public context}"
+      - run:
+          name: "Load Docker image from a file"
+          command: |
+            docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
+      - gcloud_auth:
+          gcloud-service-key: <<parameters.gcloud-service-key>>
+          project-id: <<parameters.gcp-project-id>>
+          google-compute-zone: <<parameters.google-compute-zone>>
+      - run:
+          name: "Configure Docker to use gcloud as a credential helper"
+          command: |
+            mkdir -p "$HOME/.docker"
+            gcloud auth configure-docker --quiet --project $<<parameters.gcp-project-id>>
+      - run:
+          name: "Tag container for GCR"
+          command: |
+            export NONPROD_IMAGE_ROOT=<<parameters.registry-url>>/randc-nonprod/$<<parameters.container-name>>
+            IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
+            docker tag "${NONPROD_IMAGE_ROOT}:latest" "${IMAGE_ROOT}:latest"
+            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" "${IMAGE_ROOT}:$(cat version.txt)"
+      - snyk_scan_image:
+          # use the GCR tag for the image scan (in case monitor-on-build is set to true in future)
+          # may fail build upon detection of vulnerabilities (once configured to do so)
+          docker-image-name: <<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>:latest
+          snyk-project-name: $<<parameters.container-name>>
+      - run:
+          name: "Push container to GCR"
+          command: |
+            IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
+            docker push "${IMAGE_ROOT}"
+
+  release_library:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to machine executor"
+        type: executor
+        default: machine
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git_user_email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
+        default: ""
+        type: string
+      artifactory-username:
+        description: "Name of the environment variable storing the artifactory username"
+        default: ARTIFACTORY_USERNAME
+        type: env_var_name
+      artifactory-api-key:
+        description: "Name of the environment variable storing the artifactory api key"
+        default: ARTIFACTORY_API_KEY
+        type: env_var_name
+    executor: <<parameters.executor>>
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git_user_email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - artifactory_credentials:
+          username: <<parameters.artifactory-username>>
+          api-key: <<parameters.artifactory-api-key>>
+      - run:
+          name: "Release"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
+      - snyk_monitor

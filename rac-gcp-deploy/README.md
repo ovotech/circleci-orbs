@@ -13,8 +13,6 @@ This job checkouts the source code and compiles it using sbt. After successful c
 - `executor` - : Name of executor to use for this job. Defaults to `docker` executor.
 - `workspace-dir` - Path to persist the workspace. Defaults to `~/project`.
 - `ssh-key-fingerprint` - The fingerprint of the ssh key with read permissions.
-- `bintray-username` - Name of the environment variable storing the bintray username. Defaults to `BINTRAY_USERNAME`.
-- `bintray-api-key` - Name of the environment variable storing the bintray api key. Defaults to `BINTRAY_API_KEY`.
 
 ### unit_test
 This job will restore the workspace, which contains all the source code and also the compiled source. It then executes unit testing.

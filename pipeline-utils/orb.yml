@@ -1,0 +1,42 @@
+version: 2.1
+
+description: >
+  An orb that contains helpful snippets for creating CI pipelines.
+
+display:
+  source_url: https://github.com/ovotech/circleci-orbs/tree/master/pipeline-utils
+
+commands:
+  configure-environment:
+    description: Configures the correct environment variables according to the current env
+    parameters:
+      env:
+        description: The name of the environment
+        type: string
+      vars:
+        description: List of environment variables to set
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Prepare the correct service account key for the environment
+          command: |
+            include scripts/configure-environment.sh
+
+            configure_environment "<< parameters.env >>" "<< parameters.vars >>"
+
+  base64-decode:
+    description: |
+      Decodes the environment variable if it appears to be base64 encoded, otherwise
+      leave it as is.
+    parameters:
+      var:
+        description: The name of an environment variable to base64 decode
+        type: env_var_name
+    steps:
+      - run:
+          name: Base64 decode the environment variable
+          command: |
+            include scripts/maybe-decode.sh
+
+            maybe_decode "<< parameters.var >>"
