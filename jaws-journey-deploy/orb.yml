@@ -280,6 +280,10 @@ jobs:
         description: indicate whether integration tests exist
         type: boolean
         default: true
+      store_jacoco_artifacts:
+        description: indicate whether we should store jacoco artifacts
+        type: boolean
+        default: true
       command:
         description: indicate whether to build or publish
         type: "enum"
@@ -310,8 +314,12 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
-      - store_artifacts:
-          path: ./reports/jacoco
+      - when:
+          condition: << parameters.store_jacoco_artifacts >>
+          steps:
+            - store_artifacts:
+                name: store jacoco artifacts
+                path: ./reports/jacoco
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -340,6 +348,10 @@ jobs:
         type: boolean
         default: false
       persist_to_workspace:
+        type: boolean
+        default: true
+      store_jacoco_artifacts:
+        description: indicate whether we should store jacoco artifacts
         type: boolean
         default: true
     executor: kotlin
@@ -373,8 +385,12 @@ jobs:
             - store_artifacts:
                 path: ~/test-results/junit
                 destination: ~/reports/diagrams
-            - store_artifacts:
-                path: ~/reports/jacoco
+            - when:
+                condition: << parameters.store_jacoco_artifacts >>
+                steps:
+                  - store_artifacts:
+                      name: store jacoco artifacts
+                      path: ~/reports/jacoco
       - when:
           condition: << parameters.publish >>
           steps:
