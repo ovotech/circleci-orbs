@@ -554,7 +554,7 @@ jobs:
                 steps:
                   - store_artifacts:
                       name: store jacoco artifacts
-                      path: ~/reports/jacoco
+                      path: ./reports/jacoco
       - when:
           condition: << parameters.publish >>
           steps:
