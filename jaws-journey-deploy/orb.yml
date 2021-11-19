@@ -101,6 +101,39 @@ commands:
             include ./scripts/make_gradle_executable.sh
             include ./scripts/avro.sh
 
+
+  integration_test:
+    parameters:
+      <<: *serviceName
+      <<: *environment
+      run_integration_tests:
+        type: boolean
+        default: true
+      <<: *resourceClass
+      <<: *parallelism
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - when:
+          condition: << parameters.run_integration_tests >>
+          steps:
+            - openjdk-install/openjdk:
+                version: 11
+            - restore_cache:
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+            - integration-test:
+                serviceName: << parameters.serviceName >>
+                environment: << parameters.environment >>
+            - store_test_results:
+                path: << parameters.serviceName >>/build/test-results/integrationTest
+
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
   integration-test:
     description: "Run integration tests"
     parameters:
