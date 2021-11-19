@@ -145,10 +145,6 @@ commands:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       <<: *resourceClass
       <<: *parallelism
-    parallelism: << parameters.parallelism >>
-    resource_class: << parameters.resourceClass >>
-    executor: kotlin
-    working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
