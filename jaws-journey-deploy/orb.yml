@@ -223,6 +223,68 @@ commands:
                   - ./reports/diagrams/*
                   - ./reports/jacoco/*
 
+  lib-build-and-test:
+    parameters:
+      lib:
+        description: lib to be built
+        type: string
+      contains_integration_tests:
+        description: indicate whether integration tests exist
+        type: boolean
+        default: true
+      store_jacoco_artifacts:
+        description: indicate whether we should store jacoco artifacts
+        type: boolean
+        default: true
+      command:
+        description: indicate whether to build or publish
+        type: "enum"
+        enum: [ build, publish ]
+        default: build
+      <<: *resourceClass
+      <<: *parallelism
+    steps:
+      - install-adoptopenjdk
+      - attach_workspace:
+          at: ~/working
+      - checkout
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - build-test-lib:
+          lib: << parameters.lib >>
+          contains_integration_tests: << parameters.contains_integration_tests >>
+          command: << parameters.command >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - save-test-result:
+          serviceName: << parameters.lib >>
+          save_libs: true
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+      - when:
+          condition: << parameters.store_jacoco_artifacts >>
+          steps:
+            - store_artifacts:
+                name: store jacoco artifacts
+                path: ./reports/jacoco
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.lib >>/*
+            - ./reports/jacoco/*
+
   build-test:
     description: "Run build and test commands"
     parameters:
