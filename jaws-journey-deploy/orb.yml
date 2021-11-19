@@ -116,6 +116,117 @@ commands:
             include ./scripts/make_gradle_executable.sh
             include ./scripts/run_integration_test.sh
 
+
+  build_and_test:
+    parameters:
+      <<: *serviceName
+      <<: *environment
+      publish:
+        type: boolean
+        default: false
+      skipUnitTests:
+        type: boolean
+        default: false
+      saveTopology:
+        type: boolean
+        default: false
+      persist_to_workspace:
+        type: boolean
+        default: true
+      store_jacoco_artifacts:
+        description: indicate whether we should store jacoco artifacts
+        type: boolean
+        default: true
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
+    executor: kotlin
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - checkout
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+      - build-test:
+          serviceName: << parameters.serviceName >>
+          environment: << parameters.environment >>
+          skipUnitTests: << parameters.skipUnitTests >>
+          saveTopology: << parameters.saveTopology >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+      - unless:
+          condition: << parameters.skipUnitTests >>
+          steps:
+            - save-test-result:
+                serviceName: << parameters.serviceName >>
+                save_libs: false
+            - persist-topology-diagram
+            - store_test_results:
+                path: ~/test-results
+            - store_artifacts:
+                path: ~/test-results/junit
+            - store_artifacts:
+                path: ~/test-results/junit
+                destination: ~/reports/diagrams
+            - when:
+                condition: << parameters.store_jacoco_artifacts >>
+                steps:
+                  - store_artifacts:
+                      name: store jacoco artifacts
+                      path: ./reports/jacoco
+      - when:
+          condition: << parameters.publish >>
+          steps:
+            - github-repo-login:
+                username: << parameters.username >>
+                token: << parameters.token >>
+            - aws-ecr/build-and-push-image:
+                setup-remote-docker: true
+                checkout: false
+                account-url: AWS_ACCOUNT_URL
+                aws-access-key-id: AWS_ACCESS_KEY_ID
+                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                dockerfile: Dockerfile
+                path: ./<< parameters.serviceName >>
+                create-repo: false
+                region: AWS_DEFAULT_REGION
+                repo: << parameters.serviceName >>
+                tag: "latest,$CIRCLE_SHA1"
+            - snyk/scan:
+                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
+                fail-on-issues: true
+                monitor-on-build: true
+                project: << parameters.serviceName >>
+                severity-threshold: high
+                target-file: ./<< parameters.serviceName >>/Dockerfile
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+      - when:
+          condition: << parameters.persist_to_workspace>>
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - << parameters.serviceName >>/*
+                  - ./reports/diagrams/*
+                  - ./reports/jacoco/*
+
   build-test:
     description: "Run build and test commands"
     parameters:
