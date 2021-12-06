@@ -208,6 +208,7 @@ commands:
     description: "Run automated tests"
     parameters:
       <<: *environment
+      <<: *serviceName
     steps:
       - run:
           name: "Run automated tests"
@@ -778,6 +779,7 @@ jobs:
     parameters:
       <<: *environment
       <<: *resourceClass
+      <<: *serviceName {default = "automated-test"}
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
@@ -787,6 +789,7 @@ jobs:
       - make-gradle-executable
       - run-automated-tests:
           environment: << parameters.environment >>
+          serviceName: << parameters.serviceName >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
