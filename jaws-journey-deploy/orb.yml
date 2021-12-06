@@ -218,7 +218,6 @@ commands:
           name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
-            echo 'export SERVICE_NAME="<< parameters.automatedTestSuite >>"' >> $BASH_ENV
             include ./scripts/set_profile.sh
             include ./scripts/automated_test_run.sh
 

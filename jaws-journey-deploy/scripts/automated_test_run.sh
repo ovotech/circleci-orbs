@@ -1,2 +1,2 @@
 export AWS_REGION=${AWS_DEFAULT_REGION}
-./gradlew :${SERVICE_NAME}:test -Pprofile=${PROFILE} --full-stacktrace -PrunEndToEndTests=true
+./gradlew :${AUTOMATED_TEST_SUITE}:test -Pprofile=${PROFILE} --full-stacktrace -PrunEndToEndTests=true
