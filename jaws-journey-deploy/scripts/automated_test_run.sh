@@ -1,3 +1,3 @@
 export AWS_REGION=${AWS_DEFAULT_REGION}
-export SERVICE_NAME=automated-test
-./gradlew :${SERVICE_NAME}:test -Pprofile=${PROFILE} --full-stacktrace -PrunEndToEndTests=true
+export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"
+./gradlew :${AUTOMATED_TEST_SUITE}:test -Pprofile=${PROFILE} --full-stacktrace -PrunEndToEndTests=true

@@ -425,11 +425,15 @@ commands:
     description: "Run automated tests"
     parameters:
       <<: *environment
+      automatedTestSuite:
+        type: string
+        default: "automated-test"
     steps:
       - run:
           name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
+            echo 'export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"'
             include ./scripts/set_profile.sh
             include ./scripts/automated_test_run.sh
 
@@ -995,6 +999,9 @@ jobs:
     parameters:
       <<: *environment
       <<: *resourceClass
+      automatedTestSuite:
+        type: string
+        default: "automated-test"
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
@@ -1004,6 +1011,7 @@ jobs:
       - make-gradle-executable
       - run-automated-tests:
           environment: << parameters.environment >>
+          automatedTestSuite: << parameters.automatedTestSuite >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
