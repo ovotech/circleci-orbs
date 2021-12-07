@@ -783,7 +783,7 @@ jobs:
       <<: *environment
       <<: *resourceClass
       automatedTestSuite:
-        type: String
+        type: string
         default: "automated-test"
     resource_class: << parameters.resourceClass >>
     executor: kotlin
