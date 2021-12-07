@@ -216,7 +216,7 @@ commands:
           name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
-            echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
+            echo 'export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"' >> $BASH_ENV
             include ./scripts/set_profile_extra.sh
             include ./scripts/automated_test_run.sh
 
@@ -772,7 +772,7 @@ jobs:
             - run:  
                 name: "Set environment variables"
                 command: |   
-                  echo 'export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"' >> $BASH_ENV
+                  echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - argocd/wait_for_sync:
                 application: $CIRCLE_PROJECT_REPONAME
