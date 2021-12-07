@@ -218,7 +218,7 @@ commands:
           name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
-            include ./scripts/set_profile.sh
+            include ./scripts/set_profile_extra.sh
             include ./scripts/automated_test_run.sh
 
   save-automated-tests:
