@@ -101,6 +101,54 @@ commands:
             include ./scripts/make_gradle_executable.sh
             include ./scripts/avro.sh
 
+
+  snyk-scan:
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - make-gradle-executable
+      - snyk/scan:
+          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+          severity-threshold: high
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+  integration_test:
+    parameters:
+      <<: *serviceName
+      <<: *environment
+      run_integration_tests:
+        type: boolean
+        default: true
+      <<: *resourceClass
+      <<: *parallelism
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - when:
+          condition: << parameters.run_integration_tests >>
+          steps:
+            - openjdk-install/openjdk:
+                version: 11
+            - restore_cache:
+                key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+            - integration-test:
+                serviceName: << parameters.serviceName >>
+                environment: << parameters.environment >>
+            - store_test_results:
+                path: << parameters.serviceName >>/build/test-results/integrationTest
+
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
   integration-test:
     description: "Run integration tests"
     parameters:
@@ -115,6 +163,175 @@ commands:
             include ./scripts/set_profile.sh
             include ./scripts/make_gradle_executable.sh
             include ./scripts/run_integration_test.sh
+
+
+  build_and_test:
+    parameters:
+      <<: *serviceName
+      <<: *environment
+      publish:
+        type: boolean
+        default: false
+      skipUnitTests:
+        type: boolean
+        default: false
+      saveTopology:
+        type: boolean
+        default: false
+      persist_to_workspace:
+        type: boolean
+        default: true
+      store_jacoco_artifacts:
+        description: indicate whether we should store jacoco artifacts
+        type: boolean
+        default: true
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      <<: *resourceClass
+      <<: *parallelism
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - checkout
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+      - build-test:
+          serviceName: << parameters.serviceName >>
+          environment: << parameters.environment >>
+          skipUnitTests: << parameters.skipUnitTests >>
+          saveTopology: << parameters.saveTopology >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
+      - unless:
+          condition: << parameters.skipUnitTests >>
+          steps:
+            - save-test-result:
+                serviceName: << parameters.serviceName >>
+                save_libs: false
+            - persist-topology-diagram
+            - store_test_results:
+                path: ~/test-results
+            - store_artifacts:
+                path: ~/test-results/junit
+            - store_artifacts:
+                path: ~/test-results/junit
+                destination: ~/reports/diagrams
+            - when:
+                condition: << parameters.store_jacoco_artifacts >>
+                steps:
+                  - store_artifacts:
+                      name: store jacoco artifacts
+                      path: ./reports/jacoco
+      - when:
+          condition: << parameters.publish >>
+          steps:
+            - github-repo-login:
+                username: << parameters.username >>
+                token: << parameters.token >>
+            - aws-ecr/build-and-push-image:
+                setup-remote-docker: true
+                checkout: false
+                account-url: AWS_ACCOUNT_URL
+                aws-access-key-id: AWS_ACCESS_KEY_ID
+                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                dockerfile: Dockerfile
+                path: ./<< parameters.serviceName >>
+                create-repo: false
+                region: AWS_DEFAULT_REGION
+                repo: << parameters.serviceName >>
+                tag: "latest,$CIRCLE_SHA1"
+            - snyk/scan:
+                docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
+                fail-on-issues: true
+                monitor-on-build: true
+                project: << parameters.serviceName >>
+                severity-threshold: high
+                target-file: ./<< parameters.serviceName >>/Dockerfile
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+      - when:
+          condition: << parameters.persist_to_workspace>>
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - << parameters.serviceName >>/*
+                  - ./reports/diagrams/*
+                  - ./reports/jacoco/*
+
+  lib-build-and-test:
+    parameters:
+      lib:
+        description: lib to be built
+        type: string
+      contains_integration_tests:
+        description: indicate whether integration tests exist
+        type: boolean
+        default: true
+      store_jacoco_artifacts:
+        description: indicate whether we should store jacoco artifacts
+        type: boolean
+        default: true
+      command:
+        description: indicate whether to build or publish
+        type: "enum"
+        enum: [ build, publish ]
+        default: build
+      <<: *resourceClass
+      <<: *parallelism
+    steps:
+      - install-adoptopenjdk
+      - attach_workspace:
+          at: ~/working
+      - checkout
+      - restore_cache:
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - build-test-lib:
+          lib: << parameters.lib >>
+          contains_integration_tests: << parameters.contains_integration_tests >>
+          command: << parameters.command >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}-{{ checksum "libs/<< parameters.lib >>/build.gradle" }}
+      - save-test-result:
+          serviceName: << parameters.lib >>
+          save_libs: true
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+      - when:
+          condition: << parameters.store_jacoco_artifacts >>
+          steps:
+            - store_artifacts:
+                name: store jacoco artifacts
+                path: ./reports/jacoco
+      - when:
+          condition:
+            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+          steps:
+            - slack/notify:
+                <<: *slack-notification
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - << parameters.lib >>/*
+            - ./reports/jacoco/*
 
   build-test:
     description: "Run build and test commands"
