@@ -102,6 +102,21 @@ commands:
             include ./scripts/avro.sh
 
 
+snyk-scan:
+  steps:
+    - attach_workspace:
+        at: ~/working
+    - make-gradle-executable
+    - snyk/scan:
+        additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+        severity-threshold: high
+    - when:
+        condition:
+          equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+        steps:
+          - slack/notify:
+              <<: *slack-notification
+
   integration_test:
     parameters:
       <<: *serviceName
