@@ -34,10 +34,6 @@ aliases:
     serviceName: &serviceName
       serviceName:
         type: "string"
-    automatedTestSuite: &automatedTestSuite
-      automatedTestSuite:
-        type: "string"
-        default: "automated-test"
     resourceClass: &resourceClass
       resourceClass:
         type: "enum"
@@ -212,12 +208,15 @@ commands:
     description: "Run automated tests"
     parameters:
       <<: *environment
-      <<: *automatedTestSuite
+      automatedTestSuite:
+        type: string
+        default: "automated-test"
     steps:
       - run:
           name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
+            echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
             include ./scripts/set_profile_extra.sh
             include ./scripts/automated_test_run.sh
 
@@ -783,7 +782,9 @@ jobs:
     parameters:
       <<: *environment
       <<: *resourceClass
-      <<: *automatedTestSuite
+      automatedTestSuite:
+        type: String
+        default: "automated-test"
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
