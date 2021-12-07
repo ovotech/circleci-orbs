@@ -96,7 +96,7 @@ This job executes integration tests for the supplied service
 **Parameters**
 
 * `environment` - indicates to the build step which properties file to run against.  Expected values are [sandbox, nonprod, prod]
-# `automatedTestSuite` - defines the service name to run `:test` task in. Defaults to "automated-test".
+* `automatedTestSuite` - defines the service name to run `:test` task in. Defaults to "automated-test".
 
 ### synk-scan
 
