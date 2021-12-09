@@ -16,7 +16,10 @@ function deply_manifest {
   cd /tmp/gitops
   
   # Update helm chart
-  yq e ".jaws-journey-helm-chart.buildTag=\"${CIRCLE_SHA1}\"" -i <<parameters.manifest_directory>>/values-<<parameters.environment>>.yaml
+
+  if [[ << parameters.update_build_tag >> = true ]] ; then
+    yq e ".jaws-journey-helm-chart.buildTag=\"${CIRCLE_SHA1}\"" -i <<parameters.manifest_directory>>/values-<<parameters.environment>>.yaml
+  fi
   yq e ".jaws-journey-helm-chart.releaseVersion=\"${CIRCLE_TAG:-$CIRCLE_BRANCH-${CIRCLE_SHA1:0:8}}\"" -i <<parameters.manifest_directory>>/values-<<parameters.environment>>.yaml
   
   # Commit manifest changes
