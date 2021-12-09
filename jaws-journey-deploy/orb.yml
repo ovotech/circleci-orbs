@@ -962,6 +962,9 @@ jobs:
       deploy_branch_name:
         type: string
         default: 'master'
+      update_build_tag:
+        type: boolean
+        default: true
       <<: *environment
       <<: *resourceClass
     resource_class: << parameters.resourceClass >>
