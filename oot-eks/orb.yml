@@ -2,9 +2,9 @@ version: 2.1
 description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR."
 
 orbs:
-  aws-cli: circleci/aws-cli@1.2.1
-  aws-ecr: circleci/aws-ecr@6.12.2
-  snyk: snyk/snyk@0.0.10
+  aws-cli: circleci/aws-cli@1.4.1
+  aws-ecr: circleci/aws-ecr@6.15.3
+  snyk: snyk/snyk@1.1.2
 
 commands:
   push-image:
@@ -29,6 +29,10 @@ commands:
         description: "The AWS region on which the operation will be run."
         type: string
         default: eu-west-1
+      extra-build-args:
+        description: "Extra arguments to pass when running docker build"
+        type: string
+        default: ""
 
     steps:
       - attach_workspace:
@@ -52,6 +56,7 @@ commands:
           repo: << parameters.service >>
           tag: ${CIRCLE_SHA1},latest
           ecr-login: true
+          extra-build-args: << parameters.extra-build-args >>
 
       - snyk/scan:
           monitor-on-build: true
