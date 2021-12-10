@@ -68,7 +68,7 @@
       "revision": "140c6627d2ea1ac683770accbd0adb8700c51d58"
     },
     "health": {
-      "status": "Progressing"
+      "status": "Synced"
     },
     "history": [
       {
@@ -87,7 +87,7 @@
     "operationState": {
       "operation": {
         "sync": {
-          "revision": "11368bf4ef87b51b8a3a0242bb2979d01f70de01"
+          "revision": "8ee95cb4deef2ce45fd04dad08a21d8084c1162e"
         },
         "initiatedBy": {
           "automated": true
