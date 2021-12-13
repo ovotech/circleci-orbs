@@ -17,7 +17,7 @@ def is_cluster_insync(endpoint, token, application, target_revision):
             return False
         
         data = res.json()
-        cluster_revision = data['status']['operationState']['operation']['sync']['revision']
+        cluster_revision = data['status']['operationState']['syncResult']['revision']
         cluster_phase = data['status']['operationState']['phase']
         cluster_sync_status = data['status']['sync']['status']
         app_health = data['status']['health']['status']
