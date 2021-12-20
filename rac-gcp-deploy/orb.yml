@@ -647,10 +647,6 @@ jobs:
 
   push_kmi_docker_image:
     parameters:
-      executor:
-        description: "Name of executor to use for this job. Defaults to docker executor"
-        type: executor
-        default: docker
       workspace-dir:
         description: "Path to restore/save the workspace"
         type: string
@@ -671,7 +667,8 @@ jobs:
         description: "The KMI namespace this container is deployed into. Defaults to the container name"
         type: env_var_name
         default: CIRCLE_PROJECT_REPONAME
-    executor: <<parameters.executor>>
+    docker:
+      - image: cimg/openjdk:11.0.13 # Supports the AWS CLI
     steps:
       - setup_remote_docker
       - restore_workspace:
