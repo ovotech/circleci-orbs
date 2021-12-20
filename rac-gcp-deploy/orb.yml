@@ -16,6 +16,7 @@ aliases:
 
 orbs:
   snyk: snyk/snyk@0.0.13
+  aws-ecr: circleci/aws-ecr@7.2.0
 
 executors:
   machine:
@@ -643,6 +644,49 @@ jobs:
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
+
+  push_kmi_docker_image:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      gcr-registry-url:
+        description: "The GCR registry URL. Defaults to eu.gcr.io"
+        default: eu.gcr.io
+        type: string
+      kmi-registry-url:
+        description: "The URL of the centralised ECR registry"
+        type: env_var_name
+        default: AWS_ECR_ACCOUNT_URL
+      kmi-namespace:
+        description: "The KMI namespace this container is deployed into. Defaults to the container name"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - run:
+          name: "Load docker image from file and tag"
+          command: |
+            export NONPROD_IMAGE_ROOT=<<parameters.gcr-registry-url>>/randc-nonprod/$<<parameters.container-name>>
+            docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
+            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" <<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/<<parameters.container-name>>:$(cat version.txt)
+      - aws-ecr/ecr-login
+      - run:
+          name: "Push docker image to KMI registry"
+          command: |
+            docker push <<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/<<parameters.container-name>>:$(cat version.txt)
 
   push_docker_image:
     parameters:
