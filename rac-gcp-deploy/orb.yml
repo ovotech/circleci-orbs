@@ -681,12 +681,12 @@ jobs:
           command: |
             export NONPROD_IMAGE_ROOT=<<parameters.gcr-registry-url>>/randc-nonprod/$<<parameters.container-name>>
             docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
-            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" <<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/<<parameters.container-name>>:$(cat version.txt)
+            docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" $<<parameters.kmi-registry-url>>/$<<parameters.kmi-namespace>>/$<<parameters.container-name>>:$(cat version.txt)
       - aws-ecr/ecr-login
       - run:
           name: "Push docker image to KMI registry"
           command: |
-            docker push <<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/<<parameters.container-name>>:$(cat version.txt)
+            docker push $<<parameters.kmi-registry-url>>/$<<parameters.kmi-namespace>>/$<<parameters.container-name>>:$(cat version.txt)
 
   push_docker_image:
     parameters:
