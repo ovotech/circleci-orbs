@@ -773,6 +773,7 @@ jobs:
         default: CIRCLE_PROJECT_REPONAME
       kmi-env:
         description: "The environment of KMI to deploy to"
+        type: string
         default: uat
       git-username:
         description: "Name of the environment variable storing the github user to use when pushing commits"
@@ -810,7 +811,7 @@ jobs:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              git commit -m "Bumping $<<parameters.container-name>> image tag to ${CONTAINER_VERSION}"
+              git commit -m "Bumping $<<parameters.container-name>> image tag to ${CONTAINER_VERSION} for <<parameters.kmi-env>>"
               git push origin main
             fi
 
