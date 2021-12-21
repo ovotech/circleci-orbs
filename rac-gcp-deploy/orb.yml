@@ -767,6 +767,10 @@ jobs:
 
   deploy_to_kmi:
     parameters:
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
       container-name:
         description: "Name of environment variable storing the name of the container we are publishing"
         type: env_var_name
@@ -783,10 +787,21 @@ jobs:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
     docker:
       - image: cimg/base:stable
     steps:
-      - checkout
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
       - run: 
           name: Set version as environment variable
           command: |
