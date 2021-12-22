@@ -505,6 +505,17 @@ commands:
             include ./scripts/github_docker_login.sh
           name: Github Docker Repo Login
 
+  create-nightly-tag:
+    parameters:
+      token:
+        type: string
+    steps:
+      - run:
+          name: Create nightly tag
+          shell: /bin/bash -eo pipefail
+          command: |
+            include ./scripts/circleci_create_nightly_tag.sh
+
   tf:
     parameters:
       <<: *tf-common-parameters
@@ -1102,3 +1113,16 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
+
+  create-nightly-tag:
+    parameters:
+      token:
+        type: string
+    machine:
+      docker_layer_caching: false
+    working_directory: ~/working
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - create-nightly-tag:
+          token: << parameters.token >>
