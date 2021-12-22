@@ -787,27 +787,11 @@ jobs:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
-      cache-key:
-        type: string
-        default: *cache-key
-      cache-suffix:
-        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
-        default: ""
-        type: string
     docker:
       - image: cimg/base:stable
     steps:
       - restore_workspace:
           to: <<parameters.workspace-dir>>
-      - load_cache:
-          cache-key: <<parameters.cache-key>>
-          cache-suffix: <<parameters.cache-suffix>>
-      - run: 
-          name: Set version as environment variable
-          command: |
-            ls .
-            ls <<parameters.workspace-dir>>
-            export CONTAINER_VERSION=$(cat version.txt)
       - run:
           name: Clone gitops repo
           command: |
@@ -817,7 +801,7 @@ jobs:
           name: Patch deployment
           command: |
             cd ~/gitops/$<<parameters.container-name>>
-            yq e ".version=\"${CONTAINER_VERSION}\"" -i values-<<parameters.kmi-env>>-shared.yaml
+            yq e ".version=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
       - run:
           name: Commit and push
           command: |
@@ -828,10 +812,9 @@ jobs:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              git commit -m "Bumping $<<parameters.container-name>> image tag to ${CONTAINER_VERSION} for <<parameters.kmi-env>>"
+              git commit -m "Bumping $<<parameters.container-name>> image tag to $(cat <<parameters.workspace-dir>>/version.txt) for <<parameters.kmi-env>>"
               git push origin main
             fi
-
 
   release_library:
     parameters:
