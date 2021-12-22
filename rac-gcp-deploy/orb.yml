@@ -805,6 +805,8 @@ jobs:
       - run: 
           name: Set version as environment variable
           command: |
+            ls .
+            ls <<parameters.workspace-dir>>
             export CONTAINER_VERSION=$(cat version.txt)
       - run:
           name: Clone gitops repo
