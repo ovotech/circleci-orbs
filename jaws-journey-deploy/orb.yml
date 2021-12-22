@@ -514,7 +514,7 @@ commands:
           name: Create nightly tag
           shell: /bin/bash -eo pipefail
           command: |
-            include ./scripts/circleci_create_nightly_tag.sh
+            include ./scripts/create_nightly_tag.sh
 
   tf:
     parameters:
