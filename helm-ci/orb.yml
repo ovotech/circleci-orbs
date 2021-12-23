@@ -43,4 +43,4 @@ jobs:
     steps: 
       - lint-chart:
           chart_path: << parameters.chart_path >>
-          values_files: << <parameters.values_files >>
+          values_files: << parameters.values_files >>
