@@ -297,6 +297,15 @@ workflows:
           path: gcp-rotate-keys
           requires:
             - validate_orb
+  helm-ci:
+    when: << pipeline.parameters.run-helm-ci >>
+    jobs:
+      - validate_orb:
+          path: helm-ci
+      - publish_orb:
+          path: helm-ci
+          requires:
+            - validate_orb
   jaws-journey-deploy:
     when: << pipeline.parameters.run-jaws-journey-deploy >>
     jobs:
