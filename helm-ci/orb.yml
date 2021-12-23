@@ -1,0 +1,46 @@
+version: 2.1
+description: "Defines jobs for CI with Helm"
+
+executors:
+  helm-ci:
+    docker:
+      - image: ovotech/helm-ci:latest
+
+commands:
+  lint-chart:
+    description: "Runs helm lint and kubeval over a helm chart"
+    parameters:
+      chart_path:
+        type: string
+        description: "Path to the helm chart to lint"
+      values_files:
+        type: string
+        description: "CSV of values files to pass to helm chart when templating to run kubeval"
+    steps:
+      - checkout
+      - run:
+          name: "Lint chart"
+          command: helm lint -f <<parameters.values_files>> <<parameters.chart_path>>
+      - run:
+          name: "Template chart"
+          command: |
+            rm -f output.yaml
+            helm template -f <<parameters.values_files>> <<parameters.chart_path>> > output.yaml
+      - run:
+          name: "Run kubeval over helm output"
+          command: kubeval --ignore-missing-schemas output.yaml
+
+jobs:
+  lint-chart:
+    executor: helm-ci
+    parameters:
+      chart_path:
+        type: string
+        description: "Path to the helm chart to lint"
+      values_files:
+        type: string
+        description: "Values files to pass to helm chart when templating to run kubeval"
+    steps: 
+      - lint-chart:
+          chart_path: << parameters.chart_path >>
+          values_files: << <parameters.values_files >>
