@@ -4,7 +4,7 @@ description: "Defines jobs for CI with Helm"
 executors:
   helm-ci:
     docker:
-      - image: ovotech/helm-ci:latest
+      - image: ovotech/helm-ci:add-helm-orb_23-12-2021
 
 commands:
   lint-chart:

@@ -8,10 +8,12 @@ Provides CI functionality for working with Helm.
 
 ```yaml
 orbs:
-  helm: ovotech/helm@-ci0.0.1
+  helm-ci: ovotech/helm@-ci0.0.1
 
-jobs:
-  helm/lint-chart:
-    chart_path: <path/to/helm/chart>
-    values_files: <values-file.yaml>,<other-values-file.yaml>
+workflows:
+  commit:
+    jobs:
+      - helm-ci/lint-chart:
+          chart_path: <path/to/helm/chart>
+          values_files: <values-file.yaml>,<other-values-file.yaml>
 ```
