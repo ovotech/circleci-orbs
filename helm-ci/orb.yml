@@ -2,9 +2,9 @@ version: 2.1
 description: "Defines jobs for CI with Helm"
 
 executors:
-  helm-ci:
+  default:
     docker:
-      - image: ovotech/helm-ci:add-helm-orb_23-12-2021
+      - image: alpine/helm:3.7.2
 
 commands:
   lint-chart:
@@ -28,11 +28,14 @@ commands:
             helm template -f <<parameters.values_files>> <<parameters.chart_path>> > output.yaml
       - run:
           name: "Run kubeval over helm output"
-          command: kubeval --ignore-missing-schemas output.yaml
+          command: |
+            wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+            tar xf kubeval-linux-amd64.tar.gz
+            ./kubeval --ignore-missing-schemas output.yaml
 
 jobs:
   lint-chart:
-    executor: helm-ci
+    executor: default
     parameters:
       chart_path:
         type: string
