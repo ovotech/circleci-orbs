@@ -27,6 +27,9 @@ parameters:
   run-gcp-rotate-keys:
     type: boolean
     default: false
+  run-helm-ci:
+    type: boolean
+    default: false
   run-jaws-journey-deploy:
     type: boolean
     default: false
@@ -292,6 +295,15 @@ workflows:
           path: gcp-rotate-keys
       - publish_orb:
           path: gcp-rotate-keys
+          requires:
+            - validate_orb
+  helm-ci:
+    when: << pipeline.parameters.run-helm-ci >>
+    jobs:
+      - validate_orb:
+          path: helm-ci
+      - publish_orb:
+          path: helm-ci
           requires:
             - validate_orb
   jaws-journey-deploy:
