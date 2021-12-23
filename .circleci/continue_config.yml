@@ -27,6 +27,9 @@ parameters:
   run-gcp-rotate-keys:
     type: boolean
     default: false
+  run-helm-ci:
+    type: boolean
+    default: false
   run-jaws-journey-deploy:
     type: boolean
     default: false
