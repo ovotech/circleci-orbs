@@ -47,7 +47,7 @@ This job will bundle the service into a docker image and publish the generated i
 - `executor` - : Name of executor to use for this job. Defaults to `docker` executor.
 - `workspace-dir` - Path to restore/save the workspace. Defaults to `~/project`.
 - `git-username` - Name of the environment variable storing the git username. Defaults to `GIT_USERNAME`.
-- `git_user_email` - Name of the environment variable storing the email of the github user to use when pushing commits. Defaults to `GIT_USER_EMAIL`.
+- `git-user-email` - Name of the environment variable storing the email of the github user to use when pushing commits. Defaults to `GIT_USER_EMAIL`.
 - `ssh-key-fingerprint` - The fingerprint of the ssh key with permissions to checkout.
 - `google-cloud-sdk-version` - The version of google cloud sdk to install. Defaults to `246.0.0-0`.
 - `google-compute-zone` - The Google compute zone to connect with via the gcloud CLI. Defaults to `europe-west1-b`.
