@@ -463,7 +463,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -523,7 +523,7 @@ jobs:
             mkdir -p -m 0700 ~/.ssh/
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
-            git config --global user.email "$<<parameters.git_user_email>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
@@ -597,7 +597,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -629,7 +629,7 @@ jobs:
             mkdir -p -m 0700 ~/.ssh/
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
-            git config --global user.email "$<<parameters.git_user_email>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
@@ -783,7 +783,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -806,7 +806,7 @@ jobs:
           name: Commit and push
           command: |
             cd  ~/gitops
-            git config user.email "$<<parameters.git_user_email>>"
+            git config user.email "$<<parameters.git-user-email>>"
             git config user.name "$<<parameters.git-username>>"
             git add .
             if [ -z "$(git status --porcelain)" ]; then
@@ -830,7 +830,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -869,7 +869,7 @@ jobs:
             mkdir -p -m 0700 ~/.ssh/
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
-            git config --global user.email "$<<parameters.git_user_email>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
