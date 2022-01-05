@@ -9,7 +9,7 @@ fi
 
 URL_BASE="https://api.github.com/repos/ovotech/${CIRCLE_PROJECT_REPONAME}"
 AUTH_HEADER="Authorization: Bearer $GITHUB_BOT_TOKEN"
-TAG_NAME="nightly-$(date +"%Y-%m-%d")"
+TAG_NAME="nightly"
 echo "TAG_NAME $TAG_NAME"
 
 COMMIT_RESPONSE=$(curl --silent --show-error --fail --request GET "${URL_BASE}/commits/master" --header "$AUTH_HEADER") || exit
