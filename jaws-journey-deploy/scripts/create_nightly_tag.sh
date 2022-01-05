@@ -16,9 +16,9 @@ COMMIT_RESPONSE=$(curl --silent --show-error --fail --request GET "${URL_BASE}/c
 COMMIT_SHA=$(echo "$COMMIT_RESPONSE" | jq -r '.sha')
 echo "Latest commit on master: $COMMIT_SHA"
 
-TAG_REQUEST="{\"tag\": \"$TAG_NAME\", \"object\": \"$COMMIT_SHA\", \"type\":\"commit\", \"message\":\"Nightly automation test\"}"
-TAG_RESPONSE=$(curl -sSf --request POST "${URL_BASE}/git/tags" --header "$AUTH_HEADER" --header 'Content-Type: application/json' --data "$TAG_REQUEST") || exit
-TAG_SHA=$(echo "$TAG_RESPONSE" | jq -r '.sha')
+#TAG_REQUEST="{\"tag\": \"$TAG_NAME\", \"object\": \"$COMMIT_SHA\", \"type\":\"commit\", \"message\":\"Nightly automation test\"}"
+#TAG_RESPONSE=$(curl -sSf --request POST "${URL_BASE}/git/tags" --header "$AUTH_HEADER" --header 'Content-Type: application/json' --data "$TAG_REQUEST") || exit
+#TAG_SHA=$(echo "$TAG_RESPONSE" | jq -r '.sha')
 
-REF_REQUEST="{\"ref\": \"refs/tags/$TAG_NAME\", \"sha\": \"$TAG_SHA\"}"
-curl --fail --request POST "${URL_BASE}/git/refs" --header "$AUTH_HEADER" --header 'Content-Type: application/json' --data "$REF_REQUEST"
+REF_REQUEST="{\"ref\": \"refs/tags/$TAG_NAME\", \"sha\": \"$COMMIT_SHA\"}"
+curl --fail --request PATCH "${URL_BASE}/git/refs" --header "$AUTH_HEADER" --header 'Content-Type: application/json' --data "$REF_REQUEST"
