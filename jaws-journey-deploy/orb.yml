@@ -962,6 +962,9 @@ jobs:
       deploy_branch_name:
         type: string
         default: 'master'
+      manifest_repository:
+        type: string
+        default: ''
       update_build_tag:
         type: boolean
         default: true
