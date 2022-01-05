@@ -1,9 +1,11 @@
 cat >/tmp/github.py <<"EOF"
 include github.py
+
 EOF
 
 cat >/tmp/comment_util.py <<"EOF"
 include comment_util.py
+
 EOF
 
 exec 3>&1

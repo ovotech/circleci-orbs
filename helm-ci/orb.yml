@@ -1,0 +1,49 @@
+version: 2.1
+description: "Defines jobs for CI with Helm"
+
+executors:
+  default:
+    docker:
+      - image: alpine/helm:3.7.2
+
+commands:
+  lint-chart:
+    description: "Runs helm lint and kubeval over a helm chart"
+    parameters:
+      chart_path:
+        type: string
+        description: "Path to the helm chart to lint"
+      values_files:
+        type: string
+        description: "CSV of values files to pass to helm chart when templating to run kubeval"
+    steps:
+      - checkout
+      - run:
+          name: "Lint chart"
+          command: helm lint -f <<parameters.values_files>> <<parameters.chart_path>>
+      - run:
+          name: "Template chart"
+          command: |
+            rm -f output.yaml
+            helm template -f <<parameters.values_files>> <<parameters.chart_path>> > output.yaml
+      - run:
+          name: "Run kubeval over helm output"
+          command: |
+            wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+            tar xf kubeval-linux-amd64.tar.gz
+            ./kubeval --ignore-missing-schemas output.yaml
+
+jobs:
+  lint-chart:
+    executor: default
+    parameters:
+      chart_path:
+        type: string
+        description: "Path to the helm chart to lint"
+      values_files:
+        type: string
+        description: "Values files to pass to helm chart when templating to run kubeval"
+    steps: 
+      - lint-chart:
+          chart_path: << parameters.chart_path >>
+          values_files: << parameters.values_files >>

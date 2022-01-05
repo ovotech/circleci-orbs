@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.11.5
+- Prevent lack of trailing newline chars from breaking Terraform operations
+
 ## ovotech/terraform@1.11.4
 - Reimplements release 1.11.2 and fixes bug which caused comparing apply-time plan to PR plan to fail
 

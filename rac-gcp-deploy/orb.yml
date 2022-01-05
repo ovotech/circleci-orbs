@@ -463,7 +463,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -523,7 +523,7 @@ jobs:
             mkdir -p -m 0700 ~/.ssh/
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
-            git config --global user.email "$<<parameters.git_user_email>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
@@ -597,7 +597,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -629,7 +629,7 @@ jobs:
             mkdir -p -m 0700 ~/.ssh/
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
-            git config --global user.email "$<<parameters.git_user_email>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
@@ -765,6 +765,57 @@ jobs:
             IMAGE_ROOT=<<parameters.registry-url>>/$<<parameters.gcp-project-id>>/$<<parameters.container-name>>
             docker push "${IMAGE_ROOT}"
 
+  deploy_to_kmi:
+    parameters:
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      kmi-env:
+        description: "The environment of KMI to deploy to"
+        type: string
+        default: uat
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git-user-email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - run:
+          name: Clone gitops repo
+          command: |
+            rm -rf ~/gitops
+            git clone https://$GITHUB_TOKEN@github.com/ovotech/rac-kmi-gitops ~/gitops
+      - run:
+          name: Patch deployment
+          command: |
+            cd ~/gitops/$<<parameters.container-name>>
+            yq e ".version=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
+      - run:
+          name: Commit and push
+          command: |
+            cd  ~/gitops
+            git config user.email "$<<parameters.git-user-email>>"
+            git config user.name "$<<parameters.git-username>>"
+            git add .
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "No changes detected."
+            else
+              git commit -m "Bumping $<<parameters.container-name>> image tag to $(cat <<parameters.workspace-dir>>/version.txt) for <<parameters.kmi-env>>"
+              git push origin main
+            fi
+
   release_library:
     parameters:
       executor:
@@ -779,7 +830,7 @@ jobs:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USERNAME
-      git_user_email:
+      git-user-email:
         description: "Name of the environment variable storing the email of the github user to use when pushing commits"
         type: env_var_name
         default: GIT_USER_EMAIL
@@ -818,7 +869,7 @@ jobs:
             mkdir -p -m 0700 ~/.ssh/
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
-            git config --global user.email "$<<parameters.git_user_email>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>

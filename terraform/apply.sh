@@ -1,13 +1,16 @@
 cat >/tmp/github.py <<"EOF"
 include github.py
+
 EOF
 
 cat >/tmp/cmp.py <<"EOF"
 include cmp.py
+
 EOF
 
 cat >/tmp/comment_util.py <<"EOF"
 include comment_util.py
+
 EOF
 
 export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
