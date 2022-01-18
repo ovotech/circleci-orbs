@@ -805,6 +805,10 @@ jobs:
                 region: AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
+            - run:
+                name: echo
+                command: |
+                  echo $MARS_SNYK_TOKEN
             - snyk/scan:
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
