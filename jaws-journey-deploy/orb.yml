@@ -672,6 +672,9 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      snyk_token:
+        type: env_var_name
+        default: SNYK_TOKEN
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -705,6 +708,7 @@ jobs:
           project: << parameters.serviceName >>
           severity-threshold: high
           target-file: ./<< parameters.serviceName >>/Dockerfile
+          token-variable: << parameters.snyk_token >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -738,6 +742,9 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      snyk_token:
+        type: env_var_name
+        default: SNYK_TOKEN
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -805,6 +812,7 @@ jobs:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
+                token-variable: << parameters.snyk_token >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
