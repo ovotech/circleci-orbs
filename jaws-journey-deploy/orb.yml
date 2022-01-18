@@ -257,7 +257,7 @@ commands:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
-                token-variable: << parameters.snyk-token >>
+                token-variable: << parameters.snyk_token >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
