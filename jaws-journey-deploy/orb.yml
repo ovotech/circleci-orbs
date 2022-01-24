@@ -452,7 +452,7 @@ commands:
     steps:
       - run:
           name: "Install python dependencies"
-          command: pip3 install requests
+          command: pip3 install --upgrade requests
       - run:
           name: "Report code coverage"
           shell: /bin/bash -eo pipefail
@@ -462,6 +462,9 @@ commands:
   topology-describe:
     description: "Upload topology diagram to GH as a comment"
     steps:
+      - run:
+          name: "Install python dependencies"
+          command: pip3 install --upgrade requests
       - run:
           name: "Upload topology diagram to GH as a comment"
           shell: /bin/bash -eo pipefail
