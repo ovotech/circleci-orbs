@@ -1000,6 +1000,9 @@ jobs:
                 command: |   
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
+            - run:
+                name: "Install python dependencies"
+                command: pip3 install --upgrade requests
             - argocd/wait_for_sync:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
