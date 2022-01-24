@@ -16,7 +16,7 @@ executors:
       - image: cimg/openjdk:11.0.12
   python:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
   node:
     docker:
       - image: cimg/node:14.17.3
