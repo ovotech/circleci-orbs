@@ -451,6 +451,9 @@ commands:
     description: "Add code coverage report"
     steps:
       - run:
+          name: "Install python dependencies"
+          command: pip3 install requests
+      - run:
           name: "Report code coverage"
           shell: /bin/bash -eo pipefail
           command: |
