@@ -16,7 +16,7 @@ executors:
       - image: cimg/openjdk:11.0.12
   python:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8.0
   node:
     docker:
       - image: cimg/node:14.17.3
@@ -450,6 +450,7 @@ commands:
   report-code-coverage:
     description: "Add code coverage report"
     steps:
+      - install-python-dependencies
       - run:
           name: "Report code coverage"
           shell: /bin/bash -eo pipefail
@@ -459,11 +460,21 @@ commands:
   topology-describe:
     description: "Upload topology diagram to GH as a comment"
     steps:
+      - install-python-dependencies
       - run:
           name: "Upload topology diagram to GH as a comment"
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/topology_comment.sh
+
+  install-python-dependencies:
+    description: "Install python dependencies"
+    steps:
+      - run:
+          name: "Install python dependencies"
+          command: |
+            pip3 install --upgrade pip
+            pip3 install requests
 
   install-adoptopenjdk:
     description: "Install adoptopenjdk"
@@ -994,6 +1005,7 @@ jobs:
                 command: |   
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
+            - install-python-dependencies
             - argocd/wait_for_sync:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
