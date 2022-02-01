@@ -96,4 +96,4 @@ commands:
 executors:
   clojure:
     docker:
-      - image: circleci/clojure:lein-2.9.5
+      - image: cimg/clojure:1.10.3
