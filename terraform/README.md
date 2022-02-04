@@ -363,25 +363,25 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google_creds
           gcloud auth activate-service-account --key-file=/tmp/google_creds
           helm plugin install https://github.com/nouney/helm-gcs --version 0.1.4
-          helm repo add gauges gs://gauges-helm-repo/
+          helm repo add helm-example gs://<my_google_bucket>/
 
     - terraform/plan:
         path: terraform/deployments/cluster
-        workspace: gauges-uat
+        workspace: helm-example-uat
     - terraform/plan:
         path: terraform/deployments/cluster-init
-        workspace: gauges-uat
+        workspace: helm-example-uat
     - terraform/plan:
-        path: terraform/deployments/gauges-uat
+        path: terraform/deployments/helm-example-uat
 
     - terraform/plan:
         path: terraform/deployments/cluster
-        workspace: gauges-prd
+        workspace: helm-example-prd
     - terraform/plan:
         path: terraform/deployments/cluster-init
-        workspace: gauges-prd
+        workspace: helm-example-prd
     - terraform/plan:
-        path: terraform/deployments/gauges-prd
+        path: terraform/deployments/helm-example-prd
 
     - terraform/plan:
         path: terraform/deployments/sqs-test
@@ -397,25 +397,25 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google_creds
           gcloud auth activate-service-account --key-file=/tmp/google_creds
           helm plugin install https://github.com/nouney/helm-gcs --version 0.1.4
-          helm repo add gauges gs://gauges-helm-repo/
+          helm repo add helm-example gs://helm-example-helm-repo/
 
     - terraform/apply:
         path: terraform/deployments/cluster
-        workspace: gauges-uat
+        workspace: helm-example-uat
     - terraform/apply:
         path: terraform/deployments/cluster-init
-        workspace: gauges-uat
+        workspace: helm-example-uat
     - terraform/apply:
-        path: terraform/deployments/gauges-uat
+        path: terraform/deployments/helm-example-uat
 
     - terraform/apply:
         path: terraform/deployments/cluster
-        workspace: gauges-prd
+        workspace: helm-example-prd
     - terraform/apply:
         path: terraform/deployments/cluster-init
-        workspace: gauges-prd
+        workspace: helm-example-prd
     - terraform/apply:
-        path: terraform/deployments/gauges-prd
+        path: terraform/deployments/helm-example-prd
 
     - terraform/apply:
         path: terraform/deployments/sqs-test
@@ -457,7 +457,7 @@ This can be done using the `helm3` command prior to any apply jobs.
 
     - terraform/apply:
         path: terraform/deployments/cluster
-        workspace: gauges-uat
+        workspace: helm-example-uat
 ```
 
 #### Default version
