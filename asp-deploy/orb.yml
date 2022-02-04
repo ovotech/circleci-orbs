@@ -61,6 +61,7 @@ commands:
             TAG=<<parameters.image-tag>>
             cd  ~/gitops/<<parameters.env>>
             kustomize edit set image $(echo <<parameters.service-name>> | tr a-z A-Z)=${<<parameters.aws-account-url>>}/<<parameters.service-name>>-<<parameters.env>>:$TAG
+            sed -i "s/tags.datadoghq.com\/version: .*/tags.datadoghq.com\/version: $TAG/g" general/patches/<<parameters.service-name>>.yaml || echo "No file to replace tag, continuing..."
       - run:
           name: Commit and push
           command: |
