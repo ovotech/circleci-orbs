@@ -397,7 +397,7 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google_creds
           gcloud auth activate-service-account --key-file=/tmp/google_creds
           helm plugin install https://github.com/nouney/helm-gcs --version 0.1.4
-          helm repo add helm-example gs://helm-example-helm-repo/
+          helm repo add helm-example gs://<my_google_bucket>/
 
     - terraform/apply:
         path: terraform/deployments/cluster
