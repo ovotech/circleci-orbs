@@ -293,7 +293,7 @@ commands:
                             *)
                       esac
             echo "export SLACK_PARAM_MENTIONS='<@$SLACK_USER_ID>'" >> $BASH_ENV
-  notify_on_failure:
+  send_slack_notification_on_failure:
     parameters:
       branch_for_notifications:
         default: master
