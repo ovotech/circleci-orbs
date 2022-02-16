@@ -294,18 +294,15 @@ commands:
                       esac
             echo "export SLACK_PARAM_MENTIONS='<@$SLACK_USER_ID>'" >> $BASH_ENV
   notify_on_failure:
+    parameters:
+      branch_for_notifications:
+        default: master
+        description: The branch for which Slack notifications will be sent. Can be a comma separated list.
+        type: string
     steps:
       - slack/notify:
-          branch_pattern: master
+          branch_pattern: << parameters.branch_for_notifications >>
           channel: comms-ci
           event: fail
           ignore_errors: false
           template: basic_fail_1
-
-
-
-slack-notifications: &slack-notifications
-  pre-steps:
-    - map_circle_ci_username_to_slack_user_id
-  post-steps:
-    - notify_on_failure
