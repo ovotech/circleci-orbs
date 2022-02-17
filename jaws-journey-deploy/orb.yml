@@ -627,6 +627,7 @@ jobs:
     resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
+      image: ubuntu-2004:202201-02
     working_directory: ~/working
     steps:
       - install-adoptopenjdk
@@ -842,6 +843,7 @@ jobs:
     resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
+      image: ubuntu-2004:202201-02
     working_directory: ~/working
     steps:
       - attach_workspace:
