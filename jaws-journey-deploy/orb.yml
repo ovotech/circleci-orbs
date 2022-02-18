@@ -54,6 +54,10 @@ aliases:
       path:
         type: string
         default: ""
+      tfBackendConfigPath:
+        type: string
+        description: "path of tf backend config within the provided path location.  Do not supply the ending slash /"
+        default: "env"
       attach_workspace:
         type: boolean
         default: false
@@ -74,7 +78,7 @@ aliases:
 
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
-    backend_config_file: env/<< parameters.environment >>.tf
+    backend_config_file: << parameters.tfBackendConfigPath >>/<< parameters.environment >>.tf
     var_file: << parameters.environment >>.tfvars
     label: << parameters.environment >>
     var: << parameters.var >>
