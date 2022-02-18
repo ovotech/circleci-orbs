@@ -73,9 +73,8 @@ commands:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              git pull
               git commit -m "Lord Sir Hiss has updated the version of <<parameters.service-name>> in env <<parameters.env>> to version $TAG"
-              git push origin <<parameters.gitops-deploy-branch>>
+              for i in 1 2 3; do git pull --rebase && git push origin  <<parameters.gitops-deploy-branch>> && break || sleep 5; done           
             fi
 
   ecr-push:
