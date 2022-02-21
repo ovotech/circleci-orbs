@@ -1,4 +1,4 @@
-version: 2.2
+version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
