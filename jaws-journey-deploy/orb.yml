@@ -72,6 +72,7 @@ aliases:
   tf-command-parameters: &tf-command-parameters
     path: << parameters.path >>
     attach_workspace: << parameters.attach_workspace >>
+    backend_config_file: << parameters.tfBackendConfigPath >>/<< parameters.environment >>.tf
     destroy_first: << parameters.destroy_first >>
     environment: << parameters.environment >>
 
