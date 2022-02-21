@@ -57,7 +57,6 @@ aliases:
       tfBackendConfigPath:
         type: string
         description: "path of tf backend config within the provided path location.  Do not supply the ending slash /"
-        default: "env"
       attach_workspace:
         type: boolean
         default: false
