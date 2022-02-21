@@ -63,6 +63,10 @@ aliases:
       destroy_first:
         type: boolean
         default: false
+      vars_dir:
+        type: string
+        description: "Path to directory containing Terraform variables file.  Do not supply the ending slash /"
+        default: "."
       var:
         type: string
         description: "Comma separated list of vars to set, e.g. 'foo=bar'"
@@ -75,11 +79,12 @@ aliases:
     backend_config_file: << parameters.backend_config_file >>
     destroy_first: << parameters.destroy_first >>
     environment: << parameters.environment >>
+    vars_dir: << parameters.vars_dir >>
 
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
     backend_config_file: << parameters.backend_config_file >>/<< parameters.environment >>.tf
-    var_file: << parameters.environment >>.tfvars
+    var_file: << parameters.vars_dir >>/<< parameters.environment >>.tfvars
     label: << parameters.environment >>
     var: << parameters.var >>
 
