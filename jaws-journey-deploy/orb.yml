@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.2
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
@@ -57,6 +57,7 @@ aliases:
       backend_config_file:
         type: string
         description: "path of tf backend config within the provided path location.  Do not supply the ending slash /"
+        default: "env"
       attach_workspace:
         type: boolean
         default: false
