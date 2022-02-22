@@ -43,6 +43,10 @@ aliases:
        parallelism:
          type: integer
          default: 1
+    image: &image
+      image:
+        type: "string"
+        default: "ubuntu-2004:202201-02"
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
@@ -633,10 +637,12 @@ jobs:
         default: build
       <<: *resourceClass
       <<: *parallelism
+      <<: *image
     parallelism: << parameters.parallelism >>
     resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
+      image: << parameters.image >>
     working_directory: ~/working
     steps:
       - install-adoptopenjdk
@@ -848,10 +854,12 @@ jobs:
         default: true
       <<: *resourceClass
       <<: *parallelism
+      <<: *image
     parallelism: << parameters.parallelism >>
     resource_class: << parameters.resourceClass >>
     machine:
       docker_layer_caching: false
+      image: << parameters.image >>
     working_directory: ~/working
     steps:
       - attach_workspace:
