@@ -6,7 +6,7 @@ aliases:
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
-  gcp-deploy: rac-gcp-deploy@1
+  gcp-deploy: ovotech/rac-gcp-deploy@1
 
 jobs:
   build_and_release_version:
