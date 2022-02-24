@@ -23,6 +23,14 @@ RUN set -x \
 
 RUN apk add openjdk11
 
+# Install snyk
+RUN apk add -q --no-progress --no-cache curl wget libstdc++ sudo \
+  && curl -s https://api.github.com/repos/snyk/snyk/releases/latest | grep "browser_download_url" | grep alpine | cut -d '"' -f 4 | xargs wget -q \
+  && sha256sum -c snyk-alpine.sha256 \
+  && sudo mv snyk-alpine /usr/local/bin/snyk \
+  && sudo chmod +x /usr/local/bin/snyk \
+  && snyk config set disableSuggestions=true
+
 # Install Docker
 
 # Docker.com returns the URL of the latest binary when you hit a directory listing
