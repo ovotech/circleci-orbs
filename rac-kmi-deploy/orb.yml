@@ -23,10 +23,6 @@ jobs:
         description: "Name of environment variable storing the name of the container we are publishing"
         type: env_var_name
         default: CIRCLE_PROJECT_REPONAME
-      registry-url:
-        description: "The GCR registry URL. Defaults to eu.gcr.io"
-        default: eu.gcr.io
-        type: string
       git-username:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
