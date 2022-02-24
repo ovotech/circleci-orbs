@@ -6,7 +6,7 @@ aliases:
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
-  gcp-deploy: ovotech/rac-gcp-deploy@1
+  core: ovotech/rac-gcp-deploy@1
 
 jobs:
   build_and_release_version:
@@ -48,9 +48,9 @@ jobs:
     executor: <<parameters.executor>>
     steps:
       - setup_remote_docker
-      - gcp-deploy/restore_workspace:
+      - core/restore_workspace:
           to: <<parameters.workspace-dir>>
-      - gcp-deploy/load_cache:
+      - core/load_cache:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run:
@@ -71,8 +71,8 @@ jobs:
           command: |
             # sbt unconditionally builds image tagged as nonprod
             docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage $<<parameters.container-name>>
-      - gcp-deploy/snyk_monitor
-      - gcp-deploy/persist_workspace:
+      - core/snyk_monitor
+      - core/persist_workspace:
           to: <<parameters.workspace-dir>>
 
   push_kmi_docker_image:
@@ -96,7 +96,7 @@ jobs:
       - image: cimg/openjdk:11.0.13 # Supports the AWS CLI
     steps:
       - setup_remote_docker
-      - gcp-deploy/restore_workspace:
+      - core/restore_workspace:
           to: <<parameters.workspace-dir>>
       - run:
           name: "Load docker image from file and tag"
@@ -134,7 +134,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-      - gcp-deploy/restore_workspace:
+      - core/restore_workspace:
           to: <<parameters.workspace-dir>>
       - run:
           name: Clone gitops repo
