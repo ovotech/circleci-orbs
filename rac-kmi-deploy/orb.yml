@@ -8,6 +8,11 @@ orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
   core: ovotech/rac-gcp-deploy@1
 
+executors:
+  docker:
+    docker:
+      - image: ovotech/rac-kmi-deploy:latest
+
 jobs:
   build_and_release_version:
     parameters:
