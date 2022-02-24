@@ -45,6 +45,9 @@ parameters:
   run-rac-gcp-deploy:
     type: boolean
     default: false
+  run-rac-kmi-deploy:
+    type: boolean
+    default: false  
   run-sbt-deploy:
     type: boolean
     default: false
@@ -351,6 +354,15 @@ workflows:
           path: rac-gcp-deploy
           requires:
             - validate_orb
+  rac-kmi-deploy:
+    when: << pipeline.parameters.run-rac-kmi-deploy >>
+    jobs:
+      - validate_orb:
+          path: rac-kmi-deploy
+      - publish_orb:
+          path: rac-kmi-deploy
+          requires:
+            - validate_orb            
   sbt-deploy:
     when: << pipeline.parameters.run-sbt-deploy >>
     jobs:
