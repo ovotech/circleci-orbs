@@ -1,0 +1,166 @@
+version: 2.1
+description: An orb to build scala services and deploy them to KMI
+
+aliases:
+  - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
+
+orbs:
+  aws-ecr: circleci/aws-ecr@7.2.0
+  core: ovotech/rac-gcp-deploy@1
+
+executors:
+  docker:
+    docker:
+      - image: ovotech/rac-kmi-deploy:latest
+
+jobs:
+  build_and_release_version:
+    parameters:
+      executor:
+        description: "Name of executor to use for this job. Defaults to docker executor"
+        type: executor
+        default: docker
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git-user-email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+      ssh-key-fingerprint:
+        description: "The fingerprint of the ssh key with permissions to checkout"
+        type: string
+      cache-key:
+        type: string
+        default: *cache-key
+      cache-suffix:
+        description: "Suffix to use for the cache key, e.g. -v2, to be able to clear the cache"
+        default: ""
+        type: string
+      sbt-extra-options:
+        description: "Extra options being passed to sbt, like '-mem 2048'"
+        default: ""
+        type: string
+    executor: <<parameters.executor>>
+    steps:
+      - setup_remote_docker
+      - core/restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - core/load_cache:
+          cache-key: <<parameters.cache-key>>
+          cache-suffix: <<parameters.cache-suffix>>
+      - run:
+          name: "Setup git config"
+          command: |
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "$<<parameters.git-username>>"
+            git config --global user.email "$<<parameters.git-user-email>>"
+      - add_ssh_keys:
+          fingerprints:
+            - <<parameters.ssh-key-fingerprint>>
+      - run:
+          name: "Build Docker image and release a new version"
+          command: sbt -v "release with-defaults" <<parameters.sbt-extra-options>>
+      - run:
+          name: "Store Docker image in a file"
+          command: |
+            # sbt unconditionally builds image tagged as nonprod
+            docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage $<<parameters.container-name>>
+      - core/snyk_monitor
+      - core/persist_workspace:
+          to: <<parameters.workspace-dir>>
+
+  push_kmi_docker_image:
+    parameters:
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      kmi-registry-url:
+        description: "The URL of the centralised ECR registry"
+        type: env_var_name
+        default: AWS_ECR_ACCOUNT_URL
+      kmi-namespace:
+        description: "The KMI namespace this container is deployed into"
+        type: string
+    docker:
+      - image: cimg/openjdk:11.0.13 # Supports the AWS CLI
+    steps:
+      - setup_remote_docker
+      - core/restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - run:
+          name: "Load docker image from file and tag"
+          command: |
+            docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
+            docker tag "$<<parameters.container-name>>:$(cat version.txt)" $<<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/$<<parameters.container-name>>:$(cat version.txt)
+      - aws-ecr/ecr-login
+      - run:
+          name: "Push docker image to KMI registry"
+          command: |
+            docker push $<<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/$<<parameters.container-name>>:$(cat version.txt)
+
+  deploy_to_kmi:
+    parameters:
+      workspace-dir:
+        description: "Path to restore/save the workspace"
+        type: string
+        default: ~/project
+      container-name:
+        description: "Name of environment variable storing the name of the container we are publishing"
+        type: env_var_name
+        default: CIRCLE_PROJECT_REPONAME
+      kmi-env:
+        description: "The environment of KMI to deploy to"
+        type: string
+        default: uat
+      git-username:
+        description: "Name of the environment variable storing the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USERNAME
+      git-user-email:
+        description: "Name of the environment variable storing the email of the github user to use when pushing commits"
+        type: env_var_name
+        default: GIT_USER_EMAIL
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - core/restore_workspace:
+          to: <<parameters.workspace-dir>>
+      - run:
+          name: Clone gitops repo
+          command: |
+            rm -rf ~/gitops
+            git clone https://$GITHUB_TOKEN@github.com/ovotech/rac-kmi-gitops ~/gitops
+      - run:
+          name: Patch deployment
+          command: |
+            cd ~/gitops/$<<parameters.container-name>>
+            yq e ".application.image.tag=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
+      - run:
+          name: Commit and push
+          command: |
+            cd  ~/gitops
+            git config user.email "$<<parameters.git-user-email>>"
+            git config user.name "$<<parameters.git-username>>"
+            git add .
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "No changes detected."
+            else
+              git commit -m "Bumping $<<parameters.container-name>> image tag to $(cat <<parameters.workspace-dir>>/version.txt) for <<parameters.kmi-env>>"
+              git push origin main
+            fi
