@@ -3,6 +3,7 @@
 /clair-scanner/           @ovotech/production-eng @ovotech/dex
 /aws-rotate-keys/         @mwz
 /rac-gcp-deploy/          @ovotech/reads-consumption
+/rac-kmi-deploy/          @ovotech/reads-consumption
 /aws-get-parameters/      @ovotech/jaws
 /tools-install/           @ovotech/orion-sre
 /with-git-deploy-key/     @ovotech/orion-sre
