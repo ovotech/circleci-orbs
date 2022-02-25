@@ -150,7 +150,7 @@ jobs:
           name: Patch deployment
           command: |
             cd ~/gitops/$<<parameters.container-name>>
-            yq e ".application.image.tag=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
+            yq e ".$CIRCLE_PROJECT_REPONAME.application.image.tag=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
       - run:
           name: Commit and push
           command: |
