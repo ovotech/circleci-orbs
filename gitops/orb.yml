@@ -1,0 +1,78 @@
+version: 2.1
+description: "Defines the core steps required for a smart journey deployment pipeline"
+
+orbs:
+  argocd: ovotech/argocd@1.0.2
+
+executors:
+  python:
+    docker:
+      - image: cimg/python:3.8.0
+
+
+jobs:
+ 
+  update-helm:
+    working_directory: ~/working
+    executor: python
+    parameters:
+      manifest_directory:
+        type: string
+        default: "manifests"
+      manifest_branch:
+        type: string
+        default: 'master'
+      commit_tag_name:
+        type: string
+        default: ""
+      environment:
+        type: string
+      region:
+        type: string
+      ssh_key_fingerprint:
+        type: string
+      git_email:
+        type: string
+        default: ""
+      git_name:
+        type: string
+        default: "CircleCI Gitops Orb"
+      argocd_url:
+        type: string
+        default: ""
+      argocd_token: 
+        type: string
+        default: ""
+      yq_version: 
+        type: string
+        default: "v4.6.2"
+
+    description: Deploy to << parameters.environment >> / << parameters.region >>
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - << parameters.ssh_key_fingerprint >>
+      - run:
+          name: "Install yq"
+          command: |
+            include ./scripts/install_yq.sh
+      - run:  
+          name: "Update helm values"
+          command: |   
+            include ./scripts/update_helm.sh
+      - when:
+          condition: 
+            and:
+              - << parameters.argocd_url >>
+              - << parameters.argocd_token >>
+          steps:
+            - run:  
+                name: "Set environment variables"
+                command: |   
+                  echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
+                  cat /tmp/argocd/env >> $BASH_ENV
+            - install-python-dependencies
+            - argocd/wait_for_sync:
+                application: $CIRCLE_PROJECT_REPONAME
+                argocd_url: << parameters.argocd_url >>
+                target: $ARGOCD_TARGET_REVISION
