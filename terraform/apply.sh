@@ -53,19 +53,23 @@ update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}
 exec 3>&1
 
 set +e
-terraform $chdir plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS $config_path \
-    | $TFMASK \
-    | tee /dev/fd/3 \
-    | $COMPACT_PLAN \
-        >plan.txt
 
-TF_EXIT=${PIPESTATUS[0]}
-set -e
+if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
+    terraform $chdir plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS $config_path \
+        | $TFMASK \
+        | tee /dev/fd/3 \
+        | $COMPACT_PLAN \
+            >plan.txt
 
-if [[ $TF_EXIT -eq 1 ]]; then
-    update_status "Error applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
-    exit 1
+    TF_EXIT=${PIPESTATUS[0]}
+
+    if [[ $TF_EXIT -eq 1 ]]; then
+        update_status "Error creating plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
+        exit 1
+    fi
 fi
+
+    set -e
 
 if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
     echo "Automatically approving plan"
