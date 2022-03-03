@@ -175,6 +175,7 @@ commands:
       <<: *target
       <<: *output_path
       <<: *use_chdir
+      <<: *reuse_plan
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
