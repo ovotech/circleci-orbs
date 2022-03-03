@@ -63,6 +63,11 @@ aliases:
         type: "boolean"
         description: "Add the plan to a GitHub PR"
         default: true
+    reuse_plan: &reuse_plan
+      reuse_plan:
+        type: "boolean"
+        description: "Use the generated plan for the apply stage"
+        default: false
     module_name: &module_name
       module_name:
         type: "string"
@@ -145,6 +150,7 @@ commands:
       <<: *auto_approve
       <<: *target
       <<: *output_path
+      <<: *reuse_plan
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
