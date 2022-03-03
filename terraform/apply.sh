@@ -69,7 +69,7 @@ if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
     fi
 fi
 
-    set -e
+set -e
 
 if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
     echo "Automatically approving plan"
