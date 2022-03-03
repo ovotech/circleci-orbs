@@ -5,11 +5,11 @@ executors:
   default:
     description: "Terraform 0.11 executor"
     docker:
-      - image: ovotech/terraform:0.11  
+      - image: ovotech/terraform:0.11
   terraform-0_11:
     description: "Terraform 0.11 executor"
     docker:
-      - image: ovotech/terraform:0.11 
+      - image: ovotech/terraform:0.11
   terraform-0_12:
     description: "Terraform 0.12 executor (contains all versions of TF 0.12)"
     docker:
@@ -79,6 +79,11 @@ aliases:
         type: "boolean"
         description: "Add the plan to a GitHub PR"
         default: true
+    reuse_plan: &reuse_plan
+      reuse_plan:
+        type: "boolean"
+        description: "Use the generated plan for the apply stage. It requires persist_to_workspace in the plan step and attach_workspace in the apply step"
+        default: false
     module_name: &module_name
       module_name:
         type: "string"
@@ -170,6 +175,7 @@ commands:
       <<: *target
       <<: *output_path
       <<: *use_chdir
+      <<: *reuse_plan
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
