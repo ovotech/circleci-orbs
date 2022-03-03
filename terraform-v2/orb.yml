@@ -66,7 +66,7 @@ aliases:
     reuse_plan: &reuse_plan
       reuse_plan:
         type: "boolean"
-        description: "Use the generated plan for the apply stage"
+        description: "Use the generated plan for the apply stage. It requires persist_to_workspace in the plan step and attach_workspace in the apply step"
         default: false
     module_name: &module_name
       module_name:
