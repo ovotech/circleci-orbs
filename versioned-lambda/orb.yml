@@ -3,7 +3,7 @@ description: An orb to build and deploy AWS Lambda functions written in node.js 
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.0
-  snyk: snyk/snyk@0.0.10
+  snyk: snyk/snyk@1.1.2
   shipit: ovotech/shipit@1
 
 executors:
