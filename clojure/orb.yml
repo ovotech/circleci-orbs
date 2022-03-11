@@ -2,7 +2,7 @@ version: 2.1
 description: "Commands for working with Clojure projects."
 
 orbs:
-  snyk: snyk/snyk@0.0.10
+  snyk: snyk/snyk@1.1.2
 
 commands:
   test_and_package:

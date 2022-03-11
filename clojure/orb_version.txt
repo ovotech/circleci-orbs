@@ -1,1 +1,1 @@
-ovotech/clojure@2.0.0
+ovotech/clojure@2.0.1
