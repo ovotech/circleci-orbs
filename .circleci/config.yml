@@ -20,6 +20,7 @@ workflows:
             clojure/.* run-clojure true
             comms-commands/.* run-comms-commands true
             gcp-rotate-keys/.* run-gcp-rotate-keys true
+            gitops/.* run-gitops true
             helm-ci/.* run-helm-ci true
             jaws-journey-deploy/.* run-jaws-journey-deploy true
             oot-deploy/.* run-oot-deploy true
