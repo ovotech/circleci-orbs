@@ -2,6 +2,10 @@
 
 This orb provides a CircleCI job to commit image changes to your Helm manifests.
 
+This orb will commit the `image_tag` at the specfied yaml path (`image_tag_yaml_path`), in the given yaml file (`values_file`) on the given GitHub branch (`manifest_branch`).
+
+Optionally you can tag that commit with `commit_tag_name` to give ArgoCD a stable reference to sync with.
+
 ## Initial set-up
 
 Since this orb commits changes to the target Git repository (by default the repository checked out by CircleCI) it requires write-access to that repository. By default CircleCI has read-only access.
