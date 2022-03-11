@@ -16,9 +16,9 @@ jobs:
     working_directory: ~/working
     executor: python
     parameters:
-      manifest_directory:
+      values_file:
         type: string
-        default: "manifests"
+        default: ""
       manifest_branch:
         type: string
         default: 'master'

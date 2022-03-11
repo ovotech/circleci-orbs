@@ -86,7 +86,7 @@ workflows:
         region: eu1
         image_tag_yaml_path: .backend.application.image.tag
         image_tag: $CIRCLE_SHA1
-        manifest_directory: manifests
+        values_file: manifests/values-sandbox-eu1.yaml # This is teh default value for the given environment & region params
         manifest_branch: $CIRCLE_BRANCH
         commit_tag_name: sandbox-eu1
         ssh_key_fingerprint: <fingerprint>
@@ -99,7 +99,7 @@ workflows:
 
 | Parameter | Type | Description | Default |
 |---|---|---|---|
-| `manifest_directory` | string, required | Path to your application's manifests | "manfests" |
+| `values_file` | string, optional | Path to your application's value file | `"manifests/values-{{environment}}-{{region}}.yaml"` |
 | `manifest_branch` | string, required | The branch to commit the manifest changes to. Use `$CIRCLE_BRANCH` to use the current branch. | "master" |
 | `environment` | string, required | E.g. prod, nonprod or uat |  |
 | `region` | string, required | E.g. eu1 or ap1. |  |
