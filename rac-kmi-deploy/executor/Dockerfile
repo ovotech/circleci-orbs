@@ -24,8 +24,9 @@ RUN set -x \
 RUN apk add openjdk11
 
 # Install snyk
-RUN apk add -q --no-progress --no-cache curl wget libstdc++ sudo \
-  && curl -s https://api.github.com/repos/snyk/snyk/releases/latest | grep "browser_download_url" | grep alpine | cut -d '"' -f 4 | xargs wget -q \
+RUN apk add -q --no-progress --no-cache wget libstdc++ sudo \
+  && wget -q https://static.snyk.io/cli/latest/snyk-alpine \
+  && wget -q https://static.snyk.io/cli/latest/snyk-alpine.sha256 \
   && sha256sum -c snyk-alpine.sha256 \
   && sudo mv snyk-alpine /usr/local/bin/snyk \
   && sudo chmod +x /usr/local/bin/snyk \
