@@ -105,6 +105,8 @@ workflows:
 |---|---|---|---|
 | `values_file` | string, optional | Path to your application's value file | `"manifests/values-{{environment}}-{{region}}.yaml"` |
 | `manifest_branch` | string, required | The branch to commit the manifest changes to. Use `$CIRCLE_BRANCH` to use the current branch. | "master" |
+| `image_tag_yaml_path` | string, required | The YAML path to the image to update. e.g. `.backend.application.image.tag` |  |
+| `image_tag` | string, required | The value of the image | "master" |
 | `environment` | string, required | E.g. prod, nonprod or uat |  |
 | `region` | string, required | E.g. eu1 or ap1. |  |
 | `ssh_key_fingerprint` | string, required | Fingerprint of the read-write SSH private key uploaded to CircleCI. See set-up. |  |
