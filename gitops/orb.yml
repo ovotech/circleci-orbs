@@ -9,6 +9,15 @@ executors:
     docker:
       - image: cimg/python:3.8.0
 
+commands:
+  install-python-dependencies:
+    description: "Install python dependencies"
+    steps:
+      - run:
+          name: "Install python dependencies"
+          command: |
+            pip3 install --upgrade pip
+            pip3 install requests
 
 jobs:
  
