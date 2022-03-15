@@ -22,7 +22,7 @@ function deply_manifest {
   cd /tmp/gitops
   
   # Update helm chart
-  yq e "<<parameters.image_tag_yaml_path>>=\"<<parameters.image_tag>>\"" -i $VALUES_FILE
+  yq e "<<parameters.image_tag_yaml_path>>=\"<<parameters.image_tag>>\"" -i $VALUES_FILE || exit 1
   
   # Commit manifest changes
   git config user.name '<<parameters.git_name>>'
