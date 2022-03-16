@@ -46,7 +46,7 @@ aliases:
     image: &image
       image:
         type: "string"
-        default: "ubuntu-2004:202201-02"
+        default: "ubuntu-2004:202111-02"
 
   tf-mask: &tf-mask
     TFMASK_CHAR: "#"
