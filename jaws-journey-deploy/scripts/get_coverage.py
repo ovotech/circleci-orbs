@@ -41,7 +41,7 @@ class CoverageComment:
                     branches, branches_covered = self.get_stats(branches, branches_covered, row, BRANCH_COVERED, BRANCH_MISSED)
 
                 filename = self.get_filename(report, '.csv')
-                url = self.create_url(f'{filename.replace(":", "%3A")}/html/index.html')
+                url = self.create_url(f'{filename.replace(":", "%3A")}/index.html')
                 self._comment += self.create_line(filename, url,
                                                   self.calc_percentage(instructions_covered, instructions),
                                                   self.calc_percentage(branches_covered, branches))
