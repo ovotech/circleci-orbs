@@ -90,6 +90,6 @@ jobs:
                   cat /tmp/argocd/<< parameters.argo_application >>/env >> $BASH_ENV
             - install-python-dependencies
             - argocd/wait_for_sync:
-                application: << parameters.arog_application >>
+                application: << parameters.argo_application >>
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
