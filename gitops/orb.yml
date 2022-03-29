@@ -25,6 +25,9 @@ jobs:
     working_directory: ~/working
     executor: python
     parameters:
+      argo_application:
+        type: string
+        default: $CIRCLE_PROJECT_REPONAME
       values_file:
         type: string
         default: ""
@@ -84,9 +87,9 @@ jobs:
                 name: "Set environment variables"
                 command: |   
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
-                  cat /tmp/argocd/env >> $BASH_ENV
+                  cat /tmp/argocd/<< parameters.argo_application >>/env >> $BASH_ENV
             - install-python-dependencies
             - argocd/wait_for_sync:
-                application: $CIRCLE_PROJECT_REPONAME
+                application: << parameters.arog_application >>
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
