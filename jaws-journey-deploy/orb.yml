@@ -688,8 +688,13 @@ jobs:
 
   publish-image-kmi:
     parameters:
-      imageRepository:
+      namespace:
         type: string
+      application:
+        type: string
+      sandboxIdentifier:
+        type: string
+        default: ""
       <<: *image
     machine:
       docker_layer_caching: false
@@ -697,7 +702,7 @@ jobs:
     steps:
       - aws-ecr/ecr-login
       - aws-ecr/push-image:
-          repo: << parameters.imageRepository >>
+          repo: << parameters.namespace >>/<< parameters.application >><< parameters.sandboxIdentifier >>
           tag: '${CIRCLE_SHA1}'
 
   publish-image:
