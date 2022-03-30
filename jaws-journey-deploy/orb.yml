@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-ecr: circleci/aws-ecr@7.2.0
   terraform: ovotech/terraform@1.8.2
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@1.1.2
@@ -685,6 +685,16 @@ jobs:
           paths:
             - << parameters.lib >>/*
             - ./reports/jacoco/*
+
+  publish-image-kmi:
+    parameters:
+      imageRepository:
+        type: string
+    steps:
+      - aws-ecr/ecr-login
+      - aws-ecr/push-image:
+          repo: << parameters.imageRepository >>
+          tag: '${CIRCLE_SHA1}'
 
   publish-image:
     parameters:
