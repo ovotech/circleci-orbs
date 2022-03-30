@@ -690,6 +690,10 @@ jobs:
     parameters:
       imageRepository:
         type: string
+      <<: *image
+    machine:
+      docker_layer_caching: false
+      image: << parameters.image >>
     steps:
       - aws-ecr/ecr-login
       - aws-ecr/push-image:
