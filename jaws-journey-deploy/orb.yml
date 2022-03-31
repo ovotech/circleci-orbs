@@ -688,6 +688,15 @@ jobs:
 
   publish-image-kmi:
     parameters:
+      privateDockerImage: 
+        type: boolean
+        default: false
+      username:
+        type: string
+        default: $GITHUB_BOT_USERNAME
+      token:
+        type: string
+        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       namespace:
         type: string
       application:
@@ -695,15 +704,39 @@ jobs:
       sandboxIdentifier:
         type: string
         default: ""
-      <<: *image
-    machine:
-      docker_layer_caching: false
-      image: << parameters.image >>
+      serviceName:
+        type: string
+        default: << parameters.application >>-service
+      <<: *resourceClass
+      <<: *parallelism
+    parallelism: << parameters.parallelism >>
+    resource_class: << parameters.resourceClass >>
+    executor: kotlin
+    working_directory: ~/working
     steps:
-      - aws-ecr/ecr-login
-      - aws-ecr/push-image:
+      - attach_workspace:
+          at: ~/working
+      - when:
+          condition:
+            equal: [ "true", << parameters.privateDockerImage >> ]
+          steps:
+            - github-repo-login:
+                username: << parameters.username >>
+                token: << parameters.token >>
+      - aws-ecr/build-and-push-image:
+          setup-remote-docker: true
+          checkout: false
+          path: ./<< parameters.serviceName >>
+          create-repo: false
           repo: << parameters.namespace >>/<< parameters.application >><< parameters.sandboxIdentifier >>
           tag: '${CIRCLE_SHA1}'
+      - snyk/scan:
+          docker-image-name: $AWS_ACCOUNT_URL/<< parameters.namespace >>/<< parameters.application >><< parameters.sandboxIdentifier >>:$CIRCLE_SHA1
+          fail-on-issues: true
+          monitor-on-build: true
+          project: << parameters.namespace >>-<< parameters.application >>
+          severity-threshold: high
+          target-file: ./<< parameters.serviceName >>/Dockerfile
 
   publish-image:
     parameters:
