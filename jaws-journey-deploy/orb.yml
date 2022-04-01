@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-ecr: circleci/aws-ecr@7.2.0
   terraform: ovotech/terraform@1.8.2
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@1.1.2
@@ -29,7 +29,7 @@ aliases:
     environment: &environment
       environment:
         type: "enum"
-        enum: ["sandbox", "test", "uat", "nonprod", "prod"]
+        enum: ["sandbox", "test", "uat", "nonprod", "prod", "undefined"]
         default: "sandbox"
     serviceName: &serviceName
       serviceName:
@@ -178,6 +178,36 @@ commands:
             include ./scripts/make_gradle_executable.sh
             include ./scripts/run_integration_test.sh
 
+  publish-image-kmi:
+    parameters:
+      path:
+        type: string
+      repo:
+        type: string
+      dockerImageName:
+        type: string
+      snykProject:
+        type: string
+      tag:
+        type: string
+        default: ${CIRCLE_SHA1}
+      <<: *resourceClass
+    steps:
+      - attach_workspace:
+          at: ~/working
+      - aws-ecr/build-and-push-image:
+          setup-remote-docker: true
+          checkout: false
+          path: << parameters.path >>
+          repo: << parameters.repo >>
+          tag: '<< parameters.tag >>'
+      - snyk/scan:
+          docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
+          fail-on-issues: true
+          monitor-on-build: true
+          project: << parameters.snykProject >>
+          severity-threshold: high
+          target-file: << parameters.path >>/Dockerfile
 
   build_and_test:
     parameters:
@@ -1028,6 +1058,7 @@ jobs:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
+  
   run-automation-test:
     parameters:
       <<: *environment
@@ -1072,7 +1103,6 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
-
 
   topology-describe:
     executor: python
