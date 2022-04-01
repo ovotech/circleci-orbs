@@ -688,25 +688,17 @@ jobs:
 
   publish-image-kmi:
     parameters:
-      privateDockerImage: 
-        type: boolean
-        default: false
-      username:
+      path:
         type: string
-        default: $GITHUB_BOT_USERNAME
-      token:
+      repo:
         type: string
-        default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
-      namespace:
+      dockerImageName:
         type: string
-      application:
+      snykProject:
         type: string
-      sandboxIdentifier:
+      tag:
         type: string
-        default: ""
-      serviceName:
-        type: string
-        default: << parameters.application >>-service
+        default: ${CIRCLE_SHA1}
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -716,27 +708,19 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/working
-      - when:
-          condition:
-            equal: [ "true", << parameters.privateDockerImage >> ]
-          steps:
-            - github-repo-login:
-                username: << parameters.username >>
-                token: << parameters.token >>
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          path: ./<< parameters.serviceName >>
-          create-repo: false
-          repo: << parameters.namespace >>/<< parameters.application >><< parameters.sandboxIdentifier >>
-          tag: '${CIRCLE_SHA1}'
+          path: << parameters.path >>
+          repo: << parameters.repo >>
+          tag: '<< parameters.tag >>'
       - snyk/scan:
-          docker-image-name: $AWS_ACCOUNT_URL/<< parameters.namespace >>/<< parameters.application >><< parameters.sandboxIdentifier >>:$CIRCLE_SHA1
+          docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
           fail-on-issues: true
           monitor-on-build: true
-          project: << parameters.namespace >>-<< parameters.application >>
+          project: << parameters.snykProject >>
           severity-threshold: high
-          target-file: ./<< parameters.serviceName >>/Dockerfile
+          target-file: << parameters.path >>/Dockerfile
 
   publish-image:
     parameters:
