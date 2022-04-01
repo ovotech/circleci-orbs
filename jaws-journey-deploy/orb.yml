@@ -29,7 +29,7 @@ aliases:
     environment: &environment
       environment:
         type: "enum"
-        enum: ["sandbox", "test", "uat", "nonprod", "prod"]
+        enum: ["sandbox", "test", "uat", "nonprod", "prod", "undefined"]
         default: "sandbox"
     serviceName: &serviceName
       serviceName:
@@ -1058,6 +1058,7 @@ jobs:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
+  
   run-automation-test:
     parameters:
       <<: *environment
@@ -1102,7 +1103,6 @@ jobs:
           steps:
             - slack/notify:
                 <<: *slack-notification
-
 
   topology-describe:
     executor: python
