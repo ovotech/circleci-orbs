@@ -14,6 +14,7 @@ workflows:
           mapping: |
             argocd/.* run-argocd true
             asp-deploy/.* run-asp-deploy true
+            aws-configure-credentials-oidc/.* run-aws-configure-credentials-oidc true
             aws-get-parameters/.* run-aws-get-parameters true
             aws-rotate-keys/.* run-aws-rotate-keys true
             clair-scanner/.* run-clair-scanner true

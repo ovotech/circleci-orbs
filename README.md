@@ -28,6 +28,7 @@ any changes to the orb.
 ## Published Orbs
 
  - [ovotech/argocd](argocd) - Interact with an ArgoCD API.
+ - [ovotech/aws-configure-credentials-oidc](aws-configure-credentials-oidc) - Authenticate with AWS via CircleCI OIDC.
  - [ovotech/aws-get-parameters@1](aws-get-parameters) - Get parameters from AWS Parameter Store.
  - [ovotech/aws-rotate-keys@2](aws-rotate-keys) - Rotate AWS access keys and update corresponding CircleCI environment variables.
  - [ovotech/clair-scanner@1](clair-scanner) - Scan Docker images for vulnerabilities.
