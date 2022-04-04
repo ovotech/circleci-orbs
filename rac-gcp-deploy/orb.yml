@@ -20,7 +20,8 @@ orbs:
 
 executors:
   machine:
-    machine: true
+    machine:
+      image: ubuntu-2004:202201-02
   docker:
     docker:
       - image: ovotech/rac-gcp-deploy:latest
@@ -230,7 +231,7 @@ jobs:
           name: "avoid unnecessary cache updates"
           command: |
             rm -fv ~/.ivy2/.sbt.ivy.lock
-            find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
+            test -d ~/.ivy2 && find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
             find ~/.sbt -name "*.lock" -print -delete
       - store_cache:
           cache-key: <<parameters.cache-key>>

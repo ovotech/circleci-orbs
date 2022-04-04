@@ -1,14 +1,11 @@
-ARG GCLOUD_SDK_VERSION
-FROM google/cloud-sdk:${GCLOUD_SDK_VERSION:-328.0.0-alpine}
+FROM alpine:3.15
 
 ARG SBT_VERSION
-ENV SBT_VERSION ${SBT_VERSION:-1.4.7}
-
-RUN apk --update add openjdk8 jq
+ENV SBT_VERSION ${SBT_VERSION:-1.6.2}
 
 RUN set -x \
   && apk --update add --no-cache --virtual .build-deps curl \
-  && ESUM="c2a759fe40a3c21a16b5a88d00cd66f3af6f0721e4ea61b63942dfb83a2d54fd" \
+  && ESUM="637637b6c4e6fa04ab62cd364061e32b12480b09001cd23303df62b36fadd440" \
   && SBT_URL="https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" \
   && apk add shadow \
   && apk add bash \
@@ -24,6 +21,9 @@ RUN set -x \
   && apk del --purge .build-deps \
   && rm -rf /tmp/sbt-${SBT_VERSION}.tgz /var/cache/apk/*
 
+RUN apk add openjdk11
+
+# Install snyk
 RUN apk add -q --no-progress --no-cache wget libstdc++ sudo \
   && wget -q https://static.snyk.io/cli/latest/snyk-alpine \
   && wget -q https://static.snyk.io/cli/latest/snyk-alpine.sha256 \
@@ -45,6 +45,7 @@ RUN apk add -q --no-progress --no-cache wget libstdc++ sudo \
 #>    /usr/local/bin/dockerd
 
 RUN set -ex \
+  && apk --update add --no-cache --virtual .build-deps curl \
   && export DOCKER_VERSION=$(curl --silent --fail --retry 3 https://download.docker.com/linux/static/stable/x86_64/ | grep -o -e 'docker-[.0-9]*\.tgz' | sort -r | head -n 1) \
   && DOCKER_URL="https://download.docker.com/linux/static/stable/x86_64/${DOCKER_VERSION}" \
   && echo Docker URL: $DOCKER_URL \
