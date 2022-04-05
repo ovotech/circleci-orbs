@@ -21,6 +21,7 @@ workflows:
             comms-commands/.* run-comms-commands true
             gcp-rotate-keys/.* run-gcp-rotate-keys true
             helm-ci/.* run-helm-ci true
+            ipa-deploy/.* run-ipa-deploy true
             jaws-journey-deploy/.* run-jaws-journey-deploy true
             oot-deploy/.* run-oot-deploy true
             oot-eks/.* run-oot-eks true
@@ -36,4 +37,3 @@ workflows:
             tools-install/.* run-tools-install true
             versioned-lambda/.* run-versioned-lambda true
             with-git-deploy-key/.* run-with-git-deploy-key true
-
