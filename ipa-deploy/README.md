@@ -15,7 +15,7 @@ parameter for the slack orb's `notify` command.
 
 ```yaml
 orbs:
-  ipa-deploy: ovotech/ipa-deploy@0.1.0
+  ipa-deploy: ovotech/ipa-deploy@1.0.1
 
 jobs:
   load-slack-templates:

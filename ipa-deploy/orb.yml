@@ -85,9 +85,10 @@ commands:
           command: |
             echo Saving template to file
             mkdir -p /tmp/ipa-deploy
-            echo "<< parameters.deploy_failed_template >>" > /tmp/ipa-deploy/failed_deploy_template.json
+            echo '<< parameters.deploy_failed_template >>' > /tmp/ipa-deploy/failed_deploy_template.json
 
       - run:
           name: Export template to environment variable
           command: |
+            echo $(cat /tmp/ipa-deploy/failed_deploy_template.json)
             echo 'export SLACK_DEPLOY_FAILED_TEMPLATE=$(cat /tmp/ipa-deploy/failed_deploy_template.json)' >> $BASH_ENV
