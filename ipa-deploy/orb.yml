@@ -2,90 +2,90 @@ version: 2.1
 description: "Common deploy scripts for IPA team services"
 
 commands:
-  parameters:
-    deploy_failed_template:
-      description: "Template to use when deployment fails."
-      type: string
-      default: |
-        {
-          "blocks": [
-            {
-              "type": "header",
-              "text": {
-                "type": "plain_text",
-                "text": ":alert: Failed ${STAGE} deployment . :blob-fail: ",
-                "emoji": true
-              }
-            },
-            {
-              "type": "section",
-              "fields": [
-                {
-                  "type": "mrkdwn",
-                  "text": "*Job*: ${CIRCLE_JOB}"
-                }
-              ]
-            },
-            {
-              "type": "section",
-              "fields": [
-                {
-                  "type": "mrkdwn",
-                  "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                },
-                {
-                  "type": "mrkdwn",
-                  "text": "*Branch*: $CIRCLE_BRANCH"
-                },
-                {
-                  "type": "mrkdwn",
-                  "text": "*Author*: $CIRCLE_USERNAME"
-                }
-              ],
-              "accessory": {
-                "type": "image",
-                "image_url": "https://assets.brandfolder.com/otz5mn-bw4j2w-6jzqo8/original/circle-logo-badge-black.png",
-                "alt_text": "CircleCI logo"
-              }
-            },
-            {
-              "type": "section",
-              "fields": [
-                {
-                  "type": "mrkdwn",
-                  "text": "*Mentions*: $SLACK_PARAM_MENTIONS"
-                }
-              ]
-            },
-            {
-              "type": "actions",
-              "elements": [
-                {
-                  "type": "button",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "View Job"
-                  },
-                  "url": "${CIRCLE_BUILD_URL}"
-                }
-              ]
-            }
-          ]
-        }
-
   load_templates:
     description: "Loads custom Slack alert failed deploy template for use with slack orb for deployment notifications."
+
+    parameters:
+      deploy_failed_template:
+        description: "Template to use when deployment fails."
+        type: string
+        default: |
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": ":alert: Failed ${STAGE} deployment . :blob-fail: ",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job*: ${CIRCLE_JOB}"
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Branch*: $CIRCLE_BRANCH"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Author*: $CIRCLE_USERNAME"
+                  }
+                ],
+                "accessory": {
+                  "type": "image",
+                  "image_url": "https://assets.brandfolder.com/otz5mn-bw4j2w-6jzqo8/original/circle-logo-badge-black.png",
+                  "alt_text": "CircleCI logo"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Mentions*: $SLACK_PARAM_MENTIONS"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Job"
+                    },
+                    "url": "${CIRCLE_BUILD_URL}"
+                  }
+                ]
+              }
+            ]
+          }
 
     steps:
       - attach_workspace:
           at: .
 
       - run:
-        name: Save template to file
-        command: |
-          echo Saving template to file
-          mkdir -p /tmp/ipa-deploy
-          echo "<< parameters.deploy_failed_template >>" > /tmp/ipa-deploy/failed_deploy_template.json
+          name: Save template to file
+          command: |
+            echo Saving template to file
+            mkdir -p /tmp/ipa-deploy
+            echo "<< parameters.deploy_failed_template >>" > /tmp/ipa-deploy/failed_deploy_template.json
 
       - run:
           name: Export template to environment variable
