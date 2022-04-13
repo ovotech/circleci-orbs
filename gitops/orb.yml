@@ -9,21 +9,8 @@ executors:
     docker:
       - image: cimg/python:3.8.0
 
-commands:
-  install-python-dependencies:
-    description: "Install python dependencies"
-    steps:
-      - run:
-          name: "Install python dependencies"
-          command: |
-            pip3 install --upgrade pip
-            pip3 install requests
-
-jobs:
- 
-  update-helm:
-    working_directory: ~/working
-    executor: python
+aliases:
+  update-helm-params: &update-helm-params
     parameters:
       argo_application:
         type: string
@@ -63,7 +50,22 @@ jobs:
       yq_version: 
         type: string
         default: "v4.6.2"
+      wait_for: 
+        type: integer
+        default: 600
 
+commands:
+  install-python-dependencies:
+    description: "Install python dependencies"
+    steps:
+      - run:
+          name: "Install python dependencies"
+          command: |
+            pip3 install --upgrade pip
+            pip3 install requests
+
+  update_helm:
+    <<: *update-helm-params
     description: Deploy to << parameters.environment >> / << parameters.region >>
     steps:
       - add_ssh_keys:
@@ -93,3 +95,27 @@ jobs:
                 application: << parameters.argo_application >>
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
+                wait_for: << parameters.wait_for >>
+
+jobs:
+  update-helm:
+    working_directory: ~/working
+    executor: python
+    <<: *update-helm-params
+    steps:
+      - update_helm:
+          argo_application: << parameters.argo_application >>
+          values_file: << parameters.values_file >>
+          manifest_branch: << parameters.manifest_branch >>
+          image_tag_yaml_path: << parameters.image_tag_yaml_path >>
+          image_tag: << parameters.image_tag >>
+          commit_tag_name: << parameters.commit_tag_name >>
+          environment: << parameters.environment >>
+          region: << parameters.region >>
+          ssh_key_fingerprint: << parameters.ssh_key_fingerprint >>
+          git_email: << parameters.git_email >>
+          git_name: << parameters.git_name >>
+          argocd_url: << parameters.argocd_url >>
+          argocd_token: << parameters.argocd_token >>
+          yq_version: << parameters.yq_version >>
+          wait_for: << parameters.wait_for >>
