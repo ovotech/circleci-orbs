@@ -3,6 +3,7 @@ description: "Defines jobs for CI with Helm"
 
 executors:
   default:
+    resource_class: small
     docker:
       - image: alpine/helm:3.7.2
 
