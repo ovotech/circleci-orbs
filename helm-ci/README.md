@@ -8,7 +8,7 @@ Provides CI functionality for working with Helm.
 
 ```yaml
 orbs:
-  helm-ci: ovotech/helm-ci@1.0.0
+  helm-ci: ovotech/helm-ci@1.0.1
 
 workflows:
   commit:
