@@ -14,6 +14,7 @@ workflows:
   commit:
     jobs:
       - helm-ci/lint-chart:
+          name: my-linting-job
           chart_path: <path/to/helm/chart>
           values_files: <values-file.yaml>,<other-values-file.yaml>
 ```
