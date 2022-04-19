@@ -28,7 +28,7 @@ workflows:
             pipeline-utils/.* run-pipeline-utils true
             rac-gcp-deploy/.* run-rac-gcp-deploy true
             rac-kmi-deploy/.* run-rac-kmi-deploy true
-            sast-terraform/.* sast-terraform true
+            sast-terraform/.* run-sast-terraform true
             sbt-deploy/.* run-sbt-deploy true
             set-current-environment/.* run-set-current-environment true
             ssh-proxy/.* run-ssh-proxy true
