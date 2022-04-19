@@ -44,6 +44,7 @@ any changes to the orb.
  - [ovotech/jaws-journey-deploy](jaws-journey-deploy) - Provides a standard deployment process for all jaws journey repositories.
  - [ovotech/pipeline-utils](pipeline-utils) - Miscellaneous bash commands to ease CircleCI pipeline development.
  - [ovotech/ipa-deploy](ipa-deploy) - IPA team deployment notification templates.
+ - [ovotech/sast-terraform](sast-terraform) - Consumer Products Production Engineering team orb to run static security analysis against Terraform IaC.
 
  Other orbs in the ovotech namespace:
  - [ovotech/shipit@1](https://github.com/ovotech/pe-orbs/tree/master/shipit) - Run shipit and record deployments to https://shipit.ovotech.org.uk.
