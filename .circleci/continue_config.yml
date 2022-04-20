@@ -33,6 +33,9 @@ parameters:
   run-helm-ci:
     type: boolean
     default: false
+  run-ipa-deploy:
+    type: boolean
+    default: false
   run-jaws-journey-deploy:
     type: boolean
     default: false
@@ -229,7 +232,6 @@ jobs:
               echo "    ${ORB}: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
             fi
 
-
 workflows:
   argocd:
     when: << pipeline.parameters.run-argocd >>
@@ -321,6 +323,15 @@ workflows:
           path: helm-ci
           requires:
             - validate_orb
+  ipa-deploy:
+    when: << pipeline.parameters.run-ipa-deploy >>
+    jobs:
+      - validate_orb:
+          path: ipa-deploy
+      - publish_orb:
+          path: ipa-deploy
+          requires:
+            - validate_orb
   jaws-journey-deploy:
     when: << pipeline.parameters.run-jaws-journey-deploy >>
     jobs:
@@ -374,7 +385,7 @@ workflows:
       - publish_orb:
           path: rac-kmi-deploy
           requires:
-            - validate_orb            
+            - validate_orb
   sbt-deploy:
     when: << pipeline.parameters.run-sbt-deploy >>
     jobs:
