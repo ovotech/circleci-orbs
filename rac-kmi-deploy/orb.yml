@@ -120,14 +120,18 @@ jobs:
         description: "Path to restore/save the workspace"
         type: string
         default: ~/project
-      container-name:
-        description: "Name of environment variable storing the name of the container we are publishing"
-        type: env_var_name
-        default: CIRCLE_PROJECT_REPONAME
+      kmi-application-name:
+        description: "Name of KMI application to be deployed (as defined by rac-kmi-gitops)"
+        type: string
+        default: "$CIRCLE_PROJECT_REPONAME"
       kmi-env:
         description: "The environment of KMI to deploy to"
         type: string
         default: uat
+      version-field-name:
+        description: "The field name of the value which contains the target version"
+        type: string
+        default: "$CIRCLE_PROJECT_REPONAME.application.image.tag"
       git-username:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
@@ -149,8 +153,8 @@ jobs:
       - run:
           name: Patch deployment
           command: |
-            cd ~/gitops/$<<parameters.container-name>>
-            yq e ".$CIRCLE_PROJECT_REPONAME.application.image.tag=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
+            cd ~/gitops/<<parameters.kmi-application-name>>
+            yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
       - run:
           name: Commit and push
           command: |
@@ -161,6 +165,6 @@ jobs:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              git commit -m "Bumping $<<parameters.container-name>> image tag to $(cat <<parameters.workspace-dir>>/version.txt) for <<parameters.kmi-env>>"
+              git commit -m "Bumping $CIRCLE_PROJECT_REPONAME version to $(cat <<parameters.workspace-dir>>/version.txt) for application <<parameters.kmi-application-name>> in <<parameters.kmi-env>>"
               git push origin main
             fi
