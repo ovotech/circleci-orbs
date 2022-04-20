@@ -35,10 +35,10 @@ resource "aws_iam_openid_connect_provider" "circleci_oidc_provider" {
 resource "aws_iam_role" "circleci" {
   name               = "CircleCI"
   description        = "Role used by CircleCI"
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json 
+  assume_role_policy = data.aws_iam_policy_document.assume_circleci_role_policy.json 
 }
 
-data "aws_iam_policy_document" "assume_role_policy" {
+data "aws_iam_policy_document" "assume_circleci_role_policy" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -59,7 +59,7 @@ Take a note of the IAM Role arn above (in the above example it will be of the fo
 
 Lastly attach any required policies to your Role. 
 ```
-resource "aws_iam_role_policy_attachment" "attach_policy_to_circleci" {
+resource "aws_iam_role_policy_attachment" "attach_policy_to_circleci_role" {
   role       = aws_iam_role.circleci.name
   policy_arn = "..."
 }
