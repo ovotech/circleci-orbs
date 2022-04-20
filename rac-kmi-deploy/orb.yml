@@ -128,6 +128,10 @@ jobs:
         description: "The environment of KMI to deploy to"
         type: string
         default: uat
+      version-field-name:
+        description: "The field name of the value which contains the target version"
+        type: string
+        default: "$CIRCLE_PROJECT_REPONAME.application.image.tag"
       git-username:
         description: "Name of the environment variable storing the github user to use when pushing commits"
         type: env_var_name
@@ -150,7 +154,7 @@ jobs:
           name: Patch deployment
           command: |
             cd ~/gitops/$<<parameters.container-name>>
-            yq e ".$CIRCLE_PROJECT_REPONAME.application.image.tag=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
+            yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
       - run:
           name: Commit and push
           command: |
