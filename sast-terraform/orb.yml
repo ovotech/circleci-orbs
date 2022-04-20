@@ -57,7 +57,7 @@ commands:
                         echo "running checkov on directory $PARAM_DIRECTORY:"
                         echo "checkov -d $PARAM_DIRECTORY --quiet $DOWNLOAD_EXTERNAL_MODULES_FLAG $OUTPUT_FLAG $CONFIG_FILE_FLAG $FRAMEWORK_FLAG $BASELINE_FLAG"
                         if [ ! -d "./reports_sast_terraform" ]; then
-                            mktemp -d ./reports_sast_terraform
+                            mkdir -p ./reports_sast_terraform
                         fi
                         checkov -d "$PARAM_DIRECTORY" --quiet $DOWNLOAD_EXTERNAL_MODULES_FLAG --output json --soft-fail $CONFIG_FILE_FLAG $FRAMEWORK_FLAG $BASELINE_FLAG 1> ./reports_sast_terraform/${RANDOM}.json
                         checkov -d "$PARAM_DIRECTORY" --quiet $DOWNLOAD_EXTERNAL_MODULES_FLAG $OUTPUT_FLAG $CONFIG_FILE_FLAG $FRAMEWORK_FLAG $BASELINE_FLAG
