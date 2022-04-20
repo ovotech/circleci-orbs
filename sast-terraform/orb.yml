@@ -115,6 +115,6 @@ examples:
             workflows:
                 example-workflow:
                     jobs:
-                        - sast-terraform/checkov-static-code-analysis:
+                        - sast-terraform/checkov_static_code_analysis:
                             directory: terraform/examples
 
