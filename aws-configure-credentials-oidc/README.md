@@ -14,17 +14,19 @@ This orb uses that token to assume the specified role in an AWS account; removin
 
 First you'll need to create the CircleCI identity provider, an IAM role, a trust policy for that role, and assign any permissions required by your CircleCI workflow.
 
-You will need to replace the `circleci_project_id` with the UUID of your CircleCI project (displayed in your project settings)
+You will need to replace the `circleci_project_ids` with the UUIDs of any CircleCI project (displayed in your project settings) that needs to assume your role.
 
 ```
 locals {
   circleci_org_id     = "4084b6f4-425d-43c6-996f-cce16b485731"
-  circleci_project_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  circleci_project_ids = [
+    "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  ]
   // See https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc_verify-thumbprint.html#
   circleci_thumbprint = "9e99a48a9960b14926bb7f3b02e22da2b0ab7280"  
 }
 
-resource "aws_iam_openid_connect_provider" "cluster_oidc_provider" {
+resource "aws_iam_openid_connect_provider" "circleci_oidc_provider" {
   client_id_list  = [local.circleci_org_id]
   thumbprint_list = [local.circleci_thumbprint]
   url             = "https://oidc.circleci.com/org/${local.circleci_org_id}"
@@ -47,9 +49,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
     condition {
       test     = "StringLike"
       variable = "oidc.circleci.com/org/${local.circleci_org_id}:sub"
-      values   = [
-        "org/${local.circleci_org_id}/project/${local.circleci_project_id}/user/*"
-      ]
+      values   = formatlist("org/${local.circleci_org_id}/project/%s/user/*", local.circleci_project_ids)
     }
   }
 }
