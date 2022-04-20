@@ -165,6 +165,6 @@ jobs:
             if [ -z "$(git status --porcelain)" ]; then
               echo "No changes detected."
             else
-              git commit -m "Bumping $CIRCLE_PROJECT_REPONAME version to $(cat <<parameters.workspace-dir>>/version.txt) for application <parameters.kmi-application-name> in <<parameters.kmi-env>>"
+              git commit -m "Bumping $CIRCLE_PROJECT_REPONAME version to $(cat <<parameters.workspace-dir>>/version.txt) for application <<parameters.kmi-application-name>> in <<parameters.kmi-env>>"
               git push origin main
             fi
