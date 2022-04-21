@@ -1,1 +1,1 @@
-ovotech/helm@1.0.1
+ovotech/helm-ci@1.0.1
