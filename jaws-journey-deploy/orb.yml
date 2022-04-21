@@ -920,8 +920,8 @@ jobs:
     parameters:
       severityThreshold:
         type: "enum"
-        enum: ["low" "medium" "high" "critical"]
-        default: high
+        enum: ["low", "medium", "high", "critical"]
+        default: "high"
     steps:
       - attach_workspace:
           at: ~/working
