@@ -478,6 +478,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             echo 'export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"'
+            echo 'export SPH_VERSION="green"'
             include ./scripts/set_profile.sh
             include ./scripts/automated_test_run.sh
 
