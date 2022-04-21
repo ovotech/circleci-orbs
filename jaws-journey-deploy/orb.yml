@@ -919,7 +919,8 @@ jobs:
     working_directory: ~/working
     parameters:
       severityThreshold:
-        type: string
+        type: enum
+        enum: ["low" "medium" "high" "critical"]
         default: high
     steps:
       - attach_workspace:
