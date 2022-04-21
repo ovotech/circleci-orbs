@@ -1,3 +1,4 @@
+*                                @ovotech/production-eng @ovotech/dex
 /terraform/                      @ovotech/production-eng @ovotech/dex
 /clair-scanner/                  @ovotech/production-eng @ovotech/dex
 /aws-rotate-keys/                @mwz
