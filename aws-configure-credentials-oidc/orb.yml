@@ -1,7 +1,7 @@
 version: 2.1
 description: An orb to authenticate with AWS using CircleCI OIDC
 orbs:
-  aws-cli: circleci/aws-cli@2.1.0
+  aws-cli: circleci/aws-cli@3.0.0
 commands:
   aws-configure-credentials:
     description: "Assume the specified role using the OIDC token"
@@ -15,8 +15,10 @@ commands:
         type: string
     steps:
       - aws-cli/install
-      - run: |
-          STS=($(aws sts assume-role-with-web-identity --role-arn << parameters.role-arn >> --role-session-name "CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}" --web-identity-token $CIRCLE_OIDC_TOKEN --duration-seconds 3600 --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text))
-          aws --profile << parameters.profile-name >> configure set aws_access_key_id "${STS[0]}"
-          aws --profile << parameters.profile-name >> configure set aws_secret_access_key "${STS[1]}"
-          aws --profile << parameters.profile-name >> configure set aws_session_token "${STS[2]}"
+      - run:
+          name: Configure AWS with assumed role
+          command: |
+            STS=($(aws sts assume-role-with-web-identity --role-arn << parameters.role-arn >> --role-session-name "CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}" --web-identity-token $CIRCLE_OIDC_TOKEN --duration-seconds 3600 --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text))
+            aws --profile << parameters.profile-name >> configure set aws_access_key_id "${STS[0]}"
+            aws --profile << parameters.profile-name >> configure set aws_secret_access_key "${STS[1]}"
+            aws --profile << parameters.profile-name >> configure set aws_session_token "${STS[2]}"

@@ -1,1 +1,1 @@
-ovotech/aws-configure-credentials-oidc@1.0.0
+ovotech/aws-configure-credentials-oidc@1.0.1
