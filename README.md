@@ -28,6 +28,7 @@ any changes to the orb.
 ## Published Orbs
 
  - [ovotech/argocd](argocd) - Interact with an ArgoCD API.
+ - [ovotech/aws-configure-credentials-oidc](aws-configure-credentials-oidc) - Authenticate with AWS via CircleCI OIDC.
  - [ovotech/aws-get-parameters@1](aws-get-parameters) - Get parameters from AWS Parameter Store.
  - [ovotech/aws-rotate-keys@2](aws-rotate-keys) - Rotate AWS access keys and update corresponding CircleCI environment variables.
  - [ovotech/clair-scanner@1](clair-scanner) - Scan Docker images for vulnerabilities.
@@ -44,6 +45,7 @@ any changes to the orb.
  - [ovotech/jaws-journey-deploy](jaws-journey-deploy) - Provides a standard deployment process for all jaws journey repositories.
  - [ovotech/pipeline-utils](pipeline-utils) - Miscellaneous bash commands to ease CircleCI pipeline development.
  - [ovotech/ipa-deploy](ipa-deploy) - IPA team deployment notification templates.
+ - [ovotech/helm-ci](helm-ci) - CI checks for Helm charts
  - [ovotech/sast-terraform](sast-terraform) - Consumer Products Production Engineering team orb to run static security analysis against Terraform IaC.
 
  Other orbs in the ovotech namespace:

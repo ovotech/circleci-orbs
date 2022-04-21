@@ -9,6 +9,9 @@ parameters:
   run-asp-deploy:
     type: boolean
     default: false
+  run-aws-configure-credentials-oidc:
+    type: boolean
+    default: false
   run-aws-get-parameters:
     type: boolean
     default: false
@@ -249,6 +252,15 @@ workflows:
           path: asp-deploy
       - publish_orb:
           path: asp-deploy
+          requires:
+            - validate_orb
+  aws-configure-credentials-oidc:
+    when: << pipeline.parameters.run-aws-configure-credentials-oidc >>
+    jobs:
+      - validate_orb:
+          path: aws-configure-credentials-oidc
+      - publish_orb:
+          path: aws-configure-credentials-oidc
           requires:
             - validate_orb
   aws-get-parameters:

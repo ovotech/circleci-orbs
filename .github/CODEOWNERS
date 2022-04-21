@@ -1,22 +1,22 @@
-*       @ovotech/production-eng @ovotech/dex
-/terraform/               @ovotech/production-eng @ovotech/dex
-/clair-scanner/           @ovotech/production-eng @ovotech/dex
-/aws-rotate-keys/         @mwz
-/rac-gcp-deploy/          @ovotech/reads-consumption
-/rac-kmi-deploy/          @ovotech/reads-consumption
-/aws-get-parameters/      @ovotech/jaws
-/tools-install/           @ovotech/orion-sre
-/with-git-deploy-key/     @ovotech/orion-sre
-/versioned-lambda/        @ovotech/orion-migration
-/set-current-environment/ @ovotech/jaws
-/oot-eks/                 @ovotech/orion-ops-tooling
-/clojure/                 @ovotech/orion-ops-tooling
-/ssh-proxy/               @ovotech/orion-security-engineering
-/jaws-journey-deploy      @ovotech/jaws-library-maintainers
-/oot-deploy/              @ovotech/orion-ops-tooling
-/sbt-deploy/              @ovotech/smart-bookings
-/asp-deploy/              @ovotech/asp-team
-/argocd/                  @ovotech/metering-industry-abstraction-cluster-admins
-/comms-commands/          @ovotech/comms
-/ipa-deploy/              @ovotech/ipa
-/sast-terraform/          @ovotech/consumer-products-production-engineering
+/terraform/                      @ovotech/production-eng @ovotech/dex
+/clair-scanner/                  @ovotech/production-eng @ovotech/dex
+/aws-rotate-keys/                @mwz
+/rac-gcp-deploy/                 @ovotech/reads-consumption
+/rac-kmi-deploy/                 @ovotech/reads-consumption
+/aws-configure-credentials-oidc/ @ovotech/production-eng
+/aws-get-parameters/             @ovotech/jaws
+/tools-install/                  @ovotech/orion-sre
+/with-git-deploy-key/            @ovotech/orion-sre
+/versioned-lambda/               @ovotech/orion-migration
+/set-current-environment/        @ovotech/jaws
+/oot-eks/                        @ovotech/orion-ops-tooling
+/clojure/                        @ovotech/orion-ops-tooling
+/ssh-proxy/                      @ovotech/orion-security-engineering
+/jaws-journey-deploy             @ovotech/jaws-library-maintainers
+/oot-deploy/                     @ovotech/orion-ops-tooling
+/sbt-deploy/                     @ovotech/smart-bookings
+/asp-deploy/                     @ovotech/asp-team
+/argocd/                         @ovotech/metering-industry-abstraction-cluster-admins
+/comms-commands/                 @ovotech/comms
+/ipa-deploy/                     @ovotech/ipa
+/sast-terraform/                 @ovotech/consumer-products-production-engineering
