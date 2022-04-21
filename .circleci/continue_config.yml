@@ -53,7 +53,10 @@ parameters:
     default: false
   run-rac-kmi-deploy:
     type: boolean
-    default: false  
+    default: false
+  run-sast-terraform:
+    type: boolean
+    default: false
   run-sbt-deploy:
     type: boolean
     default: false
@@ -384,6 +387,15 @@ workflows:
           path: rac-kmi-deploy
       - publish_orb:
           path: rac-kmi-deploy
+          requires:
+            - validate_orb
+  sast-terraform:
+    when: << pipeline.parameters.run-sast-terraform >>
+    jobs:
+      - validate_orb:
+          path: sast-terraform
+      - publish_orb:
+          path: sast-terraform
           requires:
             - validate_orb
   sbt-deploy:
