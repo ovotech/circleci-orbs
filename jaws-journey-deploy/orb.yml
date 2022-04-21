@@ -917,13 +917,17 @@ jobs:
   snyk-scan:
     executor: kotlin
     working_directory: ~/working
+    parameters:
+      severityThreshold:
+        type: string
+        default: high
     steps:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
-          severity-threshold: high
+          severity-threshold: << parameters.severityThreshold >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
