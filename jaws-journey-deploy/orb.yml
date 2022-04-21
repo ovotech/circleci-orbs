@@ -1075,6 +1075,9 @@ jobs:
       automatedTestSuite:
         type: string
         default: "automated-test"
+      deploymeny:
+        type: string
+        default: ""
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
@@ -1085,6 +1088,7 @@ jobs:
       - run-automated-tests:
           environment: << parameters.environment >>
           automatedTestSuite: << parameters.automatedTestSuite >>
+          deployment: << parameters.deployment >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
