@@ -1,5 +1,3 @@
-MAX_RETRY=3
-COUNTER=0
 VALUES_FILE="<<parameters.values_file>>"
 
 if [ -z "$VALUES_FILE" ]
@@ -39,15 +37,11 @@ function deply_manifest {
   return $?
 }
 
-until deply_manifest
-do
-   sleep 1
-   [[ COUNTER -eq $MAX_RETRY ]] && echo "Failed!" && exit 1
-   echo "Trying again. Try #$COUNTER"
-   ((COUNTER++))
+for COUNTER in 1 2 3; do 
+  deply_manifest && break || echo "Failed. Retry $COUNTER" && sleep 1; 
 done
 
 cd /tmp/gitops
-mkdir -p /tmp/argocd/<< parameters.argo_application >>
-touch /tmp/argocd/<< parameters.argo_application >>/env
-echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/<< parameters.manifest_branch >>)" >> /tmp/argocd/<< parameters.argo_application >>/env
+mkdir -p /tmp/argocd
+touch /tmp/argocd/env
+echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/<< parameters.manifest_branch >>)" >> /tmp/argocd/env
