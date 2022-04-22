@@ -42,6 +42,6 @@ for COUNTER in 1 2 3; do
 done
 
 cd /tmp/gitops
-mkdir -p /tmp/argocd
-touch /tmp/argocd/env
-echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/<< parameters.manifest_branch >>)" >> /tmp/argocd/env
+mkdir -p /tmp/argocd/<< parameters.argo_application >>
+touch /tmp/argocd/<< parameters.argo_application >>/env
+echo "export ARGOCD_TARGET_REVISION=$(git rev-parse origin/<< parameters.manifest_branch >>)" >> /tmp/argocd/<< parameters.argo_application >>/env
