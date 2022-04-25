@@ -32,8 +32,8 @@ It also contains:
 - terraform-provider-acme
 - google-cloud-sdk
 - aws-cli
-- ovo's terraform-provider-aiven as version 0.0.1
 - ovo's kafka user provider
+- ovo's aiven-kafka-users provider
 
 If the AIVEN_PROVIDER environment variable is set, also has:
 - Aiven's terraform-provider-aiven from versions 1.0.0+
@@ -54,6 +54,7 @@ It also contains:
 - Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - ovo's kafka user provider
+- ovo's aiven-kafka-users provider
 
 ### terraform-0_12-slim
 
@@ -72,6 +73,7 @@ It also contains:
 - Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - ovo's kafka user provider
+- ovo's aiven-kafka-users provider
 
 ### terraform-0_13
 
@@ -89,7 +91,7 @@ It also contains:
 - Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
-- beta "aiven-kafka-user" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
+- ovo's aiven-kafka-users provider
 
 
 ## Commands
