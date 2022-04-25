@@ -1,4 +1,4 @@
-*       @ovotech/production-eng @ovotech/dex
+*                                @ovotech/production-eng @ovotech/dex
 /terraform/                      @ovotech/production-eng @ovotech/dex
 /clair-scanner/                  @ovotech/production-eng @ovotech/dex
 /aws-rotate-keys/                @mwz
@@ -20,3 +20,4 @@
 /argocd/                         @ovotech/metering-industry-abstraction-cluster-admins
 /comms-commands/                 @ovotech/comms
 /ipa-deploy/                     @ovotech/ipa
+/sast-terraform/                 @ovotech/consumer-products-production-engineering
