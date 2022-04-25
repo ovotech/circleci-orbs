@@ -472,12 +472,16 @@ commands:
       automatedTestSuite:
         type: string
         default: "automated-test"
+      deployment:
+        type: string
+        default: ""
     steps:
       - run:
           name: "Run automated tests"
           shell: /bin/bash -eo pipefail
           command: |
             echo 'export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"'
+            echo 'export DEPLOYMENT="<< parameters.deployment >>"'
             include ./scripts/set_profile.sh
             include ./scripts/automated_test_run.sh
 
@@ -1071,6 +1075,9 @@ jobs:
       automatedTestSuite:
         type: string
         default: "automated-test"
+      deployment:
+        type: string
+        default: ""
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
@@ -1081,6 +1088,7 @@ jobs:
       - run-automated-tests:
           environment: << parameters.environment >>
           automatedTestSuite: << parameters.automatedTestSuite >>
+          deployment: << parameters.deployment >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
