@@ -33,6 +33,10 @@ commands:
         description: "Extra arguments to pass when running docker build"
         type: string
         default: ""
+      image-tags:
+        description: "Tags to push the image with"
+        type: string
+        default: ${CIRCLE_SHA1},latest
 
     steps:
       - attach_workspace:
@@ -54,7 +58,7 @@ commands:
           aws-access-key-id: << parameters.access-key-name >>
           aws-secret-access-key: << parameters.secret-access-key-name >>
           repo: << parameters.service >>
-          tag: ${CIRCLE_SHA1},latest
+          tag: << parameters.image-tags >>
           ecr-login: true
           extra-build-args: << parameters.extra-build-args >>
 
@@ -67,7 +71,7 @@ commands:
 
       - aws-ecr/push-image:
           repo: << parameters.service >>
-          tag: ${CIRCLE_SHA1},latest
+          tag: << parameters.image-tags >>
 
 executors:
   aws:
