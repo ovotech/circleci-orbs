@@ -1,5 +1,5 @@
 version: 2.1
-description: "Defines the core steps required for a smart journey deployment pipeline"
+description: "Provides jobs/commands for updating Helm chart values and commiting them to Git"
 
 orbs:
   argocd: ovotech/argocd@1.0.2
