@@ -1,4 +1,3 @@
-
 # SAST Terraform CircleCI orb
 
 This orb can be used to run the static code analysis tools via the CLI against a target directory containing Terraform infrastructure-as-code.
