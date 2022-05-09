@@ -73,10 +73,16 @@ jobs:
           name: "Install yq"
           command: |
             include ./scripts/install_yq.sh
-      - run:  
-          name: "Update helm values"
-          command: |   
-            include ./scripts/update_helm.sh
+      - when:
+          condition:
+            and:
+              - << parameters.image_tag_yaml_path >>
+              - << parameters.image_tag >>
+          steps:
+            - run:
+                name: "Update helm values"
+                command: |   
+                  include ./scripts/update_helm.sh
       - when:
           condition: 
             and:
