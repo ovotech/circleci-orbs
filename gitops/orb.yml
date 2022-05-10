@@ -26,6 +26,7 @@ aliases:
         default: ''
       image_tag:
         type: string
+        default: ''
       commit_tag_name:
         type: string
         default: ""
