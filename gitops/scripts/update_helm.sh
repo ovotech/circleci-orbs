@@ -19,7 +19,7 @@ function deply_manifest {
   git clone -b <<parameters.manifest_branch>> git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} /tmp/gitops
   cd /tmp/gitops
 
-  # Update helm chart
+  # Update manifest values
   if [[ "<< parameters.image_tag >>" != "" ]]; then
     yq e "<<parameters.image_tag_yaml_path>>=\"<<parameters.image_tag>>\"" -i $VALUES_FILE || exit 1
   
