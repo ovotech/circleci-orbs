@@ -80,11 +80,11 @@ commands:
             and:
               - << parameters.image_tag_yaml_path >>
               - << parameters.image_tag >>
-            steps:
-              - run:
-                  name: "Update helm values"
-                  command: |   
-                    include ./scripts/update_helm.sh
+          steps:
+            - run:
+                name: "Update helm values"
+                command: |   
+                  include ./scripts/update_helm.sh
       - when:
           condition: 
             and:
