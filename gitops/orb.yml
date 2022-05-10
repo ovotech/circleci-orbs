@@ -23,10 +23,10 @@ aliases:
         default: 'master'
       image_tag_yaml_path:
         type: string
-        default: ''
+        default: ""
       image_tag:
         type: string
-        default: ''
+        default: ""
       commit_tag_name:
         type: string
         default: ""
