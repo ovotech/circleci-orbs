@@ -8,6 +8,7 @@ not listed
 - Added Terraform provider Aiven Kafka Users v1.0.8 to all executors
 
 ## ovotech/terraform@1.11.11
+## Added
 - Upgrade tfswitch to version 0.13.1221
 
 ## ovotech/terraform@1.11.10
