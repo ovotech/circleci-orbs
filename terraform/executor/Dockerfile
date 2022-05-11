@@ -3,7 +3,7 @@
 FROM debian:buster-slim
 
 ARG TFMASK_VERSION="0.7.0"
-ARG TFSWITCH_VERSION=0.11.1071
+ARG TFSWITCH_VERSION=0.13.12345
 ARG GCLOUD_VERSION=329.0.0
 ARG AWSCLI_VERSION=1.19.16
 ARG HELM3_VERSION=3.5.3
@@ -39,7 +39,7 @@ RUN curl -fsL https://github.com/cloudposse/tfmask/releases/download/${TFMASK_VE
  && mv tfmask /usr/local/bin
 
 # tfswitch
-RUN curl -fsL https://github.com/warrensbox/terraform-switcher/releases/download/${TFSWITCH_VERSION}/terraform-switcher_${TFSWITCH_VERSION}_linux_amd64.tar.gz -o tfswitch.tar.gz \
+RUN curl -fsL https://github.com/Jukie/terraform-switcher/releases/download/${TFSWITCH_VERSION}/terraform-switcher_${TFSWITCH_VERSION}_linux_amd64.tar.gz -o tfswitch.tar.gz \
     && tar -xvf tfswitch.tar.gz tfswitch \
     && mv tfswitch /usr/local/bin \
     && rm -rf tfswitch.tar.gz
