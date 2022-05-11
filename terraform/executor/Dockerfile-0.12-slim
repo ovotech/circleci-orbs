@@ -11,7 +11,7 @@ ARG GCLOUD_VERSION=314.0.0
 ARG AWSCLI_VERSION=1.18.134
 ARG HELM2_VERSION=2.16.10
 ARG HELM3_VERSION=3.3.1
-ARG TFSWITCH_VERSION=0.13.12345
+ARG TFSWITCH_VERSION=0.13.1221
 ARG TF_AIVEN_VERSIONS="2.0.6"
 ARG TF_OVO_VERSIONS="1.0.0"
 ARG TF_AIVEN_KAFKA_USERS_VERSIONS="0.0.1 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 1.0.7 1.0.8"
@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python3-pip \
  && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsL https://github.com/Jukie/terraform-switcher/releases/download/${TFSWITCH_VERSION}/terraform-switcher_${TFSWITCH_VERSION}_linux_amd64.tar.gz -o tfswitch.tar.gz \
+RUN curl -fsL https://github.com/warrensbox/terraform-switcher/releases/download/${TFSWITCH_VERSION}/terraform-switcher_${TFSWITCH_VERSION}_linux_amd64.tar.gz -o tfswitch.tar.gz \
  && tar -xvf tfswitch.tar.gz tfswitch \
  && mv tfswitch /usr/local/bin \
  && rm -rf tfswitch.tar.gz \
