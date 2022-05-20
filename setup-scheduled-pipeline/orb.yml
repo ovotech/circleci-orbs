@@ -10,7 +10,7 @@ commands:
             Creates a scheduled trigger to be consumed by a scheduled pipeline
         parameters:
             schedule_days:
-                description: Array of days in a week in which the schedule triggers.
+                description: Comma separated days in a week in which the schedule triggers.
                 type: string
             schedule_description:
                 default: ""
@@ -20,7 +20,7 @@ commands:
                 description: Number of times a schedule triggers per hour, value must be between 1 and 60
                 type: string
             schedule_hours:
-                description: Array of hours in a day in which the schedule triggers.
+                description: Comma separated hours in a day in which the schedule triggers.
                 type: string
             schedule_name:
                 description: Name of the schedule
@@ -145,7 +145,7 @@ jobs:
             image: ubuntu-2004:202104-01
         parameters:
             schedule_days:
-                description: Array of days in a week in which the schedule triggers.
+                description: Comma separated days in a week in which the schedule triggers.
                 type: string
             schedule_description:
                 default: ""
@@ -155,7 +155,7 @@ jobs:
                 description: Number of times a schedule triggers per hour, value must be between 1 and 60
                 type: string
             schedule_hours:
-                description: Array of hours in a day in which the schedule triggers.
+                description: Comma separated hours in a day in which the schedule triggers.
                 type: string
             schedule_name:
                 description: Name of the schedule
@@ -184,10 +184,10 @@ examples:
                 example-workflow:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
-                            schedule_days: '["MON"]'
+                            schedule_days: MON
                             schedule_description: Test schedule to demonstrate orb
                             schedule_hour_frequency: "1"
-                            schedule_hours: '[9]'
+                            schedule_hours: "9"
                             schedule_name: test-schedule
                             target_branch: main
 
