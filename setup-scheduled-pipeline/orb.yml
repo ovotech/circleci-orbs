@@ -35,7 +35,7 @@ commands:
             - run:
                 command: |
                     #!/bin/bash
-                    set -eo pipefail
+                    set -eox pipefail
 
                     add_scheduled_pipeline() {
                         local ORG_NAME=$1
