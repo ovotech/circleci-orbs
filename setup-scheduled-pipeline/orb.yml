@@ -42,7 +42,7 @@ commands:
                         local JSON_BODY=$2
 
                         curl --silent --request POST "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" \
-                        --header "circle-token: ${CIRCLECI_API_TOKEN}" \
+                        --header "circle-token: ${CIRCLECI_TOKEN}" \
                         --header 'content-type: application/json' \
                         --data "$JSON_BODY"
                     }
@@ -52,7 +52,7 @@ commands:
                         local JSON_BODY=$2
 
                         curl -s --request PATCH --url "https://circleci.com/api/v2/schedule/${SCHEDULE_ID}" \
-                        --header "circle-token: ${CIRCLECI_API_TOKEN}" \
+                        --header "circle-token: ${CIRCLECI_TOKEN}" \
                         --header 'content-type: application/json' \
                         --data "$JSON_BODY"
                     }
@@ -61,7 +61,8 @@ commands:
 
                         export ORG_NAME="ovotech"
 
-                        if [ -z "$CIRCLECI_API_TOKEN" ]; then
+                        if [ -z "$CIRCLECI_TOKEN" ]; then
+                            echo "Mandatory parameters have not been set! You must specify a token as CIRCLECI_TOKEN in order to allow CircleCI to create schedules with appropriate permissions on this repository."
                             exit 1
                         fi
 
@@ -106,7 +107,7 @@ commands:
                         ')
                         export JSON_BODY
 
-                        EXISTING_SCHEDULES=$(curl -s "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" --header "circle-token: ${CIRCLECI_API_TOKEN}")
+                        EXISTING_SCHEDULES=$(curl -s "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" --header "circle-token: ${CIRCLECI_TOKEN}")
                         EXISTING_SCHEDULE_COUNT=$(echo "${EXISTING_SCHEDULES}" | jq length)
 
                         if [  "${EXISTING_SCHEDULE_COUNT}" != 0 ]; then

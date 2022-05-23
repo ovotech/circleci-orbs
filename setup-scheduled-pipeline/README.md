@@ -2,6 +2,13 @@
 
 This orb is responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started). Previously the only way to do this was via the [CircleCI API](https://circleci.com/docs/api/v2/) or via the UI. This orb aims to bring the maintainability aspect to these schedules by capturing the config natively within the CircleCI config.
 
+## Pre-requisites
+
+The intention of the orb is that it will be called from within the repository / project for which the schedule is to be created. Creating schedules for other repositories is not currently supported.
+
+In order to create the schedule, you need to add a [CircleCI environment variable](https://circleci.com/docs/2.0/env-vars/) to the project named `CIRCLECI_TOKEN` which holds a [CircleCI API token](https://circleci.com/docs/2.0/managing-api-tokens/) with write permissions to the target repository. Without this environment variable set, this orb will not be able to successfully create the schedule.
+
+
 ## Commands
 ### create_scheduled_pipeline
 
