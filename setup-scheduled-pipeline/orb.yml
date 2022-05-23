@@ -17,6 +17,7 @@ commands:
                 description: Description of the schedule
                 type: string
             schedule_hour_frequency:
+                default: "1"
                 description: Number of times a schedule triggers per hour, value must be between 1 and 60
                 type: string
             schedule_hours:
@@ -34,6 +35,7 @@ commands:
             - run:
                 command: |
                     #!/bin/bash
+                    set -eo pipefail
 
                     add_scheduled_pipeline() {
                         local ORG_NAME=$1
@@ -64,11 +66,12 @@ commands:
                         fi
 
                         if [ -z "$PARAM_SCHEDULE_HOUR_FREQUENCY" ] && [ -z "$PARAM_SCHEDULE_HOURS" ] && [ -z "$PARAM_SCHEDULE_DAYS" ]; then
+                            echo "Mandatory parameters have not been set! You must specify the days and hours of your schedule, as well as the frequency within the hour."
                             exit 1
                         fi
 
                         if [ -z "$PARAM_SCHEDULE_NAME" ]; then
-                            export SCHEDULE_NAME="${CIRCLE_PROJECT_REPONAME}-default-scheduled-pipeline"
+                            export SCHEDULE_NAME="${CIRCLE_PROJECT_REPONAME} scheduled pipeline trigger - https://circleci.com/docs/2.0/scheduled-pipelines"
                         else
                             export SCHEDULE_NAME=$PARAM_SCHEDULE_NAME
                         fi
@@ -80,7 +83,8 @@ commands:
                         fi
 
                         if [ -z "$PARAM_TARGET_BRANCH" ]; then
-                            export TARGET_BRANCH="main"
+                            export TARGET_BRANCH
+                            TARGET_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||')
                         else
                             export TARGET_BRANCH=$PARAM_TARGET_BRANCH
                         fi
@@ -185,9 +189,9 @@ examples:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
                             schedule_days: MON
-                            schedule_description: Test schedule to demonstrate orb
+                            schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
                             schedule_hours: "9"
-                            schedule_name: test-schedule
+                            schedule_name: <REPO_NAME>-weekly-workflow
                             target_branch: main
 
