@@ -32,6 +32,7 @@ workflows:
             sast-terraform/.* run-sast-terraform true
             sbt-deploy/.* run-sbt-deploy true
             set-current-environment/.* run-set-current-environment true
+            setup-scheduled-pipeline/.* run-setup-scheduled-pipeline true
             ssh-proxy/.* run-ssh-proxy true
             terraform/.* run-terraform true
             terraform-v2/.* run-terraform-v2 true
