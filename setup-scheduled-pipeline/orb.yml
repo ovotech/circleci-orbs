@@ -10,7 +10,7 @@ commands:
             Creates a scheduled trigger to be consumed by a scheduled pipeline
         parameters:
             schedule_days:
-                description: Comma separated days in a week in which the schedule triggers.
+                description: Comma separated days in a week in which the schedule triggers
                 type: string
             schedule_description:
                 default: ""
@@ -21,14 +21,14 @@ commands:
                 description: Number of times a schedule triggers per hour, value must be between 1 and 60
                 type: string
             schedule_hours:
-                description: Comma separated hours in a day in which the schedule triggers.
+                description: Comma separated hours in a day in which the schedule triggers
                 type: string
             schedule_name:
                 description: Name of the schedule
                 type: string
             target_branch:
                 default: main
-                description: Branch on which the scheduled pipeline will trigger.
+                description: Branch on which the scheduled pipeline will trigger
                 type: string
         steps:
             - checkout
@@ -149,7 +149,7 @@ jobs:
             image: ubuntu-2004:202104-01
         parameters:
             schedule_days:
-                description: Comma separated days in a week in which the schedule triggers.
+                description: Comma separated days in a week in which the schedule triggers
                 type: string
             schedule_description:
                 default: ""
@@ -159,14 +159,14 @@ jobs:
                 description: Number of times a schedule triggers per hour, value must be between 1 and 60
                 type: string
             schedule_hours:
-                description: Comma separated hours in a day in which the schedule triggers.
+                description: Comma separated hours in a day in which the schedule triggers
                 type: string
             schedule_name:
                 description: Name of the schedule
                 type: string
             target_branch:
                 default: main
-                description: Branch on which the scheduled pipeline will trigger.
+                description: Branch on which the scheduled pipeline will trigger
                 type: string
         steps:
             - create_scheduled_pipeline:
