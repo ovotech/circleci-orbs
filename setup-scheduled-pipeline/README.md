@@ -5,7 +5,7 @@ This orb is responsible for setting up schedules for [scheduled pipelines](https
 ## Commands
 ### create_scheduled_pipeline
 
-This is the only command that exists within this orb and makes use of a wrapper shell script to communicate with the CircleCI API to create your desired schedule based on what you've passed into the command parameters.
+This is the only command that exists within this orb and makes use of a wrapper shell script to communicate with the CircleCI API to create your desired schedule based on what you've passed into the command parameters. This command is also wrapped within a job with the same name `create_scheduled_pipeline`.
 
 **Parameters**
 - `schedule_name` - Name of the schedule
