@@ -187,7 +187,7 @@ examples:
             orbs:
                 setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
             workflows:
-                example-workflow:
+                setup-schedule-workflow:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
                             schedule_days: MON
@@ -196,4 +196,17 @@ examples:
                             schedule_hours: "9"
                             schedule_name: <REPO_NAME>-weekly-workflow
                             target_branch: main
+                weekly-run-workflow:
+                    jobs:
+                        - test
+                        - build
+                        - deploy
+                    when:
+                        and:
+                            - equal:
+                                - scheduled_pipeline
+                                - << pipeline.trigger_source >>
+                            - equal:
+                                - <REPO_NAME>-weekly-workflow
+                                - << pipeline.schedule.name >>
 
