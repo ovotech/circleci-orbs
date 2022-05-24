@@ -72,18 +72,19 @@ commands:
                         fi
 
                         if [ -z "$PARAM_SCHEDULE_NAME" ]; then
-                            export SCHEDULE_NAME="${CIRCLE_PROJECT_REPONAME} scheduled pipeline trigger - https://circleci.com/docs/2.0/scheduled-pipelines"
+                            export SCHEDULE_NAME="${CIRCLE_PROJECT_REPONAME}-default-scheduled-pipeline"
                         else
                             export SCHEDULE_NAME=$PARAM_SCHEDULE_NAME
                         fi
 
                         if [ -z "$PARAM_SCHEDULE_DESCRIPTION" ]; then
-                            export SCHEDULE_DESCRIPTION="${CIRCLE_PROJECT_REPONAME}-default-scheduled-pipeline-description"
+                            export SCHEDULE_DESCRIPTION="${CIRCLE_PROJECT_REPONAME} scheduled pipeline trigger - https://circleci.com/docs/2.0/scheduled-pipelines"
                         else
                             export SCHEDULE_DESCRIPTION=$PARAM_SCHEDULE_DESCRIPTION
                         fi
 
                         if [ -z "$PARAM_TARGET_BRANCH" ]; then
+                            git symbolic-ref refs/remotes/origin/HEAD &> /dev/null || { echo "refs/remotes/origin/HEAD does not exist on this repository! Please take a look manually..." ; exit 1; }
                             export TARGET_BRANCH
                             TARGET_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||')
                         else
