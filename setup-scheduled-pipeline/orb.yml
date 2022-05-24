@@ -27,7 +27,7 @@ commands:
                 description: Name of the schedule
                 type: string
             target_branch:
-                default: main
+                default: ""
                 description: Branch on which the scheduled pipeline will trigger
                 type: string
         steps:
