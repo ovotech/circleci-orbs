@@ -1,0 +1,213 @@
+version: 2.1
+description: |
+    An orb to create a scheduled trigger to be consumed by a scheduled pipeline
+display:
+    home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/setup-scheduled-pipeline/README.md
+    source_url: https://www.github.com/ovotech/team-cppe
+commands:
+    create_scheduled_pipeline:
+        description: |
+            Creates a scheduled trigger to be consumed by a scheduled pipeline
+        parameters:
+            schedule_days:
+                description: Comma separated days in a week in which the schedule triggers
+                type: string
+            schedule_description:
+                default: ""
+                description: Description of the schedule
+                type: string
+            schedule_hour_frequency:
+                default: "1"
+                description: Number of times a schedule triggers per hour, value must be between 1 and 60
+                type: string
+            schedule_hours:
+                description: Comma separated hours in a day in which the schedule triggers
+                type: string
+            schedule_name:
+                description: Name of the schedule
+                type: string
+            target_branch:
+                default: ""
+                description: Branch on which the scheduled pipeline will trigger
+                type: string
+        steps:
+            - checkout
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -eo pipefail
+
+                    add_scheduled_pipeline() {
+                        local ORG_NAME=$1
+                        local JSON_BODY=$2
+
+                        curl -s --request POST "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" \
+                        --header "circle-token: ${CIRCLECI_TOKEN}" \
+                        --header 'content-type: application/json' \
+                        --data "$JSON_BODY"
+                    }
+
+                    update_scheduled_pipeline() {
+                        local SCHEDULE_ID=$1
+                        local JSON_BODY=$2
+
+                        curl -s --request PATCH --url "https://circleci.com/api/v2/schedule/${SCHEDULE_ID}" \
+                        --header "circle-token: ${CIRCLECI_TOKEN}" \
+                        --header 'content-type: application/json' \
+                        --data "$JSON_BODY"
+                    }
+
+                    scheduled_pipeline_main() {
+
+                        export ORG_NAME="ovotech"
+
+                        if [ -z "$CIRCLECI_TOKEN" ]; then
+                            echo "Mandatory parameters have not been set! You must specify a token as CIRCLECI_TOKEN in order to allow CircleCI to create schedules with appropriate permissions on this repository."
+                            exit 1
+                        fi
+
+                        if [ -z "$PARAM_SCHEDULE_HOUR_FREQUENCY" ] && [ -z "$PARAM_SCHEDULE_HOURS" ] && [ -z "$PARAM_SCHEDULE_DAYS" ]; then
+                            echo "Mandatory parameters have not been set! You must specify the days and hours of your schedule, as well as the frequency within the hour."
+                            exit 1
+                        fi
+
+                        if [ -z "$PARAM_SCHEDULE_NAME" ]; then
+                            export SCHEDULE_NAME="${CIRCLE_PROJECT_REPONAME}-default-scheduled-pipeline"
+                        else
+                            export SCHEDULE_NAME=$PARAM_SCHEDULE_NAME
+                        fi
+
+                        if [ -z "$PARAM_SCHEDULE_DESCRIPTION" ]; then
+                            export SCHEDULE_DESCRIPTION="${CIRCLE_PROJECT_REPONAME} scheduled pipeline trigger - https://circleci.com/docs/2.0/scheduled-pipelines"
+                        else
+                            export SCHEDULE_DESCRIPTION=$PARAM_SCHEDULE_DESCRIPTION
+                        fi
+
+                        if [ -z "$PARAM_TARGET_BRANCH" ]; then
+                            git symbolic-ref refs/remotes/origin/HEAD &> /dev/null || { echo "refs/remotes/origin/HEAD does not exist on this repository! Please take a look manually..." ; exit 1; }
+                            export TARGET_BRANCH
+                            TARGET_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||')
+                        else
+                            export TARGET_BRANCH=$PARAM_TARGET_BRANCH
+                        fi
+
+                        JSON_BODY=$(jq -rcn '
+                            {
+                                "name": env.SCHEDULE_NAME,
+                                "description": env.SCHEDULE_DESCRIPTION,
+                                "attribution-actor": "system",
+                                "parameters": {
+                                    "branch": env.TARGET_BRANCH
+                                },
+                                "timetable": {
+                                    "per-hour": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,
+                                    "hours-of-day": env.PARAM_SCHEDULE_HOURS | split(",") | map(tonumber),
+                                    "days-of-week": env.PARAM_SCHEDULE_DAYS | split(",")
+                                }
+                            }
+                        ')
+                        export JSON_BODY
+
+                        EXISTING_SCHEDULES=$(curl -s "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" --header "circle-token: ${CIRCLECI_TOKEN}")
+                        EXISTING_SCHEDULE_COUNT=$(echo "${EXISTING_SCHEDULES}" | jq '.items | length')
+
+                        if [  "${EXISTING_SCHEDULE_COUNT}" != 0 ]; then
+                            echo "Schedules already exist on this project!"
+                            EXISTING_SCHEDULE=$(echo "${EXISTING_SCHEDULES}" | jq -r '.items[] | select( .name==env.SCHEDULE_NAME) | .name')
+                            if [  "${EXISTING_SCHEDULE}" == "${SCHEDULE_NAME}" ]; then
+                                echo "A schedule by this name already exists!"
+                                SCHEDULE_ID=$(echo "${EXISTING_SCHEDULES}" | jq -r '.items[] | select( .name==env.SCHEDULE_NAME) | .id')
+                                export SCHEDULE_ID
+                                update_scheduled_pipeline "$SCHEDULE_ID" "$JSON_BODY"
+                            else
+                                echo "This particular schedule with this name does not exist..."
+                                add_scheduled_pipeline "$ORG_NAME" "$JSON_BODY"
+                            fi
+                        else
+                            echo "No schedules exist on this project!"
+                            add_scheduled_pipeline "$ORG_NAME" "$JSON_BODY"
+                        fi
+
+
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
+                        scheduled_pipeline_main
+                    fi
+                environment:
+                    PARAM_SCHEDULE_DAYS: <<parameters.schedule_days>>
+                    PARAM_SCHEDULE_DESCRIPTION: <<parameters.schedule_description>>
+                    PARAM_SCHEDULE_HOUR_FREQUENCY: <<parameters.schedule_hour_frequency>>
+                    PARAM_SCHEDULE_HOURS: <<parameters.schedule_hours>>
+                    PARAM_SCHEDULE_NAME: <<parameters.schedule_name>>
+                    PARAM_TARGET_BRANCH: <<parameters.target_branch>>
+                name: Run custom script to create trigger for scheduled pipeline
+jobs:
+    create_scheduled_pipeline:
+        description: |
+            Creates a scheduled trigger to be consumed by a scheduled pipeline
+        machine:
+            image: ubuntu-2004:202104-01
+        parameters:
+            schedule_days:
+                description: Comma separated days in a week in which the schedule triggers
+                type: string
+            schedule_description:
+                default: ""
+                description: Description of the schedule
+                type: string
+            schedule_hour_frequency:
+                description: Number of times a schedule triggers per hour, value must be between 1 and 60
+                type: string
+            schedule_hours:
+                description: Comma separated hours in a day in which the schedule triggers
+                type: string
+            schedule_name:
+                description: Name of the schedule
+                type: string
+            target_branch:
+                default: main
+                description: Branch on which the scheduled pipeline will trigger
+                type: string
+        steps:
+            - create_scheduled_pipeline:
+                schedule_days: <<parameters.schedule_days>>
+                schedule_description: <<parameters.schedule_description>>
+                schedule_hour_frequency: <<parameters.schedule_hour_frequency>>
+                schedule_hours: <<parameters.schedule_hours>>
+                schedule_name: <<parameters.schedule_name>>
+                target_branch: <<parameters.target_branch>>
+examples:
+    example:
+        description: |
+            Sample usage of the setup scheduled pipeline setup orb.
+        usage:
+            version: "2.1"
+            orbs:
+                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
+            workflows:
+                setup-schedule-workflow:
+                    jobs:
+                        - setup-scheduled-pipeline/create_scheduled_pipeline:
+                            schedule_days: MON
+                            schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
+                            schedule_hour_frequency: "1"
+                            schedule_hours: "9"
+                            schedule_name: <REPO_NAME>-weekly-workflow
+                            target_branch: main
+                weekly-run-workflow:
+                    jobs:
+                        - test
+                        - build
+                        - deploy
+                    when:
+                        and:
+                            - equal:
+                                - scheduled_pipeline
+                                - << pipeline.trigger_source >>
+                            - equal:
+                                - <REPO_NAME>-weekly-workflow
+                                - << pipeline.schedule.name >>
+

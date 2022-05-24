@@ -63,6 +63,9 @@ parameters:
   run-set-current-environment:
     type: boolean
     default: false
+  run-setup-scheduled-pipeline:
+    type: boolean
+    default: false
   run-ssh-proxy:
     type: boolean
     default: false
@@ -414,6 +417,15 @@ workflows:
           path: set-current-environment
       - publish_orb:
           path: set-current-environment
+          requires:
+            - validate_orb
+  setup-scheduled-pipeline:
+    when: << pipeline.parameters.run-setup-scheduled-pipeline >>
+    jobs:
+      - validate_orb:
+          path: setup-scheduled-pipeline
+      - publish_orb:
+          path: setup-scheduled-pipeline
           requires:
             - validate_orb
   ssh-proxy:
