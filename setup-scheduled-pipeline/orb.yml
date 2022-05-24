@@ -159,6 +159,7 @@ jobs:
                 description: Description of the schedule
                 type: string
             schedule_hour_frequency:
+                default: "1"
                 description: Number of times a schedule triggers per hour, value must be between 1 and 60
                 type: string
             schedule_hours:
@@ -168,7 +169,7 @@ jobs:
                 description: Name of the schedule
                 type: string
             target_branch:
-                default: main
+                default: ""
                 description: Branch on which the scheduled pipeline will trigger
                 type: string
         steps:
