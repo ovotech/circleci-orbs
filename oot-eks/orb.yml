@@ -33,10 +33,14 @@ commands:
         description: "Extra arguments to pass when running docker build"
         type: string
         default: ""
-      image-tags:
-        description: "Tags to push the image with"
+      image-tag:
+        description: "Tag to push the image with"
         type: string
-        default: ${CIRCLE_SHA1},latest
+        default: ${CIRCLE_SHA1}
+      extra-image-tags:
+        description: "Extra tags to push the image with, these will not be snyk scanned"
+        type: string
+        default: latest
 
     steps:
       - attach_workspace:
@@ -58,7 +62,7 @@ commands:
           aws-access-key-id: << parameters.access-key-name >>
           aws-secret-access-key: << parameters.secret-access-key-name >>
           repo: << parameters.service >>
-          tag: << parameters.image-tags >>
+          tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
           ecr-login: true
           extra-build-args: << parameters.extra-build-args >>
 
@@ -67,11 +71,11 @@ commands:
           severity-threshold: high
           fail-on-issues: false
           target-file: Dockerfile
-          docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:${CIRCLE_SHA1}
+          docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:<< parameters.image-tag >>
 
       - aws-ecr/push-image:
           repo: << parameters.service >>
-          tag: << parameters.image-tags >>
+          tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
 
 executors:
   aws:
