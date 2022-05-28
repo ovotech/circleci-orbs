@@ -1,6 +1,6 @@
 # The docker image produced by this is intended to be used by the terraform-v2
 # orb.
-FROM debian:buster-slim
+FROM debian:10.12-slim
 
 ARG TFMASK_VERSION="0.7.0"
 ARG TFSWITCH_VERSION=0.13.1221
