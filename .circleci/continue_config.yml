@@ -57,6 +57,9 @@ parameters:
   run-sast-terraform:
     type: boolean
     default: false
+  run-sast-docker:
+    type: boolean
+    default: false
   run-sbt-deploy:
     type: boolean
     default: false
@@ -399,6 +402,15 @@ workflows:
           path: sast-terraform
       - publish_orb:
           path: sast-terraform
+          requires:
+            - validate_orb
+  sast-docker:
+    when: << pipeline.parameters.run-sast-docker >>
+    jobs:
+      - validate_orb:
+          path: sast-docker
+      - publish_orb:
+          path: sast-docker
           requires:
             - validate_orb
   sbt-deploy:

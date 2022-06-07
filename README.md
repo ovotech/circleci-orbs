@@ -47,6 +47,7 @@ any changes to the orb.
  - [ovotech/ipa-deploy](ipa-deploy) - IPA team deployment notification templates.
  - [ovotech/helm-ci](helm-ci) - CI checks for Helm charts
  - [ovotech/sast-terraform](sast-terraform) - Consumer Products Production Engineering team orb to run static security analysis against Terraform IaC.
+ - [ovotech/sast-docker](sast-docker) - Consumer Products Production Engineering team orb to hadolint against Docker files.
  - [ovotech/setup-scheduled-pipeline](sast-terraform) - Consumer Products Production Engineering team orb responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started).
 
  Other orbs in the ovotech namespace:

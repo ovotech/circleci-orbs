@@ -30,6 +30,7 @@ workflows:
             rac-gcp-deploy/.* run-rac-gcp-deploy true
             rac-kmi-deploy/.* run-rac-kmi-deploy true
             sast-terraform/.* run-sast-terraform true
+            sast-docker/.* run-sast-docker true
             sbt-deploy/.* run-sbt-deploy true
             set-current-environment/.* run-set-current-environment true
             setup-scheduled-pipeline/.* run-setup-scheduled-pipeline true
