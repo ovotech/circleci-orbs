@@ -40,7 +40,6 @@ commands:
                     if [ -n "$PARAM_TRUSTED_REGISTRIES" ]; then
                       readonly trusted_registries=$(printf '%s' "--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }")
                     fi
-                    hadolintw
                     printf '%s\n' "Running hadolint with the following options..."
                     printf '%s\n' "$ignore_rules"
                     printf '%s\n' "$trusted_registries"
@@ -53,10 +52,7 @@ commands:
                     IFS="$old_ifs"
 
                     for dockerfile in "${dockerfiles[@]}"; do
-                      hadolint \
-                        ${PARAM_IGNORE_RULES:+$ignore_rules} \
-                        ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \
-                        $dockerfile
+                      hadolintw $dockerfile
 
                       printf '%s\n' "Success! $dockerfile linted; no issues found"
                     done
