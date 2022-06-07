@@ -51,8 +51,10 @@ commands:
                     IFS="$old_ifs"
 
                     for dockerfile in "${dockerfiles[@]}"; do
-                      printf '%s\n' "$dockerfile"
-                      hadolint $dockerfile
+                      hadolint \
+                        ${PARAM_IGNORE_RULES:+$ignore_rules} \
+                        ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \
+                        $dockerfile
 
                       printf '%s\n' "Success! $dockerfile linted; no issues found"
                     done
