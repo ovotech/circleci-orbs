@@ -1,0 +1,161 @@
+version: 2.1
+description: |
+    An orb to run SAST against Dockerfiles
+display:
+    home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/sast-docker/README.md
+    source_url: https://www.github.com/ovotech/team-cppe
+orbs:
+    bt: circleci/build-tools@2.6.3
+commands:
+    hadolint_scan:
+        description: |
+            Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
+        parameters:
+            dockerfiles:
+                default: Dockerfile
+                description: |
+                    Relative or absolute path, including name, to Dockerfile(s) to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory. To lint multiple Dockerfiles, pass a colon-separated string, e.g., `~/project/app/deploy.Dockerfile:~/project/app/test.Dockerfile`.
+                type: string
+            ignore-rules:
+                default: ""
+                description: |
+                    Comma-separated string list of rules to ignore (e.g., `DL3000,SC1010`): https://github.com/hadolint/hadolint#rules
+                type: string
+            trusted-registries:
+                default: ""
+                description: |
+                    Comma-separated list of trusted registries (e.g., `docker.io,my-company.com:5000`); if set, return an error if Dockerfiles use any images from registries not included in this list
+                type: string
+        steps:
+            - run:
+                command: |-
+                    if [ -n "$PARAM_IGNORE_RULES" ]; then
+                      readonly ignore_rules=$(printf '%s' "--ignore ${PARAM_IGNORE_RULES//,/ --ignore }")
+                    fi
+
+                    if [ -n "$PARAM_TRUSTED_REGISTRIES" ]; then
+                      readonly trusted_registries=$(printf '%s' "--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }")
+                    fi
+
+                    printf '%s\n' "Running hadolint with the following options..."
+                    printf '%s\n' "$ignore_rules"
+                    printf '%s\n' "$trusted_registries"
+
+                    # use colon delimiters to create array
+                    readonly old_ifs="$IFS"
+                    IFS=":"
+
+                    read -ra dockerfiles \<<< "$PARAM_DOCKERFILES"
+                    IFS="$old_ifs"
+
+                    for dockerfile in "${dockerfiles[@]}"; do
+                      hadolint \
+                        ${PARAM_IGNORE_RULES:+$ignore_rules} \
+                        ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \
+                        $dockerfile
+
+                      printf '%s\n' "Success! $dockerfile linted; no issues found"
+                    done
+                environment:
+                    PARAM_DOCKERFILES: <<parameters.dockerfiles>>
+                    PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
+                    PARAM_TRUSTED_REGISTRIES: <<parameters.trusted-registries>>
+                name: Lint <<parameters.dockerfiles>> with hadolint
+executors:
+    default:
+        description: Hadolint Docker image
+        docker:
+            - image: hadolint/hadolint:<<parameters.tag>>
+        parameters:
+            resource-class:
+                default: small
+                enum:
+                    - small
+                    - medium
+                    - medium+
+                    - large
+                    - xlarge
+                type: enum
+            tag:
+                default: latest-debian
+                description: |
+                    Specific Hadolint image (make sure to use a `debian` tag, otherwise image will not be usable on CircleCI): https://hub.docker.com/r/hadolint/hadolint/tags
+                type: string
+        resource_class: <<parameters.resource-class>>
+jobs:
+    hadolint_scan:
+        description: |
+            Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
+        executor: default
+        parameters:
+            attach-workspace:
+                default: false
+                description: |
+                    Boolean for whether or not to attach to an existing workspace, default is false
+                type: boolean
+            checkout:
+                default: true
+                description: Checkout as a first step? Default is true
+                type: boolean
+            dockerfiles:
+                default: Dockerfile
+                description: |
+                    Relative or absolute path, including name, to Dockerfile(s) to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory. To lint multiple Dockerfiles, pass a colon-separated string, e.g., `~/project/app/deploy.Dockerfile:~/project/app/test.Dockerfile`.
+                type: string
+            executor-class:
+                default: small
+                description: Resource class to use for the hadolint executor
+                enum:
+                    - small
+                    - medium
+                    - medium+
+                    - large
+                    - xlarge
+                type: enum
+            hadolint-tag:
+                default: latest-debian
+                description: |
+                    Specific Hadolint image (make sure to use a `debian` tag, otherwise image will not be usable on CircleCI): https://hub.docker.com/r/hadolint/hadolint/tags
+                type: string
+            ignore-rules:
+                default: ""
+                description: |
+                    Comma-separated string list of rules to ignore (e.g., `DL3000,SC1010`): https://github.com/hadolint/hadolint#rules
+                type: string
+            trusted-registries:
+                default: ""
+                description: |
+                    Comma-separated list of trusted registries (e.g., `docker.io,my-company.com:5000`); if set, return an error if Dockerfiles use any images from registries not included in this list
+                type: string
+            workspace-root:
+                default: workspace
+                description: |
+                    Workspace root path that is either an absolute path or a path relative to the working directory
+                type: string
+        steps:
+            - bt/install-ci-tools
+            - when:
+                condition: <<parameters.checkout>>
+                steps:
+                    - checkout
+            - when:
+                condition: <<parameters.attach-workspace>>
+                steps:
+                    - attach_workspace:
+                        at: <<parameters.workspace-root>>
+examples:
+    example:
+        description: |
+            Sample usage of Docker orb.
+        usage:
+            version: "2.1"
+            orbs:
+                docker: circleci/docker@x.y.z
+            workflows:
+                lint:
+                    jobs:
+                        - docker/hadolint:
+                            dockerfiles: innovate/CPPE-135-sast-dockerfile
+                            executor-class: medium
+                            hadolint-tag: 2.2.0-debian
+

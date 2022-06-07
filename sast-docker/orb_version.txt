@@ -1,0 +1,1 @@
+ovotech/sast-docker@1.0.0
