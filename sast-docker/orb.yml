@@ -52,6 +52,7 @@ commands:
                     IFS="$old_ifs"
 
                     for dockerfile in "${dockerfiles[@]}"; do
+                      printf '%s\n' "$dockerfile"
                       hadolintw $dockerfile
 
                       printf '%s\n' "Success! $dockerfile linted; no issues found"
