@@ -29,10 +29,9 @@ commands:
         steps:
             - checkout
             - run:
-                command: pip3 install hadolintw
-                name: Install hadolint command line
-            - run:
                 command: |-
+                    wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
+                    chmod +x /bin/hadolint
                     if [ -n "$PARAM_IGNORE_RULES" ]; then
                       readonly ignore_rules=$(printf '%s' "--ignore ${PARAM_IGNORE_RULES//,/ --ignore }")
                     fi
@@ -53,7 +52,7 @@ commands:
 
                     for dockerfile in "${dockerfiles[@]}"; do
                       printf '%s\n' "$dockerfile"
-                      hadolintw $dockerfile
+                      hadolint $dockerfile
 
                       printf '%s\n' "Success! $dockerfile linted; no issues found"
                     done
