@@ -143,6 +143,10 @@ jobs:
                 steps:
                     - attach_workspace:
                         at: <<parameters.workspace-root>>
+            - hadolint_scan:
+                dockerfiles: <<parameters.dockerfiles>>
+                ignore-rules: <<parameters.ignore-rules>>
+                trusted-registries: <<parameters.trusted-registries>>
 examples:
     example:
         description: |
