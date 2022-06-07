@@ -27,6 +27,10 @@ commands:
                     Comma-separated list of trusted registries (e.g., `docker.io,my-company.com:5000`); if set, return an error if Dockerfiles use any images from registries not included in this list
                 type: string
         steps:
+            - checkout
+            - run:
+                command: pip3 install hadolint
+                name: Install hadolint command line
             - run:
                 command: |-
                     if [ -n "$PARAM_IGNORE_RULES" ]; then
@@ -61,6 +65,8 @@ commands:
                     PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
                     PARAM_TRUSTED_REGISTRIES: <<parameters.trusted-registries>>
                 name: Lint <<parameters.dockerfiles>> with hadolint
+            - store_artifacts:
+                path: ./reports_sast_terraform/
 executors:
     default:
         description: Hadolint Docker image
