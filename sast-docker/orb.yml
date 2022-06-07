@@ -29,8 +29,10 @@ commands:
         steps:
             - checkout
             - run:
+                command: pip3 install hadolintw
+                name: Install hadolint command line
+            - run:
                 command: |-
-                    brew install hadolint
                     if [ -n "$PARAM_IGNORE_RULES" ]; then
                       readonly ignore_rules=$(printf '%s' "--ignore ${PARAM_IGNORE_RULES//,/ --ignore }")
                     fi
@@ -51,7 +53,7 @@ commands:
                     IFS="$old_ifs"
 
                     for dockerfile in "${dockerfiles[@]}"; do
-                      hadolint \
+                      hadolintw \
                         ${PARAM_IGNORE_RULES:+$ignore_rules} \
                         ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \
                         $dockerfile
