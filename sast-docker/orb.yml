@@ -29,52 +29,14 @@ commands:
         steps:
             - checkout
             - run:
-                command: |-
-                    #!/bin/bash
-
-                    run_hadolint_scan() {
-                        sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64
-                        sudo chmod +x /bin/hadolint
-                        if [ -n "$PARAM_IGNORE_RULES" ]; then
-                            readonly ignore_rules=$(printf '%s' "--ignore ${PARAM_IGNORE_RULES//,/ --ignore }")
-                        fi
-
-                        if [ -n "$PARAM_TRUSTED_REGISTRIES" ]; then
-                            readonly trusted_registries=$(printf '%s' "--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }")
-                        fi
-                        printf '%s\n' "Running hadolint with the following options..."
-                        printf '%s\n' "$ignore_rules"
-                        printf '%s\n' "$trusted_registries"
-                        # use colon delimiters to create array
-                        readonly old_ifs="$IFS"
-                        IFS=":"
-                        read -ra dockerfiles \<<< "$PARAM_DOCKERFILES"
-                        IFS="$old_ifs"
-
-                        for dockerfile in "${dockerfiles[@]}"; do
-                            hadolint \
-                            ${PARAM_IGNORE_RULES:+$ignore_rules} \
-                            ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \
-                            $dockerfile
-
-                            printf '%s\n' "Success! $dockerfile linted; no issues found"
-                        done
-                    }
-
-
-
-                    # Will not run if sourced for bats-core tests.
-                    ORB_TEST_ENV="bats-core"
-                    if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
-                        run_hadolint_scan
-                    fi
+                command: "#!/bin/bash\ninstall_hadolint() {\n    sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64\n    sudo chmod +x /bin/hadolint\n    run_hadolint_scan\n}\n\nrun_hadolint_scan() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILES\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILES 1> ./reports_sast_docker/${RANDOM}.json\n    local SUCCESS_CODE=$?\n    if [ $SUCCESS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues. Check the report in artifacts!!!\"\n    fi    \n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    install_hadolint   \nfi\n"
                 environment:
                     PARAM_DOCKERFILES: <<parameters.dockerfiles>>
                     PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
                     PARAM_TRUSTED_REGISTRIES: <<parameters.trusted-registries>>
                 name: Lint <<parameters.dockerfiles>> with hadolint
             - store_artifacts:
-                path: ./reports_sast_terraform/
+                path: ./reports_sast_docker/
 executors:
     default:
         description: Hadolint Docker image
