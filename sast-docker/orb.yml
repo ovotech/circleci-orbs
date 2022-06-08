@@ -61,13 +61,13 @@ commands:
                         done
                     }
 
-                    run_hadolint_scan
+
 
                     # Will not run if sourced for bats-core tests.
-                    # ORB_TEST_ENV="bats-core"
-                    # if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
-
-                    # fi
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
+                        run_hadolint_scan
+                    fi
                 environment:
                     PARAM_DOCKERFILES: <<parameters.dockerfiles>>
                     PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
