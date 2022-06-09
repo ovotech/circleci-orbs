@@ -42,25 +42,10 @@ commands:
                 path: ./reports_sast_docker/
 executors:
     default:
-        description: Hadolint Docker image
+        description: |
+            This is a sample executor using Ubuntu.
         docker:
-            - image: hadolint/hadolint:<<parameters.tag>>
-        parameters:
-            resource-class:
-                default: small
-                enum:
-                    - small
-                    - medium
-                    - medium+
-                    - large
-                    - xlarge
-                type: enum
-            tag:
-                default: latest-debian
-                description: |
-                    Specific Hadolint image (make sure to use a `debian` tag, otherwise image will not be usable on CircleCI): https://hub.docker.com/r/hadolint/hadolint/tags
-                type: string
-        resource_class: <<parameters.resource-class>>
+            - image: cimg/base:current-22.04
 jobs:
     hadolint_scan:
         description: |
