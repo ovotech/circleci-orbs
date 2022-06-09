@@ -29,7 +29,7 @@ commands:
         steps:
             - checkout
             - run:
-                command: wget -O /home/circleci/bin https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64
+                command: wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
                 name: Install Hadolint
             - run:
                 command: "#!/bin/bash\nrun_hadolint_scan() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILES\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILES 1> ./reports_sast_docker/${RANDOM}.json\n\n    local SUCCESS_CODE=$?\n    if [ $SUCCESS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    fi  \n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    run_hadolint_scan   \nfi\n"
