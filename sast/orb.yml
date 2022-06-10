@@ -4,8 +4,6 @@ description: |
 display:
     home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/sast/README.md
     source_url: https://www.github.com/ovotech/team-cppe
-orbs:
-    bt: circleci/build-tools@2.6.3
 commands:
     hadolint_scan:
         description: |
@@ -106,7 +104,6 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - bt/install-ci-tools
             - when:
                 condition: <<parameters.checkout>>
                 steps:
