@@ -15,37 +15,31 @@ This is the only command available in this orb currently. It runs [Hadolint](htt
 
 ### Simple Scan
 ```yaml
-description: >
-  Sample usage of SAST orb.
 
-usage:
-  version: '2.1'
-  orbs:
-    sast: ovotech/sast@1
-  workflows:
-    lint:
-      jobs:
-        - sast/hadolint_scan:
-            dockerfiles: innovate/CPPE-135-sast-dockerfile
-            ignore-rules: 'DL4005,DL3008'
-            trusted-registries: 'docker.io'
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/hadolint_scan:
+          dockerfiles: innovate/CPPE-135-sast-dockerfile
+          ignore-rules: 'DL4005,DL3008'
+          trusted-registries: 'docker.io'
 ```
 
 ### Scan with ignore rules
 
 In order to [ignore rules](https://github.com/hadolint/hadolint#rules) that would otherwise cause failed pipeline runs you can add them as a comma-seperated list after the parameter `ignore-rules`
 ```yaml
-description: >
-  Sample usage of Hadolint SAST orb using hadolint_scan job with ignore rules.
 
-usage:
-  version: '2.1'
-  orbs:
-    sast: ovotech/sast@1
-  workflows:
-    lint:
-      jobs:
-        - sast/hadolint_scan:
-            dockerfiles: innovate/CPPE-135-sast-dockerfile
-            ignore-rules: 'DL3018,DL3060'
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/hadolint_scan:
+          dockerfiles: innovate/CPPE-135-sast-dockerfile
+          ignore-rules: 'DL3018,DL3060'
 ```
