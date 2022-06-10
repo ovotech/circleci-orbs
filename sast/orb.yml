@@ -73,21 +73,6 @@ jobs:
                 description: |
                     Relative or absolute path, including name, to Dockerfile(s) to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory. To lint multiple Dockerfiles, pass a colon-separated string, e.g., `~/project/app/deploy.Dockerfile:~/project/app/test.Dockerfile`.
                 type: string
-            executor-class:
-                default: small
-                description: Resource class to use for the hadolint executor
-                enum:
-                    - small
-                    - medium
-                    - medium+
-                    - large
-                    - xlarge
-                type: enum
-            hadolint-tag:
-                default: latest-debian
-                description: |
-                    Specific Hadolint image (make sure to use a `debian` tag, otherwise image will not be usable on CircleCI): https://hub.docker.com/r/hadolint/hadolint/tags
-                type: string
             ignore-rules:
                 default: ""
                 description: |
@@ -130,8 +115,6 @@ examples:
                     jobs:
                         - docker/hadolint:
                             dockerfiles: circleci-orbs/sast/examples/Dockerfile
-                            executor-class: medium
-                            hadolint-tag: 2.2.0-debian
                             ignore-rules: DL4005,DL3008
                             trusted-registries: docker.io
 
