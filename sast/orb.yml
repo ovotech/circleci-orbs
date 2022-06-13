@@ -48,7 +48,7 @@ commands:
             - store_artifacts:
                 path: ./reports_sast_docker/
 executors:
-    hadolint_executor:
+    scan_dockerfile_executor:
         description: |
             This is a sample executor using Ubuntu.
         docker:
@@ -57,7 +57,7 @@ jobs:
     scan_dockerfile:
         description: |
             Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
-        executor: hadolint_executor
+        executor: scan_dockerfile_executor
         parameters:
             attach-workspace:
                 default: false
@@ -103,7 +103,7 @@ jobs:
                 ignore-rules: <<parameters.ignore-rules>>
                 trusted-registries: <<parameters.trusted-registries>>
 examples:
-    hadolint_example:
+    scan_dockerfile_example:
         description: |
             Sample usage of Docker orb.
         usage:
