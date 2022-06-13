@@ -7,9 +7,9 @@ This orb can be used to run the Hadolint analysis tool via the CLI against a tar
 This is the only command available in this orb currently. It runs [Hadolint](https://hub.docker.com/r/hadolint/hadolint) Dockerfile analysis via the CLI against a target Dockerfile with the specified configuration options.
 
 **Parameters**
-- `dockerfiles` - directory containing a Dockerfile to scan
+- `dockerfile` - directory containing a Dockerfile to scan
 - `ignore-rules` - any vulnerability [rules](https://github.com/hadolint/hadolint#rules) you choose to ignore 
-- `trusted-registries` - comma-separated list of trusted registries (e.g. `docker.io,my-company.com:5000`) if set, returns an error if Dockerfiles use any images from registries not included in this list
+- `trusted-registries` - comma-separated list of trusted registries (e.g. `docker.io,my-company.com:5000`) if set, returns an error if Dockerfile use any images from registries not included in this list
 
 ## Examples
 
@@ -23,7 +23,7 @@ workflows:
   lint:
     jobs:
       - sast/scan_dockerfile:
-          dockerfiles: circleci-orbs/sast/examples/Dockerfile
+          dockerfile: circleci-orbs/sast/examples/Dockerfile
           ignore-rules: 'DL4005,DL3008'
           trusted-registries: 'docker.io'
 ```
@@ -40,6 +40,6 @@ workflows:
   lint:
     jobs:
       - sast/scan_dockerfile:
-          dockerfiles: innovate/CPPE-135-sast-dockerfile
+          dockerfile: innovate/CPPE-135-sast-dockerfile
           ignore-rules: 'DL3018,DL3060'
 ```
