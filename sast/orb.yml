@@ -1,0 +1,120 @@
+version: 2.1
+description: |
+    An orb to run SAST
+display:
+    home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/sast/README.md
+    source_url: https://www.github.com/ovotech/team-cppe
+commands:
+    scan_dockerfile:
+        description: |
+            Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
+        parameters:
+            dockerfile:
+                default: Dockerfile
+                description: |
+                    Relative or absolute path, including name, to the Dockerfile to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory.
+                type: string
+            ignore-rules:
+                default: ""
+                description: |
+                    Comma-separated string list of rules to ignore (e.g., `DL3000,SC1010`): https://github.com/hadolint/hadolint#rules
+                type: string
+            trusted-registries:
+                default: ""
+                description: |
+                    Comma-separated list of trusted registries (e.g., `docker.io,my-company.com:5000`); if set, return an error if Dockerfile use any images from registries not included in this list
+                type: string
+        steps:
+            - checkout
+            - run:
+                command: |
+                    echo -e "\n\n===================================================="
+                    echo "Looking up the latest version ..."
+                    version=$(curl --silent "https://api.github.com/repos/hadolint/hadolint/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+                    echo "Downloading Hadolint $version"
+                    wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
+                    echo "Installed successfully"
+                    echo -e "\n\n===================================================="
+                    echo "Current hadolint version"
+                    hadolint -v
+                name: Install latest version of Hadolint
+            - run:
+                command: "#!/bin/bash\nscan_dockerfile() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILE\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE\n\n    hadolint --format json \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        exit $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
+                environment:
+                    PARAM_DOCKERFILE: <<parameters.dockerfile>>
+                    PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
+                    PARAM_TRUSTED_REGISTRIES: <<parameters.trusted-registries>>
+                name: Lint <<parameters.dockerfile>> with hadolint
+            - store_artifacts:
+                path: ./reports_sast_docker/
+executors:
+    scan_dockerfile_executor:
+        description: |
+            This is a sample executor using Ubuntu.
+        docker:
+            - image: cimg/base:current-22.04
+jobs:
+    scan_dockerfile:
+        description: |
+            Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
+        executor: scan_dockerfile_executor
+        parameters:
+            attach-workspace:
+                default: false
+                description: |
+                    Boolean for whether or not to attach to an existing workspace, default is false
+                type: boolean
+            checkout:
+                default: true
+                description: Checkout as a first step? Default is true
+                type: boolean
+            dockerfile:
+                default: Dockerfile
+                description: |
+                    Relative or absolute path, including name, to the Dockerfile to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory.
+                type: string
+            ignore-rules:
+                default: ""
+                description: |
+                    Comma-separated string list of rules to ignore (e.g., `DL3000,SC1010`): https://github.com/hadolint/hadolint#rules
+                type: string
+            trusted-registries:
+                default: ""
+                description: |
+                    Comma-separated list of trusted registries (e.g., `docker.io,my-company.com:5000`); if set, return an error if Dockerfile use any images from registries not included in this list
+                type: string
+            workspace-root:
+                default: workspace
+                description: |
+                    Workspace root path that is either an absolute path or a path relative to the working directory
+                type: string
+        steps:
+            - when:
+                condition: <<parameters.checkout>>
+                steps:
+                    - checkout
+            - when:
+                condition: <<parameters.attach-workspace>>
+                steps:
+                    - attach_workspace:
+                        at: <<parameters.workspace-root>>
+            - scan_dockerfile:
+                dockerfile: <<parameters.dockerfile>>
+                ignore-rules: <<parameters.ignore-rules>>
+                trusted-registries: <<parameters.trusted-registries>>
+examples:
+    scan_dockerfile_example:
+        description: |
+            Sample usage of Docker orb.
+        usage:
+            version: "2.1"
+            orbs:
+                sast: ovotech/sast@1
+            workflows:
+                lint:
+                    jobs:
+                        - sast/scan_dockerfile:
+                            dockerfile: circleci-orbs/sast/examples/Dockerfile
+                            ignore-rules: DL4005,DL3008
+                            trusted-registries: docker.io
+
