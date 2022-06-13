@@ -1082,6 +1082,9 @@ jobs:
       deployment:
         type: string
         default: ""
+      isPrimaryDeployment:
+        type: string
+        default: ""
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
@@ -1093,6 +1096,7 @@ jobs:
           environment: << parameters.environment >>
           automatedTestSuite: << parameters.automatedTestSuite >>
           deployment: << parameters.deployment >>
+          isPrimaryDeployment: << parameters.isPrimaryDeployment >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
