@@ -5,14 +5,14 @@ display:
     home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/sast/README.md
     source_url: https://www.github.com/ovotech/team-cppe
 commands:
-    hadolint_scan:
+    scan_dockerfile:
         description: |
             Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
         parameters:
             dockerfiles:
                 default: Dockerfile
                 description: |
-                    Relative or absolute path, including name, to Dockerfile(s) to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory. To lint multiple Dockerfiles, pass a colon-separated string, e.g., `~/project/app/deploy.Dockerfile:~/project/app/test.Dockerfile`.
+                    Relative or absolute path, including name, to the Dockerfile to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory.
                 type: string
             ignore-rules:
                 default: ""
@@ -39,7 +39,7 @@ commands:
                     hadolint -v
                 name: Install latest version of Hadolint
             - run:
-                command: "#!/bin/bash\nrun_hadolint_scan() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILES\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILES\n\n    hadolint --format json \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILES 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        exit $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    run_hadolint_scan   \nfi\n"
+                command: "#!/bin/bash\nscan_dockerfile() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILES\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILES\n\n    hadolint --format json \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILES 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        exit $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
                 environment:
                     PARAM_DOCKERFILES: <<parameters.dockerfiles>>
                     PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
@@ -54,7 +54,7 @@ executors:
         docker:
             - image: cimg/base:current-22.04
 jobs:
-    hadolint_scan:
+    scan_dockerfile:
         description: |
             Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
         executor: hadolint_executor
@@ -71,7 +71,7 @@ jobs:
             dockerfiles:
                 default: Dockerfile
                 description: |
-                    Relative or absolute path, including name, to Dockerfile(s) to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory.
+                    Relative or absolute path, including name, to the Dockerfile to be linted, e.g., `~/project/app/deploy.Dockerfile`, defaults to a Dockerfile named `Dockerfile` in the working directory.
                 type: string
             ignore-rules:
                 default: ""
@@ -98,7 +98,7 @@ jobs:
                 steps:
                     - attach_workspace:
                         at: <<parameters.workspace-root>>
-            - hadolint_scan:
+            - scan_dockerfile:
                 dockerfiles: <<parameters.dockerfiles>>
                 ignore-rules: <<parameters.ignore-rules>>
                 trusted-registries: <<parameters.trusted-registries>>
@@ -109,11 +109,11 @@ examples:
         usage:
             version: "2.1"
             orbs:
-                docker: circleci/docker@2.1.1
+                sast: ovotech/sast@1
             workflows:
                 lint:
                     jobs:
-                        - docker/hadolint:
+                        - sast/scan_dockerfile:
                             dockerfiles: circleci-orbs/sast/examples/Dockerfile
                             ignore-rules: DL4005,DL3008
                             trusted-registries: docker.io

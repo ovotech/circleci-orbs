@@ -3,7 +3,7 @@
 This orb can be used to run the Hadolint analysis tool via the CLI against a target Dockerfile.
 
 ## Commands
-### hadolint_scan
+### scan_dockerfile
 This is the only command available in this orb currently. It runs [Hadolint](https://hub.docker.com/r/hadolint/hadolint) Dockerfile analysis via the CLI against a target Dockerfile with the specified configuration options.
 
 **Parameters**
@@ -22,8 +22,8 @@ orbs:
 workflows:
   lint:
     jobs:
-      - sast/hadolint_scan:
-          dockerfiles: innovate/CPPE-135-sast-dockerfile
+      - sast/scan_dockerfile:
+          dockerfiles: circleci-orbs/sast/examples/Dockerfile
           ignore-rules: 'DL4005,DL3008'
           trusted-registries: 'docker.io'
 ```
@@ -39,7 +39,7 @@ orbs:
 workflows:
   lint:
     jobs:
-      - sast/hadolint_scan:
+      - sast/scan_dockerfile:
           dockerfiles: innovate/CPPE-135-sast-dockerfile
           ignore-rules: 'DL3018,DL3060'
 ```
