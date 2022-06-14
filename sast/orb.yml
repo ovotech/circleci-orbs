@@ -1,10 +1,33 @@
 version: 2.1
 description: |
-    An orb to run SAST
+    An orb to run SAST scans against various types of code
 display:
-    home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/sast/README.md
-    source_url: https://www.github.com/ovotech/team-cppe
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
+    source_url: https://github.com/ovotech/team-cppe
 commands:
+    install_semgrep:
+        description: |
+            Installs the given version of semgrep, or the latest one if none provided
+        parameters:
+            version:
+                default: ""
+                description: The version of semgrep to install
+                type: string
+        steps:
+            - when:
+                condition: << parameters.version >>
+                steps:
+                    - run:
+                        command: pip install "semgrep==<< parameters.version >>"
+                        name: Install version << parameters.version >> of semgrep
+            - when:
+                condition:
+                    not: << parameters.version >>
+                steps:
+                    - run:
+                        command: pip install semgrep
+                        name: Install latest version of semgrep
+            - run: semgrep --version
     scan_dockerfile:
         description: |
             Lint a given Dockerfile using a hadolint Docker image: https://hub.docker.com/r/hadolint/hadolint
@@ -39,7 +62,7 @@ commands:
                     hadolint -v
                 name: Install latest version of Hadolint
             - run:
-                command: "#!/bin/bash\nscan_dockerfile() {\n    set --\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        IFS=, read -ra IGNORE_RULES \\<<< \"$PARAM_IGNORE_RULES\"\n        for RULE in \"${IGNORE_RULES[@]}\"; do\n          set -- \"$@\" \"--ignore\" \"${RULE}\"\n        done\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        IFS=, read -ra TRUSTED_REGISTRIES \\<<< \"$PARAM_TRUSTED_REGISTRIES\"\n        for TRUSTED_REGISTRY in \"${TRUSTED_REGISTRIES[@]}\"; do\n          set -- \"$@\" \"--trusted-registry\" \"${TRUSTED_REGISTRY}\"\n        done\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILE\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \"$@\" \"$PARAM_DOCKERFILE\"\n    hadolint --format json \"$@\" \"$PARAM_DOCKERFILE\" 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        return $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
+                command: "#!/bin/bash\nscan_dockerfile() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILE\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE\n\n    hadolint --format json \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        exit $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
                 environment:
                     PARAM_DOCKERFILE: <<parameters.dockerfile>>
                     PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
@@ -47,7 +70,59 @@ commands:
                 name: Lint <<parameters.dockerfile>> with hadolint
             - store_artifacts:
                 path: ./reports_sast_docker/
+    scan_scala:
+        description: |
+            Scans a Scala project using Semgrep
+        parameters:
+            directory:
+                default: .
+                description: |
+                    Path to the directory containing the Scala code to be scanned. Defaults to the current working directory
+                type: string
+        steps:
+            - checkout
+            - install_semgrep
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    scan_scala() {
+                      set --
+                      set -- "$@" "--config" "r/scala"
+                      set -- "$@" "--metrics" "off"
+                      set -- "$@" "--disable-version-check"
+                      set -- "$@" "--strict"
+
+                      if [[ ! -d "./reports/sast/scala" ]]; then
+                        mkdir -p "./reports/sast/scala"
+                      fi
+
+                      semgrep scan "$@" --error "${PARAM_DIRECTORY}" || _EC=$?
+                      semgrep scan "$@" --disable-nosem --json --output "./reports/sast/scala/$(date +%s).json" "${PARAM_DIRECTORY}"
+
+                      if [[ "${_EC:-0}" -gt 0 ]]; then
+                        echo "Semgrep scan returned failures. See logs."
+                        return ${_EC}
+                      fi
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        scan_scala
+                    fi
+                environment:
+                    PARAM_DIRECTORY: <<parameters.directory>>
+                name: Lint Scala code in <<parameters.directory>> with Semgrep
+            - store_artifacts:
+                path: ./reports/sast/scala/
 executors:
+    default:
+        description: |
+            This is the default executor.
+        docker:
+            - image: cimg/python:3.9
     scan_dockerfile_executor:
         description: |
             This is a sample executor using Ubuntu.
@@ -102,6 +177,42 @@ jobs:
                 dockerfile: <<parameters.dockerfile>>
                 ignore-rules: <<parameters.ignore-rules>>
                 trusted-registries: <<parameters.trusted-registries>>
+    scan_scala:
+        description: |
+            Scans a Scala project using Semgrep
+        executor: default
+        parameters:
+            attach-workspace:
+                default: false
+                description: |
+                    Boolean for whether or not to attach to an existing workspace, default is false
+                type: boolean
+            checkout:
+                default: true
+                description: Checkout as a first step? Default is true
+                type: boolean
+            directory:
+                default: .
+                description: |
+                    Path to the directory containing the Scala code to be scanned. Defaults to the current working directory
+                type: string
+            workspace-root:
+                default: workspace
+                description: |
+                    Workspace root path that is either an absolute path or a path relative to the working directory
+                type: string
+        steps:
+            - when:
+                condition: <<parameters.checkout>>
+                steps:
+                    - checkout
+            - when:
+                condition: <<parameters.attach-workspace>>
+                steps:
+                    - attach_workspace:
+                        at: <<parameters.workspace-root>>
+            - scan_scala:
+                directory: <<parameters.directory>>
 examples:
     scan_dockerfile_example:
         description: |
@@ -117,4 +228,16 @@ examples:
                             dockerfile: circleci-orbs/sast/examples/Dockerfile
                             ignore-rules: DL4005,DL3008
                             trusted-registries: docker.io
+    scan_scala:
+        description: |
+            Sample usage of scanning a Scala project.
+        usage:
+            version: "2.1"
+            orbs:
+                sast: ovotech/sast@1
+            workflows:
+                lint:
+                    jobs:
+                        - sast/scan_scala:
+                            directory: ./src
 
