@@ -475,6 +475,9 @@ commands:
       deployment:
         type: string
         default: ""
+      isPrimaryDeployment:
+        type: string
+        default: ""
     steps:
       - run:
           name: "Run automated tests"
@@ -482,6 +485,7 @@ commands:
           command: |
             echo 'export AUTOMATED_TEST_SUITE="<< parameters.automatedTestSuite >>"'
             echo 'export DEPLOYMENT="<< parameters.deployment >>"'
+            echo 'export IS_PRIMARY_DEPLOYMENT="<< parameters.isPrimaryDeployment >>"'
             include ./scripts/set_profile.sh
             include ./scripts/automated_test_run.sh
 
@@ -1078,6 +1082,9 @@ jobs:
       deployment:
         type: string
         default: ""
+      isPrimaryDeployment:
+        type: string
+        default: ""
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
@@ -1089,6 +1096,7 @@ jobs:
           environment: << parameters.environment >>
           automatedTestSuite: << parameters.automatedTestSuite >>
           deployment: << parameters.deployment >>
+          isPrimaryDeployment: << parameters.isPrimaryDeployment >>
       - save-automated-tests
       - store_test_results:
           path: ~/test-results
