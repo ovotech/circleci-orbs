@@ -1,1 +1,1 @@
-ovotech/sast@1.1.1
+ovotech/sast@1.1.0
