@@ -26,6 +26,22 @@ tool [Hadolint](https://hub.docker.com/r/hadolint/hadolint).
   `docker.io,my-company.com:5000`) if set, returns an error if Dockerfile
    use any images from registries not included in this list.
 
+### scan_scala
+This command will scan Scala code for security vulnerabilities. It runs the tool
+[Semgrep](https://semgrep.dev) to perform the scans.
+
+**Parameters**
+- `directory` - the directory containing Scala code to scan. Defaults to the
+  root of the repository.
+
+### scan_terraform
+This command runs [Checkov](https://www.checkov.io/) static code analysis via the CLI with the specified configuration options.
+
+**Parameters**
+- `directory` - directory with infrastructure code to scan
+- `config_file` - checkov configuration file
+- `baseline` - Path to a .checkov.baseline file to compare. Report will include only failed checks that are not in the baseline. If one is not specified, the orb will look for one in the directory and use that as a default
+
 ## Examples
 ### Simple Scan for scan_dockerfile command
 ```yaml
@@ -55,15 +71,6 @@ workflows:
           ignore-rules: 'DL4005,DL3008'
 ```
 
-### scan_scala
-This command will scan Scala code for security vulnerabilities. It runs the tool
-[Semgrep](https://semgrep.dev) to perform the scans.
-
-**Parameters**
-- `directory` - the directory containing Scala code to scan. Defaults to the
-  root of the repository.
-
-## Examples
 ### Simple Scan for scan_scala command
 ```yaml
 
@@ -76,16 +83,6 @@ workflows:
       - sast/scan_scala:
           directory: ./src
 ```
-
-### scan_terraform
-This command runs [Checkov](https://www.checkov.io/) static code analysis via the CLI with the specified configuration options.
-
-**Parameters**
-- `directory` - directory with infrastructure code to scan
-- `config_file` - checkov configuration file
-- `baseline` - Path to a .checkov.baseline file to compare. Report will include only failed checks that are not in the baseline. If one is not specified, the orb will look for one in the directory and use that as a default
-
-## Examples
 
 ### Simple Scan for scan_terraform command
 ```yaml
