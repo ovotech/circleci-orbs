@@ -112,7 +112,7 @@ commands:
             - checkout
             - install_hadolint
             - run:
-                command: "#!/bin/bash\nscan_dockerfile() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILE\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE\n\n    hadolint --format json \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        exit $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
+                command: "#!/bin/bash\nscan_dockerfile() {\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        readonly ignore_rules=$(printf '%s' \"--ignore ${PARAM_IGNORE_RULES//,/ --ignore }\")\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        readonly trusted_registries=$(printf '%s' \"--trusted-registry ${PARAM_TRUSTED_REGISTRIES//,/ --trusted-registry }\")\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILE\"\n\n    if [ ! -d \"./reports/sast/docker\" ]; then\n        mkdir -p ./reports/sast/docker\n    fi\n\n    hadolint --no-fail \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE\n\n    hadolint --format json \\\n    ${PARAM_IGNORE_RULES:+$ignore_rules} \\\n    ${PARAM_TRUSTED_REGISTRIES:+$trusted_registries} \\\n    $PARAM_DOCKERFILE 1> ./reports/sast/docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        exit $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*$ORB_TEST_ENV}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
                 environment:
                     PARAM_DOCKERFILE: <<parameters.dockerfile>>
                     PARAM_IGNORE_RULES: <<parameters.ignore-rules>>
@@ -218,12 +218,12 @@ commands:
 
                         echo "running checkov on directory $PARAM_DIRECTORY:"
                         echo "checkov -d $PARAM_DIRECTORY --quiet" "$@"
-                        if [ ! -d "./reports_sast_terraform" ]; then
-                            mkdir -p ./reports_sast_terraform
+                        if [ ! -d "./reports/sast/terraform" ]; then
+                            mkdir -p ./reports/sast/terraform
                         fi
 
                         export LOG_LEVEL="WARNING"
-                        checkov -d "$PARAM_DIRECTORY" --quiet --output json --soft-fail "$@" 1> ./reports_sast_terraform/${RANDOM}.json
+                        checkov -d "$PARAM_DIRECTORY" --quiet --output json --soft-fail "$@" 1> ./reports/sast/terraform/${RANDOM}.json
                         checkov -d "$PARAM_DIRECTORY" --quiet "$@"
                     }
 
