@@ -5,6 +5,67 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
     source_url: https://github.com/ovotech/team-cppe
 commands:
+    install_checkov:
+        description: |
+            Installs the given version of checkov, or the latest one if none provided
+        parameters:
+            version:
+                default: ""
+                description: The version of checkov to install
+                type: string
+        steps:
+            - when:
+                condition: << parameters.version >>
+                steps:
+                    - run:
+                        command: pip3 install "checkov==<< parameters.version >>"
+                        name: Install version << parameters.version >> of checkov
+            - when:
+                condition:
+                    not: << parameters.version >>
+                steps:
+                    - run:
+                        command: pip3 install checkov
+                        name: Install latest version of checkov
+            - run: checkov --version
+    install_hadolint:
+        description: |
+            Installs the given version of hadolint, or the latest one if none provided
+        parameters:
+            version:
+                default: ""
+                description: The version of hadolint to install
+                type: string
+        steps:
+            - when:
+                condition: << parameters.version >>
+                steps:
+                    - run:
+                        command: |
+                            echo -e "\n\n===================================================="
+                            version=<< parameters.version >>
+                            echo "Downloading Hadolint $version"
+                            wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
+                            echo "Installed successfully"
+                            echo -e "\n\n===================================================="
+                            echo "Current hadolint version"
+                        name: Install version << parameters.version >> of hadolint
+            - when:
+                condition:
+                    not: << parameters.version >>
+                steps:
+                    - run:
+                        command: |
+                            echo -e "\n\n===================================================="
+                            echo "Looking up the latest version ..."
+                            version=$(curl --silent "https://api.github.com/repos/hadolint/hadolint/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+                            echo "Downloading Hadolint $version"
+                            wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
+                            echo "Installed successfully"
+                            echo -e "\n\n===================================================="
+                            echo "Current hadolint version"
+                        name: Install latest version of hadolint
+            - run: hadolint --version
     install_semgrep:
         description: |
             Installs the given version of semgrep, or the latest one if none provided
@@ -49,18 +110,7 @@ commands:
                 type: string
         steps:
             - checkout
-            - run:
-                command: |
-                    echo -e "\n\n===================================================="
-                    echo "Looking up the latest version ..."
-                    version=$(curl --silent "https://api.github.com/repos/hadolint/hadolint/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-                    echo "Downloading Hadolint $version"
-                    wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
-                    echo "Installed successfully"
-                    echo -e "\n\n===================================================="
-                    echo "Current hadolint version"
-                    hadolint -v
-                name: Install latest version of Hadolint
+            - install_hadolint
             - run:
                 command: "#!/bin/bash\nscan_dockerfile() {\n    set --\n    if [ -n \"$PARAM_IGNORE_RULES\" ]; then\n        IFS=, read -ra IGNORE_RULES \\<<< \"$PARAM_IGNORE_RULES\"\n        for RULE in \"${IGNORE_RULES[@]}\"; do\n          set -- \"$@\" \"--ignore\" \"${RULE}\"\n        done\n    fi\n\n    if [ -n \"$PARAM_TRUSTED_REGISTRIES\" ]; then\n        IFS=, read -ra TRUSTED_REGISTRIES \\<<< \"$PARAM_TRUSTED_REGISTRIES\"\n        for TRUSTED_REGISTRY in \"${TRUSTED_REGISTRIES[@]}\"; do\n          set -- \"$@\" \"--trusted-registry\" \"${TRUSTED_REGISTRY}\"\n        done\n    fi\n    printf '%s\\n' \"Running hadolint on $PARAM_DOCKERFILE\"\n\n    if [ ! -d \"./reports_sast_docker\" ]; then\n        mkdir -p ./reports_sast_docker\n    fi\n\n    hadolint --no-fail \"$@\" \"$PARAM_DOCKERFILE\"\n    hadolint --format json \"$@\" \"$PARAM_DOCKERFILE\" 1> ./reports_sast_docker/${RANDOM}.json\n\n    local STATUS_CODE=$?\n    if [ $STATUS_CODE -eq 0 ]; then\n        printf '%s\\n' \"Docker file scan succeeded with no linting issues!!!\"\n    else\n        printf '%s\\n' \"Docker file scan failed with linting issues, see report folder!!!\" \n        return $STATUS_CODE\n    fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    scan_dockerfile   \nfi\n"
                 environment:
@@ -69,7 +119,7 @@ commands:
                     PARAM_TRUSTED_REGISTRIES: <<parameters.trusted-registries>>
                 name: Lint <<parameters.dockerfile>> with hadolint
             - store_artifacts:
-                path: ./reports_sast_docker/
+                path: ./reports/sast/docker/
     scan_scala:
         description: |
             Scans a Scala project using Semgrep
@@ -117,6 +167,79 @@ commands:
                 name: Lint Scala code in <<parameters.directory>> with Semgrep
             - store_artifacts:
                 path: ./reports/sast/scala/
+    scan_terraform:
+        description: |
+            Run Checkov Infrastructure as code static analysis against a directory
+        parameters:
+            baseline:
+                default: ""
+                description: Path to a .checkov.baseline file to compare. Report will include only failed checks that are not in the baseline
+                type: string
+            config_file:
+                default: ""
+                description: checkov configuration file
+                type: string
+            directory:
+                default: .
+                description: directory with infrastructure code to scan
+                type: string
+        steps:
+            - checkout
+            - install_checkov
+            - run:
+                command: |+
+                    #!/bin/bash
+
+                    run_checkov() {
+                        checkov --version
+
+                        set --
+                        set -- "$@" "--output" "cli"
+                        set -- "$@" "--framework" "terraform"
+                        set -- "$@" "--download-external-modules" "false"
+
+                        if [ -z "$PARAM_BASELINE" ]; then
+                            DEFAULT_BASELINE=$(find "$PARAM_DIRECTORY" -name ".checkov.baseline")
+                            if [ -n "$DEFAULT_BASELINE" ]; then
+                                set -- "$@" "--baseline" "$DEFAULT_BASELINE"
+                            else
+                                DEFAULT_BASELINE=$(find . -name ".checkov.baseline")
+                                if [ -n "$DEFAULT_BASELINE" ]; then
+                                    set -- "$@" "--baseline" "$DEFAULT_BASELINE"
+                                fi
+                            fi
+                        else
+                            set -- "$@" "--baseline" "$PARAM_BASELINE"
+                        fi
+
+                        if [[ -n "$PARAM_CONFIG_FILE" ]]; then
+                            set -- "$@" "--config-file" "$PARAM_CONFIG_FILE"
+                        fi
+
+                        echo "running checkov on directory $PARAM_DIRECTORY:"
+                        echo "checkov -d $PARAM_DIRECTORY --quiet" "$@"
+                        if [ ! -d "./reports/sast/terraform" ]; then
+                            mkdir -p ./reports/sast/terraform
+                        fi
+
+                        export LOG_LEVEL="WARNING"
+                        checkov -d "$PARAM_DIRECTORY" --quiet --output json --soft-fail "$@" 1> "./reports/sast/terraform/$(date +%s).json"
+                        checkov -d "$PARAM_DIRECTORY" --quiet "$@"
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        run_checkov
+                    fi
+
+                environment:
+                    PARAM_BASELINE: <<parameters.baseline>>
+                    PARAM_CONFIG_FILE: <<parameters.config_file>>
+                    PARAM_DIRECTORY: <<parameters.directory>>
+                name: Run Checkov command line
+            - store_artifacts:
+                path: ./reports/sast/terraform/
 executors:
     default:
         description: |
@@ -213,10 +336,55 @@ jobs:
                         at: <<parameters.workspace-root>>
             - scan_scala:
                 directory: <<parameters.directory>>
+    scan_terraform:
+        description: |
+            Scans terraform files using Checkov Infrastructure as code static analysis against a directory
+        executor: default
+        parameters:
+            attach-workspace:
+                default: false
+                description: |
+                    Boolean for whether or not to attach to an existing workspace, default is false
+                type: boolean
+            baseline:
+                default: ""
+                description: Path to a .checkov.baseline file to compare. Report will include only failed checks that are not in the baseline
+                type: string
+            checkout:
+                default: true
+                description: Checkout as a first step? Default is true
+                type: boolean
+            config_file:
+                default: ""
+                description: checkov configuration file
+                type: string
+            directory:
+                default: .
+                description: directory with infrastructure code to scan
+                type: string
+            workspace-root:
+                default: workspace
+                description: |
+                    Workspace root path that is either an absolute path or a path relative to the working directory
+                type: string
+        steps:
+            - when:
+                condition: <<parameters.checkout>>
+                steps:
+                    - checkout
+            - when:
+                condition: <<parameters.attach-workspace>>
+                steps:
+                    - attach_workspace:
+                        at: <<parameters.workspace-root>>
+            - scan_terraform:
+                baseline: << parameters.baseline >>
+                config_file: << parameters.config_file >>
+                directory: << parameters.directory >>
 examples:
     scan_dockerfile_example:
         description: |
-            Sample usage of Docker orb.
+            Sample usage of scanning a Dockerfile.
         usage:
             version: "2.1"
             orbs:
@@ -240,4 +408,16 @@ examples:
                     jobs:
                         - sast/scan_scala:
                             directory: ./src
+    scan_terraform:
+        description: |
+            Sample usage of scanning Terraform files.
+        usage:
+            version: "2.1"
+            orbs:
+                sast: ovotech/sast@1
+            workflows:
+                example-workflow:
+                    jobs:
+                        - sast/scan_terraform:
+                            directory: terraform/examples
 
