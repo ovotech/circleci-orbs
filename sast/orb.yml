@@ -28,6 +28,44 @@ commands:
                         command: pip3 install checkov
                         name: Install latest version of checkov
             - run: checkov --version
+    install_hadolint:
+        description: |
+            Installs the given version of hadolint, or the latest one if none provided
+        parameters:
+            version:
+                default: ""
+                description: The version of hadolint to install
+                type: string
+        steps:
+            - when:
+                condition: << parameters.version >>
+                steps:
+                    - run:
+                        command: |
+                            echo -e "\n\n===================================================="
+                            version=<< parameters.version >>
+                            echo "Downloading Hadolint $version"
+                            wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
+                            echo "Installed successfully"
+                            echo -e "\n\n===================================================="
+                            echo "Current hadolint version"
+                        name: Install version << parameters.version >> of hadolint
+            - when:
+                condition:
+                    not: << parameters.version >>
+                steps:
+                    - run:
+                        command: |
+                            echo -e "\n\n===================================================="
+                            echo "Looking up the latest version ..."
+                            version=$(curl --silent "https://api.github.com/repos/hadolint/hadolint/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+                            echo "Downloading Hadolint $version"
+                            wget -O /home/circleci/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64 && chmod +x /home/circleci/bin/hadolint
+                            echo "Installed successfully"
+                            echo -e "\n\n===================================================="
+                            echo "Current hadolint version"
+                        name: Install latest version of hadolint
+            - run: hadolint --version
     install_semgrep:
         description: |
             Installs the given version of semgrep, or the latest one if none provided
