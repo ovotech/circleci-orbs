@@ -5,6 +5,29 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
     source_url: https://github.com/ovotech/team-cppe
 commands:
+    install_checkov:
+        description: |
+            Installs the given version of checkov, or the latest one if none provided
+        parameters:
+            version:
+                default: ""
+                description: The version of checkov to install
+                type: string
+        steps:
+            - when:
+                condition: << parameters.version >>
+                steps:
+                    - run:
+                        command: pip3 install "checkov==<< parameters.version >>"
+                        name: Install version << parameters.version >> of checkov
+            - when:
+                condition:
+                    not: << parameters.version >>
+                steps:
+                    - run:
+                        command: pip3 install checkov
+                        name: Install latest version of checkov
+            - run: checkov --version
     install_semgrep:
         description: |
             Installs the given version of semgrep, or the latest one if none provided
@@ -135,9 +158,7 @@ commands:
                 type: string
         steps:
             - checkout
-            - run:
-                command: pip3 install checkov
-                name: Install Checkov command line
+            - install_checkov
             - run:
                 command: |+
                     #!/bin/bash
