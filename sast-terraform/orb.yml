@@ -2,7 +2,7 @@ version: 2.1
 description: |
     An orb to run SAST against Terraform infrastructure code
 display:
-    home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/sast-terraform/README.md
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
     source_url: https://www.github.com/ovotech/team-cppe
 commands:
     checkov_static_code_analysis:
