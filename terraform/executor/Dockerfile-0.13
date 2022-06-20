@@ -11,7 +11,7 @@ ARG GCLOUD_VERSION=314.0.0
 ARG AWSCLI_VERSION=1.18.134
 ARG HELM2_VERSION=2.16.10
 ARG HELM3_VERSION=3.3.1
-ARG TFSWITCH_VERSION=0.13.1221
+ARG TFSWITCH_VERSION=0.13.1275
 # Note on Aiven Provider:
 # Recommended not to use v1.3.5 but instead use TF builtin `required_providers`
 # to automatically install the correct v2.x Aiven provider
