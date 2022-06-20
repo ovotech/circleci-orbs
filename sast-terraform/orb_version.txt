@@ -1,1 +1,1 @@
-ovotech/sast-terraform@1.0.2
+ovotech/sast-terraform@1.1.2
