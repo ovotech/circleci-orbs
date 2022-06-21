@@ -46,7 +46,6 @@ any changes to the orb.
  - [ovotech/pipeline-utils](pipeline-utils) - Miscellaneous bash commands to ease CircleCI pipeline development.
  - [ovotech/ipa-deploy](ipa-deploy) - IPA team deployment notification templates.
  - [ovotech/helm-ci](helm-ci) - CI checks for Helm charts
- - [ovotech/sast-terraform](sast-terraform) - Consumer Products Production Engineering team orb to run static security analysis against Terraform IaC.
  - [ovotech/sast](sast) - Consumer Products Production Engineering team orb to run static security analysis.
  - [ovotech/setup-scheduled-pipeline](setup-scheduled-pipeline) - Consumer Products Production Engineering team orb responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started).
 
