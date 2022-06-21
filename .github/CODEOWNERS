@@ -20,6 +20,5 @@
 /argocd/                         @ovotech/metering-industry-abstraction-cluster-admins
 /comms-commands/                 @ovotech/comms
 /ipa-deploy/                     @ovotech/ipa
-/sast-terraform/                 @ovotech/consumer-products-production-engineering
 /sast/                           @ovotech/consumer-products-production-engineering
 /setup-scheduled-pipeline/       @ovotech/consumer-products-production-engineering

@@ -1,6 +1,6 @@
 version: 2.1
 description: |
-    An orb to run SAST against Terraform infrastructure code. This orb has been deprecated. Please use the [new orb](https://circleci.com/developer/orbs/orb/ovotech/sast).
+    An orb to run SAST against Terraform infrastructure code. This orb has been deprecated. Please use the new orb -> https://circleci.com/developer/orbs/orb/ovotech/sast
 display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
     source_url: https://www.github.com/ovotech/team-cppe
