@@ -185,9 +185,6 @@ commands:
             serverless deploy --stage ${STAGE} --region ${AWS_REGION}
           name: deploy
       - run:
-          name: Checking env variable
-          command: echo ${KTR_REQUEST_INPUT_QUEUE}
-      - run:
           name: "Integration tests"
           command: |
             npm run integrationTest
