@@ -1,6 +1,18 @@
 version: 2.1
 description: "Common deploy scripts for IPA team services"
 
+orbs:
+  serverless: circleci/serverless-framework@1.0.1
+  slack: circleci/slack@4.9.3
+  node: circleci/node@4.7.0
+  snyk: snyk/snyk@1.1.2
+
+executors:
+  node-runner:
+    docker:
+      - image: cimg/node:16.13.0
+    resource_class: large
+
 commands:
   load_templates:
     description: "Loads custom Slack alert failed deploy template for use with slack orb for deployment notifications."
@@ -79,16 +91,234 @@ commands:
     steps:
       - attach_workspace:
           at: .
-
       - run:
           name: Save template to file
           command: |
             echo Saving template to file
             mkdir -p /tmp/ipa-deploy
             echo '<< parameters.deploy_failed_template >>' > /tmp/ipa-deploy/failed_deploy_template.json
-
       - run:
           name: Export template to environment variable
           command: |
             echo $(cat /tmp/ipa-deploy/failed_deploy_template.json)
             echo 'export SLACK_DEPLOY_FAILED_TEMPLATE=$(cat /tmp/ipa-deploy/failed_deploy_template.json)' >> $BASH_ENV
+  
+  npm_ci:
+    description: Install node dependencies
+    parameters:
+      executor:
+        type: string
+        description: The executor used. Needed to avoid conflicting caches
+    steps:
+      - restore_cache:
+          keys:
+            - v1-dependencies-"<<parameters.executor>>"-{{ "package.json" }}
+            - v1-dependencies-
+      - run:
+          name: "Set NPM token"
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run:
+          name: "Install NPM dependencies."
+          command: |
+            npm ci
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-"<<parameters.executor>>"-{{ checksum "package.json" }}
+  
+  notify-slack-on-failure:
+    description: Sends a slack notification if the job fails
+    parameters:
+      channel:
+        type: string
+        description: The channel to send the notification to
+      mentions:
+        type: string
+        description: The Slack users/groups to mention in the message
+        default: ""
+
+    steps:
+      - attach_workspace:
+          at: .
+      - load_templates
+      - slack/notify:
+          event: fail
+          channel: <<parameters.channel>>
+          mentions: <<parameters.mentions>>
+          template: SLACK_DEPLOY_FAILED_TEMPLATE
+  
+  deploy-run-integration-tests:
+    description: Run integration tests
+    parameters:
+      executor:
+        type: string
+        description: The executor used. Needed to avoid conflicting caches
+      stage:
+        type: string
+        default: integration
+      region:
+        default: ""
+        type: string
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - v1-dependencies-"<<parameters.executor>>"-{{ "package.json" }}
+            - v1-dependencies-
+      - run:
+          name: "Set NPM token"
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run:
+          name: "Install NPM dependencies."
+          command: |
+            npm ci
+      - run:
+          name: "Install serverless CLI"
+          command: sudo npm install -g serverless@3.11.0
+      - run:
+          command: serverless plugin install -n serverless-plugin-aws-alerts
+          name: Install serverless-aws-alerts
+      - run:
+          command: |
+            export DEPLOYMENT_TYPE=integrationTest
+            serverless deploy --stage ${STAGE} --region ${AWS_REGION}
+          name: deploy
+      - run:
+          name: "Integration tests"
+          command: |
+            npm run integrationTest
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-"<<parameters.executor>>"-{{ checksum "package.json" }}
+
+jobs:
+  checkout:
+    executor: serverless/default
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  eslint:
+    executor: node-runner
+    steps:
+      - run:
+          name: Print version
+          command: npm --version
+      - attach_workspace:
+          at: .
+      - npm_ci:
+          executor: node-runner
+      - run:
+          name: Run linting
+          command: npm run lint
+  snyk-scan:
+    executor: node-runner
+    steps:
+      - attach_workspace:
+          at: .
+      - snyk/scan:
+          additional-arguments: --dev=true
+          fail-on-issues: true
+          severity-threshold: high
+  jest-tests:
+    executor: node-runner
+    steps:
+      - attach_workspace:
+          at: .
+      - npm_ci:
+          executor: node-runner
+      - run:
+          name: "Run tests"
+          command: npm run test
+  deploy:
+    parameters:
+      stage:
+        type: string
+        default: sandbox
+      region:
+        default: ""
+        type: string
+      branch:
+        default: ""
+        type: string
+    executor: node-runner
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Set NPM token"
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run:
+          name: "Install Serverless CLI"
+          command: sudo npm install -g serverless@3.11.0
+      - run:
+          command: serverless plugin install -n serverless-plugin-aws-alerts
+          name: Install serverless-aws-alerts
+      - run:
+          name: Setting stage from branch name
+          command: |
+            if [[ << parameters.branch >> =~ ^(IPA-[0-9]+).*$ ]]; then 
+              echo "export STAGE=${BASH_REMATCH[1]}" >> $BASH_ENV; 
+            elif [[ << parameters.branch >> =~ ^main$ ]]; then
+              echo "export STAGE=<< parameters.stage >>" >> $BASH_ENV
+            else  
+              echo 'export STAGE="sandbox"' >> $BASH_ENV; 
+            fi
+            echo ${STAGE}
+      - run:
+          command: |
+            export DEPLOYMENT_TYPE=normal
+            serverless deploy --stage ${STAGE} --region ${AWS_REGION}
+          name: deploy
+      - when:
+          condition:
+            or:
+              - equal: [prod, << parameters.stage >>]
+              - equal: [nonprod, << parameters.stage >>]
+          steps:
+            - notify-slack-on-failure:
+                channel: "ipa-alerts-<< parameters.stage >>"
+  delete-feature-branch-stack:
+    executor: node-runner
+    parameters:
+      region:
+        default: ""
+        type: string
+    steps:
+      - attach_workspace:
+          at: .
+      - npm_ci:
+          executor: node-runner
+      - run:
+          name: Remove stack created by feature branch
+          command: |
+            COMMIT_MESSAGE=`curl -H "Authorization: token ${GIT_TOKEN}" -s https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/git/commits/${CIRCLE_SHA1} | jq -r '.message'`
+            if [[ $COMMIT_MESSAGE =~ ^Merge" "pull" "request" "#[0-9]+" "from" "ovotech\/(IPA-[0-9]+).*$ ]]; then
+              sudo npm i -g serverless
+              serverless remove --stage ${BASH_REMATCH[1]} --region ${AWS_REGION} || true
+            fi
+
+  delete-feature-branch-integration-stack:
+    executor: node-runner
+    parameters:
+      region:
+        default: ""
+        type: string
+    steps:
+      - attach_workspace:
+          at: .
+      - npm_ci:
+          executor: node-runner
+      - run:
+          name: Remove stack created by feature branch
+          command: |
+            COMMIT_MESSAGE=`curl -H "Authorization: token ${GIT_TOKEN}" -s https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/git/commits/${CIRCLE_SHA1} | jq -r '.message'`
+            if [[ $COMMIT_MESSAGE =~ ^Merge" "pull" "request" "#[0-9]+" "from" "ovotech\/(IPA-[0-9]+).*$ ]]; then
+              sudo npm i -g serverless
+              serverless remove --stage ${BASH_REMATCH[1]}-integration --region ${AWS_REGION} || true
+            fi
+  
