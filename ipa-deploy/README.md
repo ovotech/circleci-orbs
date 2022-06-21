@@ -65,3 +65,11 @@ This job can be used to delete the feature stack deployed from a git branch afte
 Parameters:
 * `region` - AWS region that the stack is being removed from
 
+### delete-feature-branch-stack
+
+This job can be used to delete the feature stack deployed from a git branch, for integration tests, after the branch has been merged in.
+
+Parameters:
+* `region` - AWS region that the stack is being removed from
+
+
