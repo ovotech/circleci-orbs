@@ -231,7 +231,7 @@ jobs:
           name: "avoid unnecessary cache updates"
           command: |
             rm -fv ~/.ivy2/.sbt.ivy.lock
-            test -d ~/.ivy2 && find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
+            test -d ~/.ivy2/cache && find ~/.ivy2/cache -name "ivydata-*.properties" -print -delete
             find ~/.sbt -name "*.lock" -print -delete
       - store_cache:
           cache-key: <<parameters.cache-key>>
