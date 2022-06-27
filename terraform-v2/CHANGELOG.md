@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.4.15
+- Added Terraform provider Aiven Kafka Users v1.0.9 to all executors
+
 ## ovotech/terraform-v2@2.4.14
 - Upgrade tfswitch to version 0.13.1275, in particular to get a fix for a bug where tfswitch is unable to get terraform versions.
 
