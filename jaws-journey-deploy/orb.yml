@@ -1034,6 +1034,9 @@ jobs:
       deploy_branch_name:
         type: string
         default: 'master'
+      manifest_repository:
+        type: string
+        default: "git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
       update_build_tag:
         type: boolean
         default: true
