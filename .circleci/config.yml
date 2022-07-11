@@ -40,3 +40,4 @@ workflows:
             tools-install/.* run-tools-install true
             versioned-lambda/.* run-versioned-lambda true
             with-git-deploy-key/.* run-with-git-deploy-key true
+            kap-kmi-deploy/.* run-kap-kmi-deploy true
