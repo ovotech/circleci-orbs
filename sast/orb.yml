@@ -167,6 +167,58 @@ commands:
                 name: Lint Scala code in <<parameters.directory>> with Semgrep
             - store_artifacts:
                 path: ./reports/sast/scala/
+    scan_sourcecode:
+        description: |
+            Scans a project using Semgrep
+        parameters:
+            directory:
+                default: .
+                description: |
+                    Path to the directory containing the source code to be scanned. Defaults to the current working directory
+                type: string
+            language:
+                description: |
+                    The source code language
+                type: string
+        steps:
+            - checkout
+            - install_semgrep
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    scan_sourcecode() {
+                      set --
+                      set -- "$@" "--config" "r/${PARAM_LANGUAGE}"
+                      set -- "$@" "--metrics" "off"
+                      set -- "$@" "--disable-version-check"
+                      set -- "$@" "--strict"
+
+                      if [[ ! -d "./reports/sast/semgrep" ]]; then
+                        mkdir -p "./reports/sast/semgrep"
+                      fi
+
+                      semgrep scan "$@" --error "${PARAM_DIRECTORY}" || _EC=$?
+                      semgrep scan "$@" --disable-nosem --json --output "./reports/sast/semgrep/$(date "+%F-%H-%M-%S").json" "${PARAM_DIRECTORY}"
+
+                      if [[ "${_EC:-0}" -gt 0 ]]; then
+                        echo "Semgrep scan returned failures. See logs."
+                        return ${_EC}
+                      fi
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        scan_sourcecode
+                    fi
+                environment:
+                    PARAM_DIRECTORY: <<parameters.directory>>
+                    PARAM_LANGUAGE: <<parameters.language>>
+                name: Lint source code in <<parameters.directory>> with Semgrep
+            - store_artifacts:
+                path: ./reports/sast/semgrep/
     scan_terraform:
         description: |
             Run Checkov Infrastructure as code static analysis against a directory
@@ -336,6 +388,50 @@ jobs:
                         at: <<parameters.workspace-root>>
             - scan_scala:
                 directory: <<parameters.directory>>
+    scan_sourcecode:
+        description: |
+            Scans a project using Semgrep
+        executor: default
+        parameters:
+            attach-workspace:
+                default: false
+                description: |
+                    Boolean for whether or not to attach to an existing workspace, default is false
+                type: boolean
+            checkout:
+                default: true
+                description: Checkout as a first step? Default is true
+                type: boolean
+            directory:
+                default: .
+                description: |
+                    Path to the directory containing the Scala code to be scanned. Defaults to the current working directory
+                type: string
+            language:
+                description: |
+                    The source code language
+                enum:
+                    - typescript
+                    - python
+                type: enum
+            workspace-root:
+                default: workspace
+                description: |
+                    Workspace root path that is either an absolute path or a path relative to the working directory
+                type: string
+        steps:
+            - when:
+                condition: <<parameters.checkout>>
+                steps:
+                    - checkout
+            - when:
+                condition: <<parameters.attach-workspace>>
+                steps:
+                    - attach_workspace:
+                        at: <<parameters.workspace-root>>
+            - scan_sourcecode:
+                directory: <<parameters.directory>>
+                language: <<parameters.language>>
     scan_terraform:
         description: |
             Scans terraform files using Checkov Infrastructure as code static analysis against a directory
@@ -408,6 +504,19 @@ examples:
                     jobs:
                         - sast/scan_scala:
                             directory: ./src
+    scan_sourcecode:
+        description: |
+            Sample usage of scanning source code using Semgrep
+        usage:
+            version: "2.1"
+            orbs:
+                sast: ovotech/sast@1
+            workflows:
+                lint:
+                    jobs:
+                        - sast/scan_sourcecode:
+                            directory: ./src
+                            language: typescript
     scan_terraform:
         description: |
             Sample usage of scanning Terraform files.
