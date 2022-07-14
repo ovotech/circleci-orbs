@@ -15,27 +15,25 @@ Overview
 
 * `deploy` - combines the two commands to build, push and deploy a new docker image of a given KAP service to KMI.
 
-### Environment variables
+### Prerequisites
 
 Mandatory environment variables:
 
 * `AWS_ACCESS_KEY_ID` - for read/write access to the ECR registry.
 * `AWS_SECRET_ACCESS_KEY` - for read/write access to the ECR registry.
-* `KAP_GITOPS_SSH_KEY_FINGERPRINT` - fingerprint of the SSH key added to the Circle project settings which will allow git operations against the gitops repo.
 * `KAP_GITOPS_USERNAME`
 * `KAP_GITOPS_EMAIL`
 
-Other environment variables:
+Core environment variables in use by the orb:
 
-* `CIRCLE_PROJECT_REPONAME` - used as the default for `service-name`, `image-name` and `kmi-k8s-namespace` 
+* `CIRCLE_PROJECT_REPONAME` - used as the default for `service-name`, `image-name` and `kmi-k8s-namespace`
 * `CIRCLE_SHA1` - used as a suffix to the image tag used.
 
-To get the value for the `gitops-ssh-key-fingerprint` parameter:
+You will also need the SSH key appropriate for gitops operations added as an SSH key in your project settings in CircleCI:
 
 1. In Circle CI, navigate to your Circle CI _Project Settings_.
 2. Navigate to _SSH Keys_ -> _Additional SSH Keys_.
 3. Add a new "additional" SSH key (hostname "github.com"). The key itself should be available from the maintainers of the KAP infra.
-4. Copy the resulting fingerprint.
 
 Example
 -------
