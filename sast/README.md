@@ -42,6 +42,17 @@ This command runs [Checkov](https://www.checkov.io/) static code analysis via th
 - `config_file` - checkov configuration file
 - `baseline` - Path to a .checkov.baseline file to compare. Report will include only failed checks that are not in the baseline. If one is not specified, the orb will look for one in the directory and use that as a default
 
+### scan_sourcecode
+This command will scan source code for security vulnerabilities. It runs the tool
+[Semgrep](https://semgrep.dev) to perform the scans.
+
+**Parameters**
+- `directory` - the directory containing the source code to scan. Defaults to the
+  root of the repository.
+
+- `language` - python and typescript are currently supported.
+
+
 ## Examples
 ### Simple Scan for scan_dockerfile command
 ```yaml
@@ -81,6 +92,34 @@ workflows:
   lint:
     jobs:
       - sast/scan_scala:
+          directory: ./src
+```
+
+### Scanning TypeScript source code command
+```yaml
+
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/scan_sourcecode:
+          language: typescript
+          directory: ./src
+```
+
+### Scanning Python source code command
+```yaml
+
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/scan_sourcecode:
+          language: python
           directory: ./src
 ```
 
