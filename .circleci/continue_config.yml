@@ -87,6 +87,9 @@ parameters:
   run-with-git-deploy-key:
     type: boolean
     default: false
+  run-kap-kmi-deploy:
+    type: boolean
+    default: false
 
 jobs:
   test_python:
@@ -495,5 +498,14 @@ workflows:
           path: with-git-deploy-key
       - publish_orb:
           path: with-git-deploy-key
+          requires:
+            - validate_orb
+  kap-kmi-deploy:
+    when: << pipeline.parameters.run-kap-kmi-deploy >>
+    jobs:
+      - validate_orb:
+          path: kap-kmi-deploy
+      - publish_orb:
+          path: kap-kmi-deploy
           requires:
             - validate_orb
