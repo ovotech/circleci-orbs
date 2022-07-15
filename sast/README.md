@@ -1,8 +1,15 @@
 # SAST CircleCI Orb
 
 This orb can be used to run SAST analysis tools via the CI against your
-codebase. It currently has support for scanning Dockerfiles, Terraform files and Scala, and more
-will be coming soon. All tooling within this Orb has been selected in
+codebase. It currently has support for scanning:
+
+- Dockerfiles 
+- Terraform
+- Python
+- Scala
+- TypeScript
+
+All tooling within this Orb has been selected in
 cooperation with OVO SecEng.
 
 ## Commands
@@ -26,6 +33,14 @@ tool [Hadolint](https://hub.docker.com/r/hadolint/hadolint).
   `docker.io,my-company.com:5000`) if set, returns an error if Dockerfile
    use any images from registries not included in this list.
 
+### scan_python
+This command will scan Python code for security vulnerabilities. It runs the tool
+[Semgrep](https://semgrep.dev) to perform the scans.
+
+**Parameters**
+- `directory` - the directory containing the source code to scan. Defaults to the
+  root of the repository.  
+
 ### scan_scala
 This command will scan Scala code for security vulnerabilities. It runs the tool
 [Semgrep](https://semgrep.dev) to perform the scans.
@@ -34,6 +49,14 @@ This command will scan Scala code for security vulnerabilities. It runs the tool
 - `directory` - the directory containing Scala code to scan. Defaults to the
   root of the repository.
 
+### scan_typescript
+This command will scan TypeScript code for security vulnerabilities. It runs the tool
+[Semgrep](https://semgrep.dev) to perform the scans.
+
+**Parameters**
+- `directory` - the directory containing the source code to scan. Defaults to the
+  root of the repository.  
+
 ### scan_terraform
 This command runs [Checkov](https://www.checkov.io/) static code analysis via the CLI with the specified configuration options.
 
@@ -41,6 +64,7 @@ This command runs [Checkov](https://www.checkov.io/) static code analysis via th
 - `directory` - directory with infrastructure code to scan
 - `config_file` - checkov configuration file
 - `baseline` - Path to a .checkov.baseline file to compare. Report will include only failed checks that are not in the baseline. If one is not specified, the orb will look for one in the directory and use that as a default
+
 
 ## Examples
 ### Simple Scan for scan_dockerfile command
@@ -71,6 +95,19 @@ workflows:
           ignore-rules: 'DL4005,DL3008'
 ```
 
+### Simple Scan for scan_python command
+```yaml
+
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/scan_python:
+          directory: ./src
+```
+
 ### Simple Scan for scan_scala command
 ```yaml
 
@@ -81,6 +118,19 @@ workflows:
   lint:
     jobs:
       - sast/scan_scala:
+          directory: ./src
+```
+
+### Simple Scan for scan_typescript command
+```yaml
+
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/scan_typescript:
           directory: ./src
 ```
 
