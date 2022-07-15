@@ -175,6 +175,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *target
     steps:
       - run:
           name: "terraform check << parameters.path >> << parameters.label >>"
@@ -197,6 +198,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *target
     steps:
       - run:
           name: "terraform destroy << parameters.path >> << parameters.label >>"
@@ -239,6 +241,7 @@ commands:
       <<: *var_file
       <<: *parallelism
       <<: *label
+      <<: *target
     steps:
       - run:
           name: "terraform workspace delete"

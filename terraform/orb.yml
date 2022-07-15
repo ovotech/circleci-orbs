@@ -202,6 +202,7 @@ commands:
       <<: *parallelism
       <<: *label
       <<: *use_chdir
+      <<: *target
     steps:
       - run:
           name: "terraform check << parameters.path >> << parameters.label >>"
@@ -225,6 +226,7 @@ commands:
       <<: *parallelism
       <<: *label
       <<: *use_chdir
+      <<: *target
     steps:
       - run:
           name: "terraform destroy << parameters.path >> << parameters.label >>"
@@ -269,6 +271,7 @@ commands:
       <<: *parallelism
       <<: *label
       <<: *use_chdir
+      <<: *target
     steps:
       - run:
           name: "terraform workspace delete"
