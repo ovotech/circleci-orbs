@@ -8,6 +8,12 @@ if [[ -n "<< parameters.var >>" ]]; then
     done
 fi
 
+if [[ -n "<< parameters.target >>" ]]; then
+    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -target $target"
+    done
+fi
+
 if [[ -n "<< parameters.var_file >>" ]]; then
     for file in $(echo "<< parameters.var_file >>" | tr ',' '\n'); do
         if [[ -f "$file" ]]; then

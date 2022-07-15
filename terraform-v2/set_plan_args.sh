@@ -10,13 +10,19 @@ if [[ -n "<< parameters.var >>" ]]; then
     done
 fi
 
+if [[ -n "<< parameters.target >>" ]]; then
+    for target in $(echo "<< parameters.target >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -target $target"
+    done
+fi
+
 if [[ -n "<< parameters.var_file >>" ]]; then
     for file in $(echo "<< parameters.var_file >>" | tr ',' '\n'); do
         # TODO Testing: make sure that this works for files specified
         # from the top level and for files specified relative to the
         # terraform configuration
         if [[ -f "$file" ]]; then
-            # chdir needs files to be specified relative to the terraform 
+            # chdir needs files to be specified relative to the terraform
             # config file, so change this to be a relative path
             rel_path=$(realpath --relative-to ${module_path} ${file})
             PLAN_ARGS="$PLAN_ARGS -var-file=$rel_path"

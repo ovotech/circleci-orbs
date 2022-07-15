@@ -149,6 +149,7 @@ commands:
       <<: *label
       <<: *add_github_comment
       <<: *use_chdir
+      <<: *target
     steps:
       - run:
           name: "terraform plan << parameters.path >> << parameters.label >>"

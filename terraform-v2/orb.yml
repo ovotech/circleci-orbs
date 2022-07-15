@@ -125,6 +125,7 @@ commands:
       <<: *parallelism
       <<: *label
       <<: *add_github_comment
+      <<: *target
     steps:
       - run:
           name: "terraform plan << parameters.path >> << parameters.label >>"
