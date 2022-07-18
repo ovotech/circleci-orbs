@@ -148,6 +148,7 @@ Parameters:
 - parallelism (int): Limit the number of concurrent operations
 - add_github_comment (bool): 'true' to comment on an open PR with the plan. Default: true
 - use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- target (string): The resource to target
 
 ### apply
 
@@ -439,8 +440,8 @@ workflows:
 ### Using Helm 3
 #### Repositories
 If you are using Helm 3 (terraform provider > v1) you must explicitly add
-repositories, this includes charts in `stable` which is no longer included 
-in Helm by default. 
+repositories, this includes charts in `stable` which is no longer included
+in Helm by default.
 
 [Official Documentation](https://helm.sh/docs/intro/quickstart/#initialize-a-helm-chart-repository)
 
@@ -463,7 +464,7 @@ This can be done using the `helm3` command prior to any apply jobs.
 ```
 
 #### Default version
-The `helm` command will use `helm2` by default, however if the `HELM` 
+The `helm` command will use `helm2` by default, however if the `HELM`
 environment variable is set to `helm3`, the `helm` command invokes Helm 3 instead.
 
 ### Using the aiven provider
@@ -537,7 +538,7 @@ environment variables in the CircleCI project. This should be the username
 (not email address) and a Personal Access Token of a github user that has access to
 the repo. The token requires the `repo, write:discussion` scopes.
 
-It's recommended to enable **"Only build pull requests"**  in your CircleCI 
+It's recommended to enable **"Only build pull requests"**  in your CircleCI
 config when using this setting. If not enabled this could lead to a creation
 of a PR after the CircleCI job has run, which means the Plan comment cannot be
 added. Settings can be found under "Advanced Settings" e.g.
@@ -590,7 +591,7 @@ terraform {
 }
 ```
 
-tfswitch and tfenv make it easy to install the correct version locally.  
+tfswitch and tfenv make it easy to install the correct version locally.
 Their config files contain a terraform version number to use:
 ```
 0.12.18
