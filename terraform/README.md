@@ -198,6 +198,7 @@ Parameters:
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
 - use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- target (string): The resource to target
 
 ### destroy
 
@@ -213,6 +214,7 @@ Parameters:
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
 - use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- target (string): The resource to target
 
 ### new-workspace
 
@@ -240,6 +242,7 @@ Parameters:
 - var: Comma separated list of vars to set, e.g. foo=bar
 - parallelism: Limit the number of concurrent operations
 - use_chdir (bool): 'true' to use the -chdir option in terraform. This is only relevant to terraform 0.14 and onward and is for compatibility with provider lockfiles. Default: false
+- target (string): The resource to target
 
 ### fmt-check
 
