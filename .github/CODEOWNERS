@@ -13,7 +13,7 @@
 /oot-eks/                        @ovotech/orion-ops-tooling
 /clojure/                        @ovotech/orion-ops-tooling
 /ssh-proxy/                      @ovotech/orion-security-engineering
-/jaws-journey-deploy             @ovotech/jaws-library-maintainers
+/jaws-journey-deploy             @ovotech/kaluza-smart-metering
 /oot-deploy/                     @ovotech/orion-ops-tooling
 /sbt-deploy/                     @ovotech/smart-bookings
 /asp-deploy/                     @ovotech/asp-team
