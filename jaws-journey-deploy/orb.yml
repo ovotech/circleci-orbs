@@ -1010,7 +1010,7 @@ jobs:
     parameters:
       manifest_repository:
         type: string
-        default: ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+        default: ${CIRCLE_PROJECT_REPONAME}
       manifest_directory:
         type: string
         default: "manifests"
