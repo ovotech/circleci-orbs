@@ -12,7 +12,7 @@ function deply_manifest {
   mkdir -p /tmp/gitops
   
   # Clone manifest repo
-  git clone -b << parameters.deploy_branch_name >> git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} /tmp/gitops
+git clone -b << parameters.deploy_branch_name >> git@github.com:${CIRCLE_PROJECT_USERNAME}/<< parameters.manifest_repository >> /tmp/gitops
   cd /tmp/gitops
   
   # Update helm chart
