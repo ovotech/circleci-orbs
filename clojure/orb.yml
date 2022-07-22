@@ -96,4 +96,4 @@ commands:
 executors:
   clojure:
     docker:
-      - image: cimg/clojure:1.10.3
+      - image: cimg/clojure:1.11.1
