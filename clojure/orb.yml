@@ -80,8 +80,11 @@ commands:
           name: Generate pom.xml for Snyk
           command: lein pom
 
+      # Force an explicit monitor regardless of the failure/success of a scan
       - snyk/scan:
-          command: "monitor"
+          command: "version"
+          monitor-on-build: true
+          severity-threshold: high
 
       - snyk/scan:
           fail-on-issues: true
