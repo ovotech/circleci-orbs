@@ -78,13 +78,14 @@ commands:
 
       - run:
           name: Generate pom.xml for Snyk
-          command: |
-            lein pom
-            cat pom.xml
+          command: lein pom
+
+      - snyk/scan:
+          command: "monitor"
 
       - snyk/scan:
           fail-on-issues: true
-          monitor-on-build: true
+          monitor-on-build: false
           severity-threshold: high
 
       - save_cache:
