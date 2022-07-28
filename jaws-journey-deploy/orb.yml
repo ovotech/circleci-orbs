@@ -930,6 +930,9 @@ jobs:
         type: "enum"
         enum: ["low", "medium", "high", "critical"]
         default: "high"
+      failOnIssues:
+        type: "boolean"
+        default: true
     steps:
       - attach_workspace:
           at: ~/working
@@ -937,6 +940,7 @@ jobs:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: << parameters.severityThreshold >>
+          fail-on-issues: << parameters.failOnIssues >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
