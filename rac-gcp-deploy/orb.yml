@@ -510,6 +510,10 @@ jobs:
         description: "Extra options being passed to sbt, like '-mem 2048'"
         default: ""
         type: string
+      manual-approval:
+        description: "Whether to require manual approval step"
+        default: false
+        type: boolean
     executor: <<parameters.executor>>
     steps:
       - setup_remote_docker
@@ -559,6 +563,14 @@ jobs:
       - run:
           name: "Push container to GCR UAT"
           command: docker push "${UAT_IMAGE_ROOT}"
+      - when:
+          condition: << parameters.manual-approval >>
+          steps:
+            - run:
+                name: "PRD Approval"
+                type: approval
+                requires:
+                - "Push container to GCR UAT"
       - gcloud_auth: *gcloud_auth_prd
       - run:
           name: "Configure Docker to use gcloud as a credential helper"
@@ -575,6 +587,7 @@ jobs:
       - snyk_monitor
       - persist_workspace:
           to: <<parameters.workspace-dir>>
+
 
   build_and_release_version:
     parameters:
