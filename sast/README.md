@@ -3,11 +3,12 @@
 This orb can be used to run SAST analysis tools via the CI against your
 codebase. It currently has support for scanning:
 
-- Dockerfiles 
+- Dockerfiles
 - Terraform
 - Python
 - Scala
 - TypeScript
+- JavScript
 
 All tooling within this Orb has been selected in
 cooperation with OVO SecEng.
@@ -56,6 +57,14 @@ This command will scan TypeScript code for security vulnerabilities. It runs the
 **Parameters**
 - `directory` - the directory containing the source code to scan. Defaults to the
   root of the repository.  
+
+### scan_javascript
+This command will scan JavaScript code for security vulnerabilities. It runs the tool
+[Semgrep](https://semgrep.dev) to perform the scans.
+
+**Parameters**
+- `directory` - the directory containing the source code to scan. Defaults to the
+  root of the repository.
 
 ### scan_terraform
 This command runs [Checkov](https://www.checkov.io/) static code analysis via the CLI with the specified configuration options.
@@ -131,6 +140,19 @@ workflows:
   lint:
     jobs:
       - sast/scan_typescript:
+          directory: ./src
+```
+
+### Simple Scan for scan_javascript command
+```yaml
+
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/scan_javascript:
           directory: ./src
 ```
 
