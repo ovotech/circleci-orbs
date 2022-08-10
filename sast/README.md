@@ -8,7 +8,7 @@ codebase. It currently has support for scanning:
 - Python
 - Scala
 - TypeScript
-- JavScript
+- JavaScript
 
 All tooling within this Orb has been selected in
 cooperation with OVO SecEng.
