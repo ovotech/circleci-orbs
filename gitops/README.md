@@ -14,8 +14,6 @@ Since this orb commits changes to the target Git repository (by default the repo
 
 #### Create a private/public key pair:
 
-Replace `<repo>` with the name of your repository.
-
 ```
 ssh-keygen -t rsa -f /tmp/deploykey -N '' -q 1>/dev/null
 ```
@@ -90,7 +88,7 @@ workflows:
         region: eu1
         image_tag_yaml_path: .backend.application.image.tag
         image_tag: $CIRCLE_SHA1
-        values_file: manifests/values-sandbox-eu1.yaml # This is teh default value for the given environment & region params
+        values_file: manifests/values-sandbox-eu1.yaml # This is the default value for the given environment & region params
         manifest_branch: $CIRCLE_BRANCH
         commit_tag_name: sandbox-eu1
         ssh_key_fingerprint: <fingerprint>
