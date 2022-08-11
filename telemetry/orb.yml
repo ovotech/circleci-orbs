@@ -59,7 +59,7 @@ commands:
                       local _PAYLOAD=$2
                       local _AUTHHEADER=$3
 
-                      curl -s -XPOST -H "Content-Type: application/json" -H "$_AUTHHEADER" --body "$_PAYLOAD" "$_ENDPOINT"
+                      curl -s -XPOST -H "Content-Type: application/json" -H "$_AUTHHEADER" --data "$_PAYLOAD" "$_ENDPOINT"
                     }
 
                     ##
@@ -265,7 +265,7 @@ commands:
                       local _PAYLOAD=$2
                       local _AUTHHEADER=$3
 
-                      curl -s -XPOST -H "Content-Type: application/json" -H "$_AUTHHEADER" --body "$_PAYLOAD" "$_ENDPOINT"
+                      curl -s -XPOST -H "Content-Type: application/json" -H "$_AUTHHEADER" --data "$_PAYLOAD" "$_ENDPOINT"
                     }
 
                     ##
