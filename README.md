@@ -48,6 +48,7 @@ any changes to the orb.
  - [ovotech/helm-ci](helm-ci) - CI checks for Helm charts
  - [ovotech/sast](sast) - Consumer Products Production Engineering team orb to run static security analysis.
  - [ovotech/setup-scheduled-pipeline](setup-scheduled-pipeline) - Consumer Products Production Engineering team orb responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started).
+ - [ovotech/telemetry](telemetry) - Consumer Products Production Engineering team orb which enables sending Orb usage telemetry.
 
  Other orbs in the ovotech namespace:
  - [ovotech/shipit@1](https://github.com/ovotech/pe-orbs/tree/master/shipit) - Run shipit and record deployments to https://shipit.ovotech.org.uk.

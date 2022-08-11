@@ -34,6 +34,7 @@ workflows:
             set-current-environment/.* run-set-current-environment true
             setup-scheduled-pipeline/.* run-setup-scheduled-pipeline true
             ssh-proxy/.* run-ssh-proxy true
+            telemetry/.* run-telemetry true
             terraform/.* run-terraform true
             terraform-v2/.* run-terraform-v2 true
             tools/.* run-tools true

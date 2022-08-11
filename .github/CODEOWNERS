@@ -22,4 +22,5 @@
 /ipa-deploy/                     @ovotech/ipa
 /sast/                           @ovotech/consumer-products-production-engineering
 /setup-scheduled-pipeline/       @ovotech/consumer-products-production-engineering
+/telemetry/                      @ovotech/consumer-products-production-engineering
 /kap-kmi-deploy/                 @ovotech/agent-platform-enablement
