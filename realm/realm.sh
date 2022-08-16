@@ -16,13 +16,11 @@ if [ -z "${realm_api_key}" ]; then
 fi
 
 env="<< parameters.environment >>"
-realm_env="uat"
-# TODO: switch this on when prod is ready
-# realm_env="prod"
+realm_env="prod"
 # if env = prod then hit Prod Realm, otherwise hit UAT Realm
-# if [ "${env}" != "prod" ]; then
-#     realm_env="uat"
-# fi
+if [ "${env}" != "prod" ]; then
+    realm_env="uat"
+fi
 realm_url="https://realm.eu1.${realm_env}.kaluza.com/realm"
 
 # if realm status hasn't been passed in as "started" or "unknown", then grab the status
