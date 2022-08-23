@@ -191,6 +191,9 @@ commands:
       tag:
         type: string
         default: ${CIRCLE_SHA1}
+      skipWhenTagExists:
+        type: boolean
+        default: false
       <<: *resourceClass
     steps:
       - attach_workspace:
@@ -201,6 +204,7 @@ commands:
           path: << parameters.path >>
           repo: << parameters.repo >>
           tag: '<< parameters.tag >>'
+          skip-when-tags-exist: << parameters.skipWhenTagExists >>
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
           fail-on-issues: true
