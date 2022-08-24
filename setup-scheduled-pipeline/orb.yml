@@ -9,6 +9,10 @@ commands:
         description: |
             Creates a scheduled trigger to be consumed by a scheduled pipeline
         parameters:
+            circleci_token:
+                default: ""
+                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                type: string
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
                 type: string
@@ -33,110 +37,9 @@ commands:
         steps:
             - checkout
             - run:
-                command: |
-                    #!/bin/bash
-                    set -eo pipefail
-
-                    add_scheduled_pipeline() {
-                        local ORG_NAME=$1
-                        local JSON_BODY=$2
-
-                        curl -s --request POST "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" \
-                        --header "circle-token: ${CIRCLECI_TOKEN}" \
-                        --header 'content-type: application/json' \
-                        --data "$JSON_BODY"
-                    }
-
-                    update_scheduled_pipeline() {
-                        local SCHEDULE_ID=$1
-                        local JSON_BODY=$2
-
-                        curl -s --request PATCH --url "https://circleci.com/api/v2/schedule/${SCHEDULE_ID}" \
-                        --header "circle-token: ${CIRCLECI_TOKEN}" \
-                        --header 'content-type: application/json' \
-                        --data "$JSON_BODY"
-                    }
-
-                    scheduled_pipeline_main() {
-
-                        export ORG_NAME="ovotech"
-
-                        if [ -z "$CIRCLECI_TOKEN" ]; then
-                            echo "Mandatory parameters have not been set! You must specify a token as CIRCLECI_TOKEN in order to allow CircleCI to create schedules with appropriate permissions on this repository."
-                            exit 1
-                        fi
-
-                        if [ -z "$PARAM_SCHEDULE_HOUR_FREQUENCY" ] && [ -z "$PARAM_SCHEDULE_HOURS" ] && [ -z "$PARAM_SCHEDULE_DAYS" ]; then
-                            echo "Mandatory parameters have not been set! You must specify the days and hours of your schedule, as well as the frequency within the hour."
-                            exit 1
-                        fi
-
-                        if [ -z "$PARAM_SCHEDULE_NAME" ]; then
-                            export SCHEDULE_NAME="${CIRCLE_PROJECT_REPONAME}-default-scheduled-pipeline"
-                        else
-                            export SCHEDULE_NAME=$PARAM_SCHEDULE_NAME
-                        fi
-
-                        if [ -z "$PARAM_SCHEDULE_DESCRIPTION" ]; then
-                            export SCHEDULE_DESCRIPTION="${CIRCLE_PROJECT_REPONAME} scheduled pipeline trigger - https://circleci.com/docs/2.0/scheduled-pipelines"
-                        else
-                            export SCHEDULE_DESCRIPTION=$PARAM_SCHEDULE_DESCRIPTION
-                        fi
-
-                        if [ -z "$PARAM_TARGET_BRANCH" ]; then
-                            git symbolic-ref refs/remotes/origin/HEAD &> /dev/null || { echo "refs/remotes/origin/HEAD does not exist on this repository! Please take a look manually..." ; exit 1; }
-                            export TARGET_BRANCH
-                            TARGET_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||')
-                        else
-                            export TARGET_BRANCH=$PARAM_TARGET_BRANCH
-                        fi
-
-                        JSON_BODY=$(jq -rcn '
-                            {
-                                "name": env.SCHEDULE_NAME,
-                                "description": env.SCHEDULE_DESCRIPTION,
-                                "attribution-actor": "system",
-                                "parameters": {
-                                    "branch": env.TARGET_BRANCH
-                                },
-                                "timetable": {
-                                    "per-hour": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,
-                                    "hours-of-day": env.PARAM_SCHEDULE_HOURS | split(",") | map(tonumber),
-                                    "days-of-week": env.PARAM_SCHEDULE_DAYS | split(",")
-                                }
-                            }
-                        ')
-                        export JSON_BODY
-
-                        EXISTING_SCHEDULES=$(curl -s "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" --header "circle-token: ${CIRCLECI_TOKEN}")
-                        EXISTING_SCHEDULE_COUNT=$(echo "${EXISTING_SCHEDULES}" | jq '.items | length')
-
-                        if [  "${EXISTING_SCHEDULE_COUNT}" != 0 ]; then
-                            echo "Schedules already exist on this project!"
-                            EXISTING_SCHEDULE=$(echo "${EXISTING_SCHEDULES}" | jq -r '.items[] | select( .name==env.SCHEDULE_NAME) | .name')
-                            if [  "${EXISTING_SCHEDULE}" == "${SCHEDULE_NAME}" ]; then
-                                echo "A schedule by this name already exists!"
-                                SCHEDULE_ID=$(echo "${EXISTING_SCHEDULES}" | jq -r '.items[] | select( .name==env.SCHEDULE_NAME) | .id')
-                                export SCHEDULE_ID
-                                update_scheduled_pipeline "$SCHEDULE_ID" "$JSON_BODY"
-                            else
-                                echo "This particular schedule with this name does not exist..."
-                                add_scheduled_pipeline "$ORG_NAME" "$JSON_BODY"
-                            fi
-                        else
-                            echo "No schedules exist on this project!"
-                            add_scheduled_pipeline "$ORG_NAME" "$JSON_BODY"
-                        fi
-
-
-                    }
-
-                    # Will not run if sourced for bats-core tests.
-                    ORB_TEST_ENV="bats-core"
-                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
-                        scheduled_pipeline_main
-                    fi
+                command: "#!/bin/bash\nset -eo pipefail\n\nadd_scheduled_pipeline() {\n    local ORG_NAME=$1\n    local JSON_BODY=$2\n\n    curl -s --request POST \"https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule\" \\\n    --header \"circle-token: ${CIRCLECI_TOKEN}\" \\\n    --header 'content-type: application/json' \\\n    --data \"$JSON_BODY\"\n}\n\nupdate_scheduled_pipeline() {\n    local SCHEDULE_ID=$1\n    local JSON_BODY=$2\n\n    curl -s --request PATCH --url \"https://circleci.com/api/v2/schedule/${SCHEDULE_ID}\" \\\n    --header \"circle-token: ${CIRCLECI_TOKEN}\" \\\n    --header 'content-type: application/json' \\\n    --data \"$JSON_BODY\"\n}\n\nscheduled_pipeline_main() {\n\n    export ORG_NAME=\"ovotech\"\n\n    if [ -z \"$PARAM_CIRCLECI_TOKEN\" ]; then\n        echo \"A custom environment variable has not been provided containing the value of the required CircleCI API token. Looking for value of CIRCLECI_TOKEN...\"\n        if [ -z \"$CIRCLECI_TOKEN\" ]; then\n            echo \"Mandatory parameters have not been set! You must specify a token in order to allow CircleCI to create schedules with appropriate permissions on this repository.\"\n            echo \"You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token\"\n            echo \"Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth\"\n            exit 1\n        fi\n    else\n        export CIRCLECI_TOKEN=$PARAM_CIRCLECI_TOKEN\n    fi\n\n    if [ -z \"$PARAM_SCHEDULE_HOUR_FREQUENCY\" ] && [ -z \"$PARAM_SCHEDULE_HOURS\" ] && [ -z \"$PARAM_SCHEDULE_DAYS\" ]; then\n        echo \"Mandatory parameters have not been set! You must specify the days and hours of your schedule, as well as the frequency within the hour.\"\n        exit 1\n    fi\n\n    if [ -z \"$PARAM_SCHEDULE_NAME\" ]; then\n        export SCHEDULE_NAME=\"${CIRCLE_PROJECT_REPONAME}-default-scheduled-pipeline\"\n    else\n        export SCHEDULE_NAME=$PARAM_SCHEDULE_NAME\n    fi\n\n    if [ -z \"$PARAM_SCHEDULE_DESCRIPTION\" ]; then\n        export SCHEDULE_DESCRIPTION=\"${CIRCLE_PROJECT_REPONAME} scheduled pipeline trigger - https://circleci.com/docs/2.0/scheduled-pipelines\"\n    else\n        export SCHEDULE_DESCRIPTION=$PARAM_SCHEDULE_DESCRIPTION\n    fi\n\n    if [ -z \"$PARAM_TARGET_BRANCH\" ]; then\n        git symbolic-ref refs/remotes/origin/HEAD &> /dev/null || { echo \"refs/remotes/origin/HEAD does not exist on this repository! Please take a look manually...\" ; exit 1; }\n        export TARGET_BRANCH\n        TARGET_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's|^refs/remotes/origin/||')\n    else\n        export TARGET_BRANCH=$PARAM_TARGET_BRANCH\n    fi\n\n    JSON_BODY=$(jq -rcn '\n        {\n            \"name\": env.SCHEDULE_NAME,\n            \"description\": env.SCHEDULE_DESCRIPTION,\n            \"attribution-actor\": \"system\",\n            \"parameters\": {\n                \"branch\": env.TARGET_BRANCH\n            },\n            \"timetable\": {\n                \"per-hour\": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,\n                \"hours-of-day\": env.PARAM_SCHEDULE_HOURS | split(\",\") | map(tonumber),\n                \"days-of-week\": env.PARAM_SCHEDULE_DAYS | split(\",\")\n            }\n        }\n    ')\n    export JSON_BODY\n\n    CIRCLECI_AUTH_HTTP_STATUS=$(curl -s --write-out \"%{http_code}\" \"https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule\" --header \"circle-token: ${CIRCLECI_TOKEN}\" --output /dev/null)\n    \n    if [  \"${CIRCLECI_AUTH_HTTP_STATUS}\" == \"404\" ]; then\n        echo \"Unable to authenticate as provided CircleCI Token is invalid! Exiting...\"\n        echo \"You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token\"\n        echo \"Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth\"\n        exit 1\n    fi\n\n    EXISTING_SCHEDULES=$(curl -s \"https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule\" --header \"circle-token: ${CIRCLECI_TOKEN}\")\n    EXISTING_SCHEDULE_COUNT=$(echo \"${EXISTING_SCHEDULES}\" | jq '.items | length')\n\n    if [  \"${EXISTING_SCHEDULE_COUNT}\" != 0 ]; then\n        echo \"Schedules already exist on this project!\"\n        EXISTING_SCHEDULE=$(echo \"${EXISTING_SCHEDULES}\" | jq -r '.items[] | select( .name==env.SCHEDULE_NAME) | .name')\n        if [  \"${EXISTING_SCHEDULE}\" == \"${SCHEDULE_NAME}\" ]; then\n            echo \"A schedule by this name already exists!\"\n            SCHEDULE_ID=$(echo \"${EXISTING_SCHEDULES}\" | jq -r '.items[] | select( .name==env.SCHEDULE_NAME) | .id')\n            export SCHEDULE_ID\n            update_scheduled_pipeline \"$SCHEDULE_ID\" \"$JSON_BODY\"\n        else\n            echo \"This particular schedule with this name does not exist...\"\n            add_scheduled_pipeline \"$ORG_NAME\" \"$JSON_BODY\"\n        fi\n    else\n        echo \"No schedules exist on this project!\"\n        add_scheduled_pipeline \"$ORG_NAME\" \"$JSON_BODY\"\n    fi\n\n\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    scheduled_pipeline_main\nfi\n"
                 environment:
+                    PARAM_CIRCLECI_TOKEN: <<parameters.circleci_token>>
                     PARAM_SCHEDULE_DAYS: <<parameters.schedule_days>>
                     PARAM_SCHEDULE_DESCRIPTION: <<parameters.schedule_description>>
                     PARAM_SCHEDULE_HOUR_FREQUENCY: <<parameters.schedule_hour_frequency>>
@@ -151,6 +54,10 @@ jobs:
         machine:
             image: ubuntu-2004:202104-01
         parameters:
+            circleci_token:
+                default: ""
+                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                type: string
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
                 type: string
@@ -174,6 +81,7 @@ jobs:
                 type: string
         steps:
             - create_scheduled_pipeline:
+                circleci_token: <<parameters.circleci_token>>
                 schedule_days: <<parameters.schedule_days>>
                 schedule_description: <<parameters.schedule_description>>
                 schedule_hour_frequency: <<parameters.schedule_hour_frequency>>
@@ -192,6 +100,7 @@ examples:
                 setup-schedule-workflow:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
+                            circleci_token: ${SERVICE_USER_CIRCLECI_TOKEN}
                             schedule_days: MON
                             schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
