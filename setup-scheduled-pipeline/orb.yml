@@ -10,9 +10,9 @@ commands:
             Creates a scheduled trigger to be consumed by a scheduled pipeline
         parameters:
             circleci_token:
-                default: ""
+                default: CIRCLECI_TOKEN
                 description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
-                type: string
+                type: env_var_name
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
                 type: string
@@ -66,13 +66,10 @@ commands:
                         export ORG_NAME="ovotech"
 
                         if [ -z "$PARAM_CIRCLECI_TOKEN" ]; then
-                            echo "A custom environment variable has not been provided containing the value of the required CircleCI API token. Looking for value of CIRCLECI_TOKEN..."
-                            if [ -z "$CIRCLECI_TOKEN" ]; then
-                                echo "Mandatory parameters have not been set! You must specify a token in order to allow CircleCI to create schedules with appropriate permissions on this repository."
-                                echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
-                                echo "Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth"
-                                exit 1
-                            fi
+                            echo "Mandatory parameters have not been set! You must specify a token in order to allow CircleCI to create schedules with appropriate permissions on this repository."
+                            echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
+                            echo "Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth"
+                            exit 1
                         else
                             export CIRCLECI_TOKEN=$PARAM_CIRCLECI_TOKEN
                         fi
@@ -124,7 +121,9 @@ commands:
 
                         CIRCLECI_AUTH_HTTP_STATUS=$(curl -s --write-out "%{http_code}" "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" --header "circle-token: ${CIRCLECI_TOKEN}" --output /dev/null)
 
-                        if [ "${CIRCLECI_AUTH_HTTP_STATUS}" == "404" ]; then
+                        # Checking if returned string is a valid 3 digit HTTP Status code (accounting for tests)
+                        # and if the status code is not 200
+                        if [ "$(echo "${CIRCLECI_AUTH_HTTP_STATUS}" | awk '{print length}')" == "3" ] && [ "${CIRCLECI_AUTH_HTTP_STATUS}" != "200" ]; then
                             echo "Unable to authenticate because provided CircleCI Token is invalid! Exiting..."
                             echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
                             echo "Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth"
@@ -175,9 +174,9 @@ jobs:
             image: ubuntu-2004:202104-01
         parameters:
             circleci_token:
-                default: ""
+                default: CIRCLECI_TOKEN
                 description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
-                type: string
+                type: env_var_name
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
                 type: string
@@ -220,7 +219,7 @@ examples:
                 setup-schedule-workflow:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
-                            circleci_token: ${SERVICE_USER_CIRCLECI_TOKEN}
+                            circleci_token: SERVICE_USER_CIRCLECI_TOKEN
                             schedule_days: MON
                             schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
