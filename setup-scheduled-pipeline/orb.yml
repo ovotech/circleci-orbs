@@ -123,7 +123,8 @@ commands:
 
                         # Checking if returned string is a valid 3 digit HTTP Status code (accounting for tests)
                         # and if the status code is not 200
-                        if [ "$(echo "${CIRCLECI_AUTH_HTTP_STATUS}" | awk '{print length}')" == "3" ] && [ "${CIRCLECI_AUTH_HTTP_STATUS}" != "200" ]; then
+                        # if [ "$(echo "${CIRCLECI_AUTH_HTTP_STATUS}" | awk '{print length}')" == "3" ] && [ "${CIRCLECI_AUTH_HTTP_STATUS}" != "200" ]; then
+                        if [ "${CIRCLECI_AUTH_HTTP_STATUS}" == "404" ]; then
                             echo "Unable to authenticate because provided CircleCI Token is invalid! Exiting..."
                             echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
                             echo "Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth"
