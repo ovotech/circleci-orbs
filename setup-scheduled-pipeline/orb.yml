@@ -158,7 +158,7 @@ commands:
                         scheduled_pipeline_main
                     fi
                 environment:
-                    PARAM_CIRCLECI_TOKEN: ${<<parameters.circleci_token>>}
+                    PARAM_CIRCLECI_TOKEN: $<<parameters.circleci_token>>
                     PARAM_SCHEDULE_DAYS: <<parameters.schedule_days>>
                     PARAM_SCHEDULE_DESCRIPTION: <<parameters.schedule_description>>
                     PARAM_SCHEDULE_HOUR_FREQUENCY: <<parameters.schedule_hour_frequency>>
