@@ -65,6 +65,8 @@ commands:
 
                         export ORG_NAME="ovotech"
 
+                        echo "$PARAM_CIRCLECI_TOKEN"
+
                         if [ -z "$PARAM_CIRCLECI_TOKEN" ]; then
                             echo "Mandatory parameters have not been set! You must specify a token in order to allow CircleCI to create schedules with appropriate permissions on this repository."
                             echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
@@ -159,7 +161,7 @@ commands:
                         scheduled_pipeline_main
                     fi
                 environment:
-                    PARAM_CIRCLECI_TOKEN: $<<parameters.circleci_token>>
+                    PARAM_CIRCLECI_TOKEN: <<parameters.circleci_token>>
                     PARAM_SCHEDULE_DAYS: <<parameters.schedule_days>>
                     PARAM_SCHEDULE_DESCRIPTION: <<parameters.schedule_description>>
                     PARAM_SCHEDULE_HOUR_FREQUENCY: <<parameters.schedule_hour_frequency>>
