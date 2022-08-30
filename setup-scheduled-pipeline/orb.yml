@@ -65,8 +65,6 @@ commands:
 
                         export ORG_NAME="ovotech"
 
-                        echo "$PARAM_CIRCLECI_TOKEN"
-
                         if [ -z "$PARAM_CIRCLECI_TOKEN" ]; then
                             echo "Mandatory parameters have not been set! You must specify a token in order to allow CircleCI to create schedules with appropriate permissions on this repository."
                             echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
@@ -127,7 +125,6 @@ commands:
                         # and if the status code is not 200
                         if [ "$(echo "${CIRCLECI_AUTH_HTTP_STATUS}" | awk '{print length}')" == "3" ] && [ "${CIRCLECI_AUTH_HTTP_STATUS}" != "200" ]; then
                             echo "${CIRCLECI_AUTH_HTTP_STATUS}: Unable to authenticate because provided CircleCI Token is invalid! Exiting..."
-                            echo "The value for the token is ${CIRCLECI_TOKEN}"
                             echo "You must create a personal API token (ideally for a service user) in CircleCI using the following instructions: https://circleci.com/docs/managing-api-tokens#creating-a-personal-api-token"
                             echo "Note: Do not create a project API token as this will not work with the relevant V2 API endpoints: https://circleci.com/docs/api/v2/index.html#section/Authentication/basic_auth"
                             exit 1
