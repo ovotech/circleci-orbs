@@ -6,7 +6,9 @@ This orb is responsible for setting up schedules for [scheduled pipelines](https
 
 The intention of the orb is that it will be called from within the repository / project for which the schedule is to be created. Creating schedules for other repositories is not currently supported.
 
-In order to create the schedule, you need to add a [CircleCI environment variable](https://circleci.com/docs/2.0/env-vars/) to the project named `CIRCLECI_TOKEN` which holds a [CircleCI API token](https://circleci.com/docs/2.0/managing-api-tokens/#creating-a-personal-api-token) with write permissions to the target repository. Without this environment variable set, this orb will not be able to successfully create the schedule.
+In order to create the schedule, you need to add a [CircleCI environment variable](https://circleci.com/docs/2.0/env-vars/) to the project which holds a [CircleCI API token](https://circleci.com/docs/2.0/managing-api-tokens/#creating-a-personal-api-token) with write permissions to the target repository. Without this environment variable set, this orb will not be able to successfully create the schedule.
+
+If not using the default environment variable `CIRCLECI_TOKEN`, please be sure to set the `circleci_token` parameter to your chosen environment variable in the orb job / command.
 
 **Note** that the token must be a personal API token and not a project API token, as project tokens are not supported with V2 of the CircleCI API.
 
@@ -22,6 +24,7 @@ This is the only command that exists within this orb and makes use of a wrapper 
 - `schedule_hours` - Comma separated hours in a day in which the schedule triggers
 - `schedule_days` - Comma separated days in a week in which the schedule triggers
 - `target_branch` - Branch on which the scheduled pipeline will trigger
+- `circleci_token` - Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
 
 ## Examples
 
@@ -44,6 +47,7 @@ usage:
             schedule_hours: '9'
             schedule_days: 'MON'
             target_branch: 'main'
+            circleci_token: SERVICE_USER_CIRCLECI_TOKEN
 ```
 
 ## Consuming the schedule and adding workflow filtering
