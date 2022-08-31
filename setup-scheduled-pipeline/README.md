@@ -47,7 +47,7 @@ usage:
             schedule_hours: '9'
             schedule_days: 'MON'
             target_branch: 'main'
-            circleci_token: "${SERVICE_USER_CIRCLECI_TOKEN}"
+            circleci_token: SERVICE_USER_CIRCLECI_TOKEN
 ```
 
 ## Consuming the schedule and adding workflow filtering
