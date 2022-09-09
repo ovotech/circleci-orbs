@@ -29,6 +29,7 @@ workflows:
             pipeline-utils/.* run-pipeline-utils true
             rac-gcp-deploy/.* run-rac-gcp-deploy true
             rac-kmi-deploy/.* run-rac-kmi-deploy true
+            realm/.* run-realm true
             sast/.* run-sast true
             sbt-deploy/.* run-sbt-deploy true
             set-current-environment/.* run-set-current-environment true

@@ -54,6 +54,9 @@ parameters:
   run-rac-kmi-deploy:
     type: boolean
     default: false
+  run-realm:
+    type: boolean
+    default: false
   run-sast:
     type: boolean
     default: false
@@ -393,6 +396,15 @@ workflows:
           path: rac-kmi-deploy
       - publish_orb:
           path: rac-kmi-deploy
+          requires:
+            - validate_orb
+  realm:
+    when: << pipeline.parameters.run-realm >>
+    jobs:
+      - validate_orb:
+          path: realm
+      - publish_orb:
+          path: realm
           requires:
             - validate_orb
   sast:

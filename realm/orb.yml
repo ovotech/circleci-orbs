@@ -1,0 +1,156 @@
+version: 2.1
+description: "Posts to Realm"
+
+executors:
+  default:
+    description: "Realm executor"
+    docker:
+      - image: alpine:3
+
+commands:
+  realm:
+    description: Curl to Realm
+    parameters:
+      auto-status:
+        description: Have the orb automatically determine the deployment event status
+        type: boolean
+        default: false
+      environment:
+        description: |
+          The environment the deployment event occurred in. Options: ["dev", "prod", "sandbox", "test", "uat"]
+        enum:
+          - dev
+          - prod
+          - sandbox
+          - test
+          - uat
+        type: enum
+        default: prod
+      kaluza-region:
+        description: |
+          The kaluza_region the deployment event occurred in. Options:  ["ap1", "eu1", "unknown"]
+        enum:
+          - ap1
+          - eu1
+          - unknown
+        type: enum
+        default: unknown
+      notify-slack-channel:
+        description: Slack channel to notify (omit the hash prefix)
+        type: string
+        default: ""
+      retailer:
+        description: |
+          The retailer the deployment event occurred in. Options: ["oea", "ovo", "unknown"]
+        enum:
+          - oea
+          - ovo
+          - unknown
+        type: enum
+        default: unknown
+      status:
+        description: |
+          Status of the deployment event. Options: ["failed", "started", "success", "unknown"]
+        enum:
+          - failed
+          - started
+          - success
+          - unknown
+        type: enum
+        default: unknown
+      team-name:
+        description: Team slug (should match Ownership data)
+        type: string
+        default: $TEAM_NAME
+    steps:
+      - checkout
+      - run:
+          command: |
+            echo 'failed' > /tmp/REALM_STATUS
+          name: Realm - Detecting Job Status (FAIL)
+          when: on_fail
+      - run:
+          command: |
+            echo 'success' > /tmp/REALM_STATUS
+          name: Realm - Detecting Job Status (PASS)
+          when: on_success
+      - run:
+          name: realm
+          command: |
+            include realm.sh
+          # always run this, so we get an event posted to Realm even if the (e.g. deploy) job fails
+          when: always
+  ##### legacy command #####
+  shipit:
+    description: Curl to ShipIt (Deprecated, use the realm command instead)
+    parameters:
+      auto-status:
+        description: Have the orb automatically determine the deployment event status
+        type: boolean
+        default: false
+      team-name:
+        description: Team slug (should match Ownership data)
+        type: string
+        default: $TEAM_NAME
+      environment:
+        # includes a "nonprod" option for back compat
+        description: |
+          The environment the deployment event occurred in. Options: ["dev", "nonprod", "prod", "sandbox", "test", "uat"]
+        enum:
+          - dev
+          - nonprod
+          - prod
+          - sandbox
+          - test
+          - uat
+        type: enum
+        default: prod
+      kaluza-region:
+        description: |
+          The kaluza_region the deployment event occurred in. Options:  ["ap1", "eu1", "unknown"]
+        enum:
+          - ap1
+          - eu1
+          - unknown
+        type: enum
+        default: unknown
+      notify-slack-channel:
+        description: Slack channel to notify (omit the hash prefix)
+        type: string
+        default: ""
+      retailer:
+        description: |
+          The retailer the deployment event occurred in. Options: ["oea", "ovo", "unknown"]
+        enum:
+          - oea
+          - ovo
+          - unknown
+        type: enum
+        default: unknown
+      status:
+        description: |
+          Status of the deployment event. Options: ["failed", "success", "unknown"]
+        enum:
+          - failed
+          - success
+          - unknown
+        type: enum
+        default: unknown
+      jira-component:
+        description: JIRA component name to create a release ticket for (Not in use)
+        type: string
+        default: ""
+      service-name:
+        description: A manual override for the name of the service (Not in use)
+        type: string
+        default: ""
+      silence-errors:
+        description: Silence any errors and allow the job to continue (Not in use)
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - run:
+          name: shipit
+          command: |
+            include realm.sh
