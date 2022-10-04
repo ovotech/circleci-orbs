@@ -652,6 +652,11 @@ jobs:
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}
       - when:
           condition:
             equal: ["true", $SLACK_INTEGRATION_ENABLED]
