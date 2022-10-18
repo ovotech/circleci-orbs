@@ -871,6 +871,7 @@ jobs:
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
             git config --global user.name "$<<parameters.git-username>>"
             git config --global user.email "$<<parameters.git-user-email>>"
+            git branch --set-upstream-to="origin/$(git branch --show-current)"
       - add_ssh_keys:
           fingerprints:
             - <<parameters.ssh-key-fingerprint>>
