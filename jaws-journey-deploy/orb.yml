@@ -2,6 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
+  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1  
   aws-ecr: circleci/aws-ecr@8.1.3
   terraform: ovotech/terraform@1.11.13
   openjdk-install: cloudesire/openjdk-install@1.2.3
@@ -590,6 +591,8 @@ commands:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
+      - aws-configure-credentials-oidc/aws-configure-credentials:
+          role-arn: $CIRCLE_IAM_ROLE_ARN              
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
