@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-ecr: circleci/aws-ecr@8.1.3
   terraform: ovotech/terraform@1.11.13
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@1.1.2
@@ -286,9 +286,10 @@ commands:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                account-url: AWS_ACCOUNT_URL
-                aws-access-key-id: AWS_ACCESS_KEY_ID
-                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                assume-web-identity: true                   
+                role-arn: CIRCLE_IAM_ROLE_ARN
+                role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
+                registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
@@ -759,9 +760,10 @@ jobs:
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          account-url: AWS_ACCOUNT_URL
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          assume-web-identity: true                   
+          role-arn: CIRCLE_IAM_ROLE_ARN
+          role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
+          registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
@@ -859,9 +861,10 @@ jobs:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                account-url: AWS_ACCOUNT_URL
-                aws-access-key-id: AWS_ACCESS_KEY_ID
-                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                assume-web-identity: true                   
+                role-arn: CIRCLE_IAM_ROLE_ARN
+                role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
+                registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
