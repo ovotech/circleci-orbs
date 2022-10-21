@@ -293,7 +293,7 @@ commands:
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
@@ -767,7 +767,7 @@ jobs:
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
-          region: AWS_DEFAULT_REGION
+          region: $AWS_DEFAULT_REGION
           repo: << parameters.serviceName >>
           tag: "latest,$CIRCLE_SHA1"
       - snyk/scan:
@@ -868,7 +868,7 @@ jobs:
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
