@@ -287,13 +287,13 @@ commands:
                 setup-remote-docker: true
                 checkout: false
                 assume-web-identity: true                   
-                role-arn: CIRCLE_IAM_ROLE_ARN
+                role-arn: $CIRCLE_IAM_ROLE_ARN
                 role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
-                registry-id: AWS_ACCOUNT_ID
+                registry-id: $AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
@@ -761,13 +761,13 @@ jobs:
           setup-remote-docker: true
           checkout: false
           assume-web-identity: true                   
-          role-arn: CIRCLE_IAM_ROLE_ARN
+          role-arn: $CIRCLE_IAM_ROLE_ARN
           role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
-          registry-id: AWS_ACCOUNT_ID
+          registry-id: $AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
-          region: AWS_DEFAULT_REGION
+          region: $AWS_DEFAULT_REGION
           repo: << parameters.serviceName >>
           tag: "latest,$CIRCLE_SHA1"
       - snyk/scan:
@@ -862,13 +862,13 @@ jobs:
                 setup-remote-docker: true
                 checkout: false
                 assume-web-identity: true                   
-                role-arn: CIRCLE_IAM_ROLE_ARN
+                role-arn: $CIRCLE_IAM_ROLE_ARN
                 role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
-                registry-id: AWS_ACCOUNT_ID
+                registry-id: $AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
