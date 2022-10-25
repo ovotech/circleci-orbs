@@ -78,17 +78,17 @@ commands:
 
       - run:
           name: Generate pom.xml for Snyk
-          command: |
-            lein pom
-            cat pom.xml
+          command: lein pom
 
-      - run:
-          name: Install mvn for Snyk
-          command: sudo apt update && sudo apt install maven
+      # Force an explicit monitor regardless of the failure/success of a scan
+      - snyk/scan:
+          command: "version"
+          monitor-on-build: true
+          severity-threshold: high
 
       - snyk/scan:
           fail-on-issues: true
-          monitor-on-build: true
+          monitor-on-build: false
           severity-threshold: high
 
       - save_cache:

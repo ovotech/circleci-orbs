@@ -3,6 +3,10 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.11.16
+## Added
+- Added authentication to the API call for `/versions`
+
 ## ovotech/terraform@1.11.15
 ## Added
 - Added target parameter for plan step
