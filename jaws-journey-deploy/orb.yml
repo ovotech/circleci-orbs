@@ -776,7 +776,7 @@ jobs:
           setup-remote-docker: true
           checkout: false
           assume-web-identity: << parameters.oidc >>                   
-          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</arameters.oidc>>
+          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
           role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
           registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
