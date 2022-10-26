@@ -569,9 +569,7 @@ commands:
       username:
         type: string
       token:
-        type: string
-      url:
-        type: string        
+        type: string       
     steps:
       - run:
           shell: /bin/bash -eo pipefail
