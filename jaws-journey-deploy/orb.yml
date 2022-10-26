@@ -242,10 +242,7 @@ commands:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       use_oidc:
         type: boolean
-        default: false
-      github_repo_url:
-        type: string
-        default: 'docker.pkg.github.com'          
+        default: false         
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -290,7 +287,6 @@ commands:
             - github-repo-login:
                 username: << parameters.username >>
                 token: << parameters.token >>
-                url: << parameters.github_repo_url >> 
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
@@ -757,10 +753,7 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       use_oidc:
         type: boolean
-        default: false
-      github_repo_url:
-        type: string
-        default: 'docker.pkg.github.com'                
+        default: false             
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -774,8 +767,7 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - github-repo-login:
           username: << parameters.username >>
-          token: << parameters.token >>
-          url: << parameters.github_repo_url >>          
+          token: << parameters.token >>        
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
@@ -831,10 +823,7 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       use_oidc:
         type: boolean
-        default: false
-      github_repo_url:
-        type: string
-        default: 'docker.pkg.github.com'                
+        default: false              
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -882,8 +871,7 @@ jobs:
           steps:
             - github-repo-login:
                 username: << parameters.username >>
-                token: << parameters.token >>
-                url: << parameters.github_repo_url >>                
+                token: << parameters.token >>              
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false

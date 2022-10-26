@@ -1,6 +1,5 @@
 
 USERNAME="<< parameters.username >>"
 TOKEN="<< parameters.token >>"
-URL="<< parameters.url >>"
 
-docker login https://$URL -u $USERNAME -p $TOKEN
+docker login https://ghcr.io -u $USERNAME -p $TOKEN
