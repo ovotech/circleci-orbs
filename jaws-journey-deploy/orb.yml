@@ -580,12 +580,12 @@ commands:
   tf:
     parameters:
       <<: *tf-common-parameters
-      oidc:
-        type: boolean
-        default: false
       command:
         type: "enum"
         enum: [ "plan", "apply" ]
+      oidc:
+        type: boolean
+        default: false          
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -994,9 +994,14 @@ jobs:
     <<: *tf-common
     environment:
       <<: *tf-mask
+    parameters:
+      oidc:
+        type: boolean
+        default: false      
     steps:
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: plan
 
   tf-apply:
@@ -1005,9 +1010,14 @@ jobs:
     <<: *tf-common
     environment:
       <<: *tf-mask
+    parameters:
+      oidc:
+        type: boolean
+        default: false       
     steps:
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: apply
 
   tf-plan-java:
@@ -1016,10 +1026,15 @@ jobs:
     <<: *tf-common
     environment:
       <<: *tf-mask
+    parameters:
+      oidc:
+        type: boolean
+        default: false       
     steps:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>          
           command: plan
 
   tf-apply-java:
@@ -1028,10 +1043,15 @@ jobs:
     <<: *tf-common
     environment:
       <<: *tf-mask
+    parameters:
+      oidc:
+        type: boolean
+        default: false       
     steps:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: apply
 
   gitops-deploy:
