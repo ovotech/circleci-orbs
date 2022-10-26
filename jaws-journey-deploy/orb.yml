@@ -580,6 +580,9 @@ commands:
   tf:
     parameters:
       <<: *tf-common-parameters
+      using_oidc:
+        type: boolean
+        default: false
       command:
         type: "enum"
         enum: [ "plan", "apply" ]
@@ -594,8 +597,11 @@ commands:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
-      - aws-configure-credentials-oidc/aws-configure-credentials:
-          role-arn: $CIRCLE_IAM_ROLE_ARN              
+      - when:
+          condition: << parameters.using_oidc >>
+          steps:            
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN              
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
