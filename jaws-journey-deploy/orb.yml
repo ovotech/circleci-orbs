@@ -292,7 +292,7 @@ commands:
                 checkout: false
                 assume-web-identity: << parameters.use_oidc >>                   
                 role-arn: <<#parameters.use_oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.use_oidc>>
-                role-session-name: <<#parameters.use_oidc>>'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}'<</parameters.use_oidc>> 
+                role-session-name: <<#parameters.use_oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.use_oidc>> 
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
@@ -771,7 +771,7 @@ jobs:
           checkout: false
           assume-web-identity: << parameters.use_oidc >>                   
           role-arn: <<#parameters.use_oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.use_oidc>>
-          role-session-name: <<#parameters.use_oidc>>'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}'<</parameters.use_oidc>>  
+          role-session-name: <<#parameters.use_oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.use_oidc>>  
           registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
@@ -875,7 +875,7 @@ jobs:
                 checkout: false
                 assume-web-identity: << parameters.use_oidc >>                   
                 role-arn: <<#parameters.use_oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.use_oidc>>
-                role-session-name: <<#parameters.use_oidc>>'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}'<</parameters.use_oidc>>  
+                role-session-name: <<#parameters.use_oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.use_oidc>>  
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
