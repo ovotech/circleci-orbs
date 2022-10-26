@@ -287,8 +287,6 @@ commands:
       - when:
           condition: << parameters.publish >>
           steps:
-            - when: 
-                condition: 
             - github-repo-login:
                 username: << parameters.username >>
                 token: << parameters.token >>
