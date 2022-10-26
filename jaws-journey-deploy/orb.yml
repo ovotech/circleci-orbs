@@ -240,6 +240,12 @@ commands:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      use_oidc:
+        type: boolean
+        default: false
+      github_repo_url:
+        type: string
+        default: 'docker.pkg.github.com'          
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -281,15 +287,18 @@ commands:
       - when:
           condition: << parameters.publish >>
           steps:
+            - when: 
+                condition: 
             - github-repo-login:
                 username: << parameters.username >>
                 token: << parameters.token >>
+                url: << parameters.github_repo_url >> 
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                assume-web-identity: true                   
-                role-arn: $CIRCLE_IAM_ROLE_ARN
-                role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
+                assume-web-identity: << parameters.use_oidc >>                   
+                role-arn: <<#parameters.use_oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.use_oidc>>
+                role-session-name: <<#parameters.use_oidc>>'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}'<</parameters.use_oidc>> 
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
@@ -567,6 +576,8 @@ commands:
         type: string
       token:
         type: string
+      url:
+        type: string        
     steps:
       - run:
           shell: /bin/bash -eo pipefail
@@ -746,6 +757,12 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      use_oidc:
+        type: boolean
+        default: false
+      github_repo_url:
+        type: string
+        default: 'docker.pkg.github.com'                
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -760,12 +777,13 @@ jobs:
       - github-repo-login:
           username: << parameters.username >>
           token: << parameters.token >>
+          url: << parameters.github_repo_url >>          
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          assume-web-identity: true                   
-          role-arn: $CIRCLE_IAM_ROLE_ARN
-          role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
+          assume-web-identity: << parameters.use_oidc >>                   
+          role-arn: <<#parameters.use_oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.use_oidc>>
+          role-session-name: <<#parameters.use_oidc>>'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}'<</parameters.use_oidc>>  
           registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
@@ -813,6 +831,12 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      use_oidc:
+        type: boolean
+        default: false
+      github_repo_url:
+        type: string
+        default: 'docker.pkg.github.com'                
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -861,12 +885,13 @@ jobs:
             - github-repo-login:
                 username: << parameters.username >>
                 token: << parameters.token >>
+                url: << parameters.github_repo_url >>                
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                assume-web-identity: true                   
-                role-arn: $CIRCLE_IAM_ROLE_ARN
-                role-session-name: 'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}' 
+                assume-web-identity: << parameters.use_oidc >>                   
+                role-arn: <<#parameters.use_oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.use_oidc>>
+                role-session-name: <<#parameters.use_oidc>>'CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}'<</parameters.use_oidc>>  
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
