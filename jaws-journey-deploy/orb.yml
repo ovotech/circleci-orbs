@@ -69,6 +69,9 @@ aliases:
       destroy_first:
         type: boolean
         default: false
+      oidc:
+        type: boolean
+        default: false  
       vars_dir:
         type: string
         description: "Path to directory containing Terraform variables file.  Do not supply the ending slash /"
@@ -582,10 +585,7 @@ commands:
       <<: *tf-common-parameters
       command:
         type: "enum"
-        enum: [ "plan", "apply" ]
-      oidc:
-        type: boolean
-        default: false          
+        enum: [ "plan", "apply" ]         
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -993,11 +993,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
-    parameters:
-      oidc:
-        type: boolean
-        default: false      
+      <<: *tf-mask     
     steps:
       - tf:
           <<: *tf-command-parameters
@@ -1009,11 +1005,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
-    parameters:
-      oidc:
-        type: boolean
-        default: false       
+      <<: *tf-mask       
     steps:
       - tf:
           <<: *tf-command-parameters
@@ -1025,11 +1017,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
-    parameters:
-      oidc:
-        type: boolean
-        default: false       
+      <<: *tf-mask      
     steps:
       - tf-install-adoptopenjdk
       - tf:
@@ -1042,11 +1030,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
-    parameters:
-      oidc:
-        type: boolean
-        default: false       
+      <<: *tf-mask      
     steps:
       - tf-install-adoptopenjdk
       - tf:
