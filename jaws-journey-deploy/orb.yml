@@ -2,7 +2,8 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1  
+  aws-ecr: circleci/aws-ecr@8.1.3
   terraform: ovotech/terraform@1.11.13
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@1.1.2
@@ -68,6 +69,9 @@ aliases:
       destroy_first:
         type: boolean
         default: false
+      oidc:
+        type: boolean
+        default: false  
       vars_dir:
         type: string
         description: "Path to directory containing Terraform variables file.  Do not supply the ending slash /"
@@ -239,6 +243,9 @@ commands:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      oidc:
+        type: boolean
+        default: false         
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -286,13 +293,14 @@ commands:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                account-url: AWS_ACCOUNT_URL
-                aws-access-key-id: AWS_ACCESS_KEY_ID
-                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                assume-web-identity: << parameters.oidc >>                   
+                role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>> 
+                registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
@@ -564,7 +572,7 @@ commands:
       username:
         type: string
       token:
-        type: string
+        type: string       
     steps:
       - run:
           shell: /bin/bash -eo pipefail
@@ -577,7 +585,7 @@ commands:
       <<: *tf-common-parameters
       command:
         type: "enum"
-        enum: [ "plan", "apply" ]
+        enum: [ "plan", "apply" ]         
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -589,6 +597,11 @@ commands:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
+      - when:
+          condition: << parameters.oidc >>
+          steps:            
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN              
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -742,6 +755,9 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      oidc:
+        type: boolean
+        default: false             
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -755,17 +771,18 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - github-repo-login:
           username: << parameters.username >>
-          token: << parameters.token >>
+          token: << parameters.token >>        
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          account-url: AWS_ACCOUNT_URL
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          assume-web-identity: << parameters.oidc >>                   
+          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
+          registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
-          region: AWS_DEFAULT_REGION
+          region: $AWS_DEFAULT_REGION
           repo: << parameters.serviceName >>
           tag: "latest,$CIRCLE_SHA1"
       - snyk/scan:
@@ -808,6 +825,9 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      oidc:
+        type: boolean
+        default: false              
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -855,17 +875,18 @@ jobs:
           steps:
             - github-repo-login:
                 username: << parameters.username >>
-                token: << parameters.token >>
+                token: << parameters.token >>              
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                account-url: AWS_ACCOUNT_URL
-                aws-access-key-id: AWS_ACCESS_KEY_ID
-                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                assume-web-identity: << parameters.oidc >>                   
+                role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
+                registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
@@ -972,10 +993,11 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
+      <<: *tf-mask     
     steps:
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: plan
 
   tf-apply:
@@ -983,10 +1005,11 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
+      <<: *tf-mask       
     steps:
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: apply
 
   tf-plan-java:
@@ -994,11 +1017,12 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
+      <<: *tf-mask      
     steps:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>          
           command: plan
 
   tf-apply-java:
@@ -1006,11 +1030,12 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask
+      <<: *tf-mask      
     steps:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: apply
 
   gitops-deploy:

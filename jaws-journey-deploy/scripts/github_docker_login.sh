@@ -2,4 +2,4 @@
 USERNAME="<< parameters.username >>"
 TOKEN="<< parameters.token >>"
 
-docker login https://docker.pkg.github.com -u $USERNAME -p $TOKEN
+docker login https://ghcr.io -u $USERNAME -p $TOKEN
