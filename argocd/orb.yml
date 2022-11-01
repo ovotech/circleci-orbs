@@ -81,5 +81,4 @@ jobs:
     steps:
       - sync_request:
           argocd_url: << parameters.argocd_url >>
-          application: << parameters.application >>
-          target: << parameters.target >>          
+          application: << parameters.application >>        
