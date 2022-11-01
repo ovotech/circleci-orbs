@@ -29,6 +29,21 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/wait_for_sync.sh
+  sync_request:
+    description: "Sends a post request to the Argo api to sync the given app to its target commit hash. Expects ARGOCD_TOKEN environment variable to be set."          
+    parameters:
+      application:
+        type: string
+        description: "Application ID"
+      argocd_url:
+        type: string
+        description: "URL of ArgoCD server"
+    steps:
+      - run:
+          name: "sync request to app"
+          shell: /bin/bash -eo pipefail
+          command: |
+            curl -X POST -H "Authorization: Bearer ${ARGOCD_TOKEN}" << parameters.argocd_url >>/api/v1/applications/<< parameters.application >>/sync    
 
 jobs:
   wait_for_sync:
@@ -53,3 +68,16 @@ jobs:
           argocd_url: << parameters.argocd_url >>
           application: << parameters.application >>
           target: << parameters.target >>
+  sync_request:
+    parameters:
+      application:
+        type: string
+        description: "Application ID"
+      argocd_url:
+        type: string
+        description: "URL of ArgoCD server"
+    steps:
+      - sync_request:
+          argocd_url: << parameters.argocd_url >>
+          application: << parameters.application >>
+          target: << parameters.target >>          
