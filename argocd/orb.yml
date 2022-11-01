@@ -69,6 +69,8 @@ jobs:
           application: << parameters.application >>
           target: << parameters.target >>
   sync_request:
+    machine: 
+      image: ubuntu-2004:202010-01
     parameters:
       application:
         type: string
