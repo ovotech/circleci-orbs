@@ -9,7 +9,7 @@ orbs:
   snyk: snyk/snyk@1.1.2
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
-  argocd: ovotech/argocd@1.0.2
+  argocd: ovotech/argocd@dev:masc-410-argo-sync-request
 
 executors:
   kotlin:
@@ -1104,10 +1104,9 @@ jobs:
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - install-python-dependencies
-            - argocd/wait_for_sync:
+            - argocd/sync_request:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
-                target: $ARGOCD_TARGET_REVISION
   
   run-automation-test:
     parameters:
