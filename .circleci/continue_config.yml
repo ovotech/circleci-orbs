@@ -521,3 +521,12 @@ workflows:
           path: kap-kmi-deploy
           requires:
             - validate_orb
+  build-utilities:
+    when: << pipeline.parameters.run-build-utilities >>
+    jobs:
+      - validate_orb:
+          path: build-utilities
+      - publish_orb:
+          path: build-utilities
+          requires:
+            - validate_orb
