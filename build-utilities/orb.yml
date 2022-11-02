@@ -1,0 +1,78 @@
+version: 2.1
+description: "OHS build utilities"
+
+commands:
+  clone-utilities:
+    parameters:
+      git_repo:
+        description: "Git repository to clone"
+        type: string
+      local_folder:
+        description: "Local folder path where the git repo will be cloned to"
+        type: string
+    steps:
+      - run:
+          name: Clone repo
+          command: |
+            mkdir << parameters.local_folder >>
+            git clone << parameters.git_repo >> << parameters.local_folder >>
+            chmod +x << parameters.local_folder >>/docker/build-image.sh
+            chmod +x << parameters.local_folder >>/docker/publish-manifest.sh
+
+  build:
+    parameters:
+      architecture: 
+        type: string
+      image_name:
+        type: string
+      docker_registry:
+        type: string
+      docker_file:
+        type: string
+    steps:
+      - checkout
+      - clone-utilities:
+          git_repo: https://github.com/ovotech/ohs-build-scripts.git
+          local_folder: $HOME/utilities
+      - run:
+          name: Build image
+          working_directory: src
+          command: |
+            $HOME/utilities/docker/build-image.sh \
+                TARGET_ARCH=<< parameters.architecture >>\
+                NUGET_USERNAME=$NUGET_USERNAME\
+                NUGET_PASSWORD=$NUGET_PASSWORD\
+                DOCKERFILE=<< parameters.docker_file >>\
+                IMAGE_NAME=<< parameters.image_name >>\
+                DOCKER_REGISTRY=<< parameters.docker_registry >>
+
+  save-image:
+    parameters:
+      image_name: 
+        type: string
+      path_name:
+        type: string
+      root_name:
+        type: string
+    steps:
+      - run:
+          name: Archive image
+          command: |
+            mkdir -p << parameters.root_name >>/<< parameters.path_name >>
+            docker save -o << parameters.root_name >>/<< parameters.path_name >>/<< parameters.image_name >>.tar << parameters.image_name >>
+      - persist_to_workspace:
+          root: << parameters.root_name >>
+          paths:
+            - << parameters.path_name >>
+
+  restore_persisted_container_images:
+    description: 'Restores container images saved to the workspace to the current docker context'
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load images into docker
+          command: |
+            for i in /tmp/workspace/container_images/*.tar; do
+              docker load -i "$i"
+            done 
