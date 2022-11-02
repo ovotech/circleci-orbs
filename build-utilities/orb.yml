@@ -1,5 +1,5 @@
 version: 2.1
-description: "OHS build utilities"
+description: "Build utilities"
 
 commands:
   clone-utilities:
