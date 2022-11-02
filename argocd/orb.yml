@@ -43,7 +43,7 @@ commands:
           name: "sync request to app"
           shell: /bin/bash -eo pipefail
           command: |
-            curl -X POST -H "Authorization: Bearer ${ARGOCD_TOKEN}" << parameters.argocd_url >>/api/v1/applications/<< parameters.application >>/sync    
+            include ./scripts/sync_request.sh    
 
 jobs:
   wait_for_sync:
@@ -69,8 +69,7 @@ jobs:
           application: << parameters.application >>
           target: << parameters.target >>
   sync_request:
-    machine: 
-      image: ubuntu-2004:202010-01
+    executor: python
     parameters:
       application:
         type: string
