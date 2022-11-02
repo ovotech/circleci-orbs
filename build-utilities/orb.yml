@@ -3,6 +3,7 @@ description: "Build utilities"
 
 commands:
   clone-utilities:
+    description: 'Clones the utilities repo into the current process'
     parameters:
       git_repo:
         description: "Git repository to clone"
@@ -20,14 +21,19 @@ commands:
             chmod +x << parameters.local_folder >>/docker/publish-manifest.sh
 
   build:
+    description: 'Executes the build utility script to build docker images in the targeted processor architecture'
     parameters:
       architecture: 
+        description: "Target processor architecture (amd64, arm64) desired"
         type: string
       image_name:
+        description: "Docker image name"
         type: string
       docker_registry:
+        description: "Docker registry"
         type: string
       docker_file:
+        description: "Docker file name + location"
         type: string
     steps:
       - checkout
@@ -47,12 +53,16 @@ commands:
                 DOCKER_REGISTRY=<< parameters.docker_registry >>
 
   save-image:
+    description: 'Saves container images to the circleci workspace'
     parameters:
       image_name: 
+        description: "Filename to save image using docker"
         type: string
       path_name:
+        description: "Path name where the image will be saved"
         type: string
       root_name:
+        description: "Root folder name where the image will be saved"
         type: string
     steps:
       - run:
@@ -67,6 +77,13 @@ commands:
 
   restore_persisted_container_images:
     description: 'Restores container images saved to the workspace to the current docker context'
+    parameters:
+      path_name:
+        description: "Path name where the image will be lloaded from"
+        type: string
+      root_name:
+        description: "Root folder name where the image will be loaded from"
+        type: string
     steps:
       - attach_workspace:
           at: /tmp/workspace
