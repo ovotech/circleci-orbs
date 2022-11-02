@@ -43,7 +43,7 @@ commands:
           name: "sync request to app"
           shell: /bin/bash -eo pipefail
           command: |
-            include ./scripts/sync_request.sh    
+            include ./scripts/sync_request.sh
 
 jobs:
   wait_for_sync:
