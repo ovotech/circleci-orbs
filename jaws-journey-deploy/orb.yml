@@ -1104,7 +1104,7 @@ jobs:
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - install-python-dependencies
-            - argocd/sync_request:
+            - argocd/sync:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
   
