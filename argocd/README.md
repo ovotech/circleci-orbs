@@ -28,7 +28,7 @@ jobs:
         target: $ARGO_TARGET_REVISION
     - run-test
 ```
-### Sync request
+### Sync
 
 ```yaml
 orbs:
@@ -40,7 +40,7 @@ jobs:
     context: jaws-nonprod # Must have ARGOCD_TOKEN in the context
     steps:
     - gitops-deploy # Deploys to manifest repo, persists deployed commit hash as ARGO_TARGET_REVISION in $BASH_ENV
-    - argocd/sync_request:
+    - argocd/sync:
         application: journey-meter-tariff-extractor
         argocd_url: https://argocd.metering-shared-non-prod.ovotech.org.uk/
     - run-test
