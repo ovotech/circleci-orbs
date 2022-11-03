@@ -44,6 +44,11 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/sync_request.sh
+      - wait_for_sync:
+          application: << parameters.application >>
+          argocd_url: << parameters.argocd_url >>
+          target: $TARGET
+          wait_for: 300
 
 jobs:
   wait_for_sync:
