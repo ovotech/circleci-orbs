@@ -29,7 +29,7 @@ commands:
           shell: /bin/bash -eo pipefail
           command: |
             include ./scripts/wait_for_sync.sh
-  sync_request:
+  sync:
     description: "Sends a post request to the Argo api to sync the given app to its target commit hash. Expects ARGOCD_TOKEN environment variable to be set."          
     parameters:
       application:
@@ -48,7 +48,7 @@ commands:
           application: << parameters.application >>
           argocd_url: << parameters.argocd_url >>
           target: $TARGET
-          wait_for: 300      
+          wait_for: 300
 
 jobs:
   wait_for_sync:
@@ -73,7 +73,7 @@ jobs:
           argocd_url: << parameters.argocd_url >>
           application: << parameters.application >>
           target: << parameters.target >>
-  sync_request:
+  sync:
     executor: python
     parameters:
       application:
@@ -83,11 +83,6 @@ jobs:
         type: string
         description: "URL of ArgoCD server"
     steps:
-      - sync_request:
+      - sync:
           argocd_url: << parameters.argocd_url >>
           application: << parameters.application >>        
-      - wait_for_sync:
-          application: << parameters.application >>
-          argocd_url: << parameters.argocd_url >>
-          target: $TARGET
-          wait_for: 300
