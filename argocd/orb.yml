@@ -30,7 +30,7 @@ commands:
           command: |
             include ./scripts/wait_for_sync.sh
   sync:
-    description: "Sends a post request to the Argo api to sync the given app to its target commit hash. Expects ARGOCD_TOKEN environment variable to be set."          
+    description: "Sends a post request to the Argo api to sync the given app to its target commit hash. Then waits for sync to complete. Expects ARGOCD_TOKEN environment variable to be set."
     parameters:
       application:
         type: string
@@ -38,17 +38,16 @@ commands:
       argocd_url:
         type: string
         description: "URL of ArgoCD server"
+      wait_for:
+        type: integer
+        default: 600
+        description: "Maximum time to wait for sync in seconds. Default 600."
     steps:
       - run:
-          name: "sync request to app"
+          name: "sync request to app and wait for sync"
           shell: /bin/bash -eo pipefail
           command: |
-            include ./scripts/sync_request.sh
-      - wait_for_sync:
-          application: << parameters.application >>
-          argocd_url: << parameters.argocd_url >>
-          target: $TARGET
-          wait_for: 300
+            include ./scripts/sync_and_wait.sh
 
 jobs:
   wait_for_sync:
@@ -84,5 +83,6 @@ jobs:
         description: "URL of ArgoCD server"
     steps:
       - sync:
+          wait_for: << parameters.wait_for >>
           argocd_url: << parameters.argocd_url >>
           application: << parameters.application >>
