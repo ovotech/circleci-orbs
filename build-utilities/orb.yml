@@ -37,7 +37,7 @@ commands:
         type: string
     steps:
       - checkout
-      - clone-utilities:
+      - clone:
           git_repo: https://github.com/ovotech/ohs-build-scripts.git
           local_folder: $HOME/utilities
       - run:
