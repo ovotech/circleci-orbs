@@ -1,3 +1,6 @@
+# 2.0.1
+* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target
+
 # 2.0.0
 
 * aws-ecr orb changed from version `7.2.0` to `8.1.3`
