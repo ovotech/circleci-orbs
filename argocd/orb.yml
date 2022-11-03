@@ -42,6 +42,9 @@ commands:
         type: integer
         default: 600
         description: "Maximum time to wait for sync in seconds. Default 600."
+      target:
+        type: string
+        description: "Commit hash to check for"        
     steps:
       - run:
           name: "sync request to app and wait for sync"
@@ -85,8 +88,12 @@ jobs:
       argocd_url:
         type: string
         description: "URL of ArgoCD server"
+      target:
+        type: string
+        description: "Commit hash to check for"        
     steps:
       - sync:
           wait_for: << parameters.wait_for >>
           argocd_url: << parameters.argocd_url >>
           application: << parameters.application >>
+          target: << parameters.target >>

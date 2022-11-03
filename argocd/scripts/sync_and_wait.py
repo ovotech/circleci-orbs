@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # Add long and short argument
     parser.add_argument("--wait-for", help="Set maximum number of seconds to wait for cluster being sync", default=300)
     parser.add_argument("--application", help="Application to check")
-    # parser.add_argument("--target", help="Target Git hash cluster should be synced to")
+    parser.add_argument("--target", help="Target Git hash cluster should be synced to")
     parser.add_argument("--argocd-url", help="API endpoint of ArgoCD")
 
     args = parser.parse_args()
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     while time.time() <= t_end:
         print(f'Checking if {args.application} is in sync with {target}...')
                 
-        if is_cluster_insync(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application, target):
+        if is_cluster_insync(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application, args.target):
             exit(0)
         time.sleep(5)
     
