@@ -24,7 +24,7 @@ commands:
     description: 'Executes the build utility script to build docker images in the targeted processor architecture'
     parameters:
       architecture: 
-        description: "Target processor architecture (amd64, arm64) desired"
+        description: "Targeted processor architecture (amd64, arm64) desired"
         type: string
       image_name:
         description: "Docker image name"
@@ -35,11 +35,15 @@ commands:
       docker_file:
         description: "Docker file name + location"
         type: string
+      clone_folder:
+        description: "Clone build-script folder"
+        type: string
+        default: $HOME/utilities
     steps:
       - checkout
       - clone:
           git_repo: https://github.com/ovotech/ohs-build-scripts.git
-          local_folder: $HOME/utilities
+          local_folder: << parameters.clone_folder >>
       - run:
           name: Build image
           working_directory: src
@@ -56,7 +60,7 @@ commands:
     description: 'Saves container images to the circleci workspace'
     parameters:
       image_name: 
-        description: "Filename to save image using docker"
+        description: "Docker image name to save"
         type: string
       path_name:
         description: "Path name where the image will be saved"
@@ -79,7 +83,7 @@ commands:
     description: 'Restores container images saved in the workspace to the current docker context'
     parameters:
       path_name:
-        description: "Path name where the image will be lloaded from"
+        description: "Path name where the image will be loaded from"
         type: string
       root_name:
         description: "Root folder name where the image will be loaded from"
