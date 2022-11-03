@@ -19,8 +19,6 @@ def sync_request(endpoint, token, application):
         cluster_sync_status = data['status']['sync']['status']
         target = data['operation']['sync']['revision']
 
-        os.environ['TARGET'] = target
-
         if os.environ.get('ARGOCD_ORB_DEBUG'):
             print_debug(data)
 
@@ -126,11 +124,9 @@ if __name__ == '__main__':
 
     sync_request(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application)
 
-    target = os.environ.get('TARGET')
-
     t_end = time.time() + int(args.wait_for)
     while time.time() <= t_end:
-        print(f'Checking if {args.application} is in sync with {target}...')
+        print(f'Checking if {args.application} is in sync with {args.target}...')
                 
         if is_cluster_insync(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application, args.target):
             exit(0)
