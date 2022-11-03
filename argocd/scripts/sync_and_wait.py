@@ -17,18 +17,15 @@ def sync_request(endpoint, token, application):
         
         data = res.json()
         cluster_sync_status = data['status']['sync']['status']
-        target = data['operation']['sync']['revision']
 
         if os.environ.get('ARGOCD_ORB_DEBUG'):
             print_debug(data)
 
         if cluster_sync_status == "Synced":
             print(f'Sync request successful, application was in sync')
-            print(f'Target revision: {target}')
             return True
         else:
             print(f'Sync request successful, application was not in sync')
-            print(f'Target revision: {target}')
             return False
 
     except ValueError as e:

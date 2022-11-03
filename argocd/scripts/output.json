@@ -1,0 +1,377 @@
+{
+    "metadata": {
+        "name": "smart-ingestion-service",
+        "namespace": "argocd",
+        "uid": "cc041855-4387-410a-9b65-9ab3c301eb1d",
+        "resourceVersion": "356143276",
+        "generation": 138704,
+        "creationTimestamp": "2021-12-01T17:58:42Z",
+        "labels": {
+            "argocd.argoproj.io/instance": "default"
+        },
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"Application\",\"metadata\":{\"annotations\":{},\"labels\":{\"argocd.argoproj.io/instance\":\"default\"},\"name\":\"smart-ingestion-service\",\"namespace\":\"argocd\"},\"spec\":{\"destination\":{\"namespace\":\"smart-ingestion\",\"server\":\"https://kubernetes.default.svc\"},\"project\":\"paym\",\"source\":{\"helm\":{\"valueFiles\":[\"values-sandbox.yaml\"]},\"path\":\"manifests\",\"repoURL\":\"https://github.com/ovotech/smart-ingestion-service\",\"targetRevision\":\"sandbox\"},\"syncPolicy\":{\"automated\":{}}}}\n"
+        },
+        "managedFields": [
+            {
+                "manager": "argocd-application-controller",
+                "operation": "Update",
+                "apiVersion": "argoproj.io/v1alpha1",
+                "time": "2022-05-22T00:59:22Z",
+                "fieldsType": "FieldsV1",
+                "fieldsV1": {
+                    "f:metadata": {
+                        "f:annotations": {
+                            ".": {},
+                            "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                        },
+                        "f:labels": {
+                            ".": {},
+                            "f:argocd.argoproj.io/instance": {}
+                        }
+                    },
+                    "f:spec": {
+                        ".": {},
+                        "f:destination": {
+                            ".": {},
+                            "f:namespace": {},
+                            "f:server": {}
+                        },
+                        "f:project": {},
+                        "f:source": {
+                            ".": {},
+                            "f:helm": {
+                                ".": {},
+                                "f:valueFiles": {}
+                            },
+                            "f:path": {},
+                            "f:repoURL": {},
+                            "f:targetRevision": {}
+                        },
+                        "f:syncPolicy": {
+                            ".": {},
+                            "f:automated": {}
+                        }
+                    },
+                    "f:status": {
+                        ".": {},
+                        "f:health": {},
+                        "f:summary": {},
+                        "f:sync": {
+                            ".": {},
+                            "f:comparedTo": {
+                                ".": {},
+                                "f:destination": {
+                                    ".": {},
+                                    "f:namespace": {},
+                                    "f:server": {}
+                                },
+                                "f:source": {
+                                    ".": {},
+                                    "f:helm": {
+                                        ".": {},
+                                        "f:valueFiles": {}
+                                    },
+                                    "f:path": {},
+                                    "f:repoURL": {},
+                                    "f:targetRevision": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "manager": "Go-http-client",
+                "operation": "Update",
+                "apiVersion": "argoproj.io/v1alpha1",
+                "time": "2022-11-02T19:10:44Z",
+                "fieldsType": "FieldsV1",
+                "fieldsV1": {
+                    "f:operation": {
+                        ".": {},
+                        "f:initiatedBy": {
+                            ".": {},
+                            "f:username": {}
+                        },
+                        "f:retry": {},
+                        "f:sync": {
+                            ".": {},
+                            "f:revision": {}
+                        }
+                    },
+                    "f:status": {
+                        "f:conditions": {},
+                        "f:health": {
+                            "f:status": {}
+                        },
+                        "f:reconciledAt": {},
+                        "f:resources": {},
+                        "f:sourceType": {},
+                        "f:sync": {
+                            "f:revision": {},
+                            "f:status": {}
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "spec": {
+        "source": {
+            "repoURL": "https://github.com/ovotech/smart-ingestion-service",
+            "path": "manifests",
+            "targetRevision": "sandbox",
+            "helm": {
+                "valueFiles": [
+                    "values-sandbox.yaml"
+                ]
+            }
+        },
+        "destination": {
+            "server": "https://kubernetes.default.svc",
+            "namespace": "smart-ingestion"
+        },
+        "project": "paym",
+        "syncPolicy": {
+            "automated": {}
+        }
+    },
+    "status": {
+        "resources": [
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "api-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "appointments-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "device-store-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "journey-tracking-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "pan-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "readings-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "version": "v1",
+                "kind": "Service",
+                "namespace": "smart-ingestion",
+                "name": "tariff-configuration-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "api-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "appointments-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "device-store-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "journey-tracking-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "pan-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "readings-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "apps",
+                "version": "v1",
+                "kind": "Deployment",
+                "namespace": "smart-ingestion",
+                "name": "tariff-configuration-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "cert-manager.io",
+                "version": "v1",
+                "kind": "Certificate",
+                "namespace": "smart-ingestion",
+                "name": "api",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "networking.k8s.io",
+                "version": "v1",
+                "kind": "Ingress",
+                "namespace": "smart-ingestion",
+                "name": "api-sandbox",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "networking.k8s.io",
+                "version": "v1",
+                "kind": "NetworkPolicy",
+                "namespace": "smart-ingestion",
+                "name": "allow-ingress-from-traefik",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            },
+            {
+                "group": "traefik.containo.us",
+                "version": "v1alpha1",
+                "kind": "TLSOption",
+                "namespace": "smart-ingestion",
+                "name": "api-mtls",
+                "status": "OutOfSync",
+                "health": {
+                    "status": "Missing"
+                }
+            }
+        ],
+        "sync": {
+            "status": "OutOfSync",
+            "comparedTo": {
+                "source": {
+                    "repoURL": "https://github.com/ovotech/smart-ingestion-service",
+                    "path": "manifests",
+                    "targetRevision": "sandbox",
+                    "helm": {
+                        "valueFiles": [
+                            "values-sandbox.yaml"
+                        ]
+                    }
+                },
+                "destination": {
+                    "server": "https://kubernetes.default.svc",
+                    "namespace": "smart-ingestion"
+                }
+            },
+            "revision": "f1bd336d37d44ce1b24a86950762645e791d4128"
+        },
+        "health": {
+            "status": "Missing"
+        },
+        "conditions": [
+            {
+                "type": "SyncError",
+                "message": "Failed sync attempt to f1bd336d37d44ce1b24a86950762645e791d4128: one or more objects failed to apply (dry run)",
+                "lastTransitionTime": "2022-10-25T14:47:12Z"
+            }
+        ],
+        "reconciledAt": "2022-11-02T19:10:00Z",
+        "sourceType": "Helm",
+        "summary": {}
+    },
+    "operation": {
+        "sync": {
+            "revision": "f1bd336d37d44ce1b24a86950762645e791d4128"
+        },
+        "initiatedBy": {
+            "username": "proj:paym:read-only"
+        },
+        "retry": {}
+    }
+}
