@@ -1,21 +1,8 @@
 version: 2.1
 description: "Build utilities"
 
-defaults: &defaults
-  working_directory: ~/project
-
-amd64: &amd64
-  <<: *defaults
-  machine:
-    image: ubuntu-2004:current
-    docker_layer_caching: true
-
-arm64: &arm64
-  <<: *amd64
-  resource_class: arm.medium
-
 commands:
-  clone-utilities:
+  clone:
     description: 'Clones the utilities repo into the current process'
     parameters:
       git_repo:
@@ -88,8 +75,8 @@ commands:
           paths:
             - << parameters.path_name >>
 
-  restore_persisted_container_images:
-    description: 'Restores container images saved to the workspace to the current docker context'
+  restore_images:
+    description: 'Restores container images saved in the workspace to the current docker context'
     parameters:
       path_name:
         description: "Path name where the image will be lloaded from"
