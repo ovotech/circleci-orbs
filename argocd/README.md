@@ -28,7 +28,23 @@ jobs:
         target: $ARGO_TARGET_REVISION
     - run-test
 ```
+### Sync request
 
+```yaml
+orbs:
+  argocd: ovotech/argocd@0.1.0
+
+jobs:
+  deploy-to-uat:
+    executor: python
+    context: jaws-nonprod # Must have ARGOCD_TOKEN in the context
+    steps:
+    - gitops-deploy # Deploys to manifest repo, persists deployed commit hash as ARGO_TARGET_REVISION in $BASH_ENV
+    - argocd/sync_request:
+        application: journey-meter-tariff-extractor
+        argocd_url: https://argocd.metering-shared-non-prod.ovotech.org.uk/
+    - run-test
+```
 ## Debugging issues
 
 If you encounter any issues with the orb, set the environment to `ARGOCD_ORB_DEBUG` to `true` to have the orb print out the state of the target application.

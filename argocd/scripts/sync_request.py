@@ -22,10 +22,10 @@ def sync_request(endpoint, token, application):
             print_debug(data)
         
         if cluster_sync_status == "Synced":
-            print(f'Sync request successful, application is in sync')
+            print(f'Sync request successful, application was in sync')
             return True
         else:
-            print(f'Sync request successful, application is not synced')
+            print(f'Sync request successful, application was not synced')
             return False
     
     except ValueError as e:
