@@ -1107,6 +1107,7 @@ jobs:
             - argocd/sync:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
+                target: $ARGOCD_TARGET_REVISION
   
   run-automation-test:
     parameters:
