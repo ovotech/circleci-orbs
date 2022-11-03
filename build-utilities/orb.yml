@@ -86,10 +86,10 @@ commands:
         type: string
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: << parameters.root_name >>
       - run:
           name: Load images into docker
           command: |
-            for i in /tmp/workspace/container_images/*.tar; do
+            for i in /<< parameters.root_name >>/<< parameters.path_name >>/*.tar; do
               docker load -i "$i"
             done 
