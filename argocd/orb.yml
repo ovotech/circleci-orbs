@@ -85,4 +85,4 @@ jobs:
     steps:
       - sync:
           argocd_url: << parameters.argocd_url >>
-          application: << parameters.application >>        
+          application: << parameters.application >>
