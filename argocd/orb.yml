@@ -8,7 +8,7 @@ executors:
 
 commands:
   wait_for_sync:
-    description: "Waits for an Argo applications to become in sync with a target revision. Expects ARGOCD_TOKEN environment variable to be set."
+    description: "Waits for an Argo applications to become in sync with a target revision. Expects ARGOCD_TOKEN environment variable to be set. Optional sync request before waiting"
     parameters:
       wait_for:
         type: integer
