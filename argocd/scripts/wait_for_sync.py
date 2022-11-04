@@ -14,7 +14,7 @@ def sync_request(endpoint, token, application):
         res = requests.post(endpoint.rstrip("/") + f'/api/v1/applications/{application}/sync', headers=headers, timeout = 10, verify=True)
         if res.status_code != 200:
             print(f"ERROR: Non-200 response ({res.status_code}): {res.json()}.")
-            return False
+            exit(1)
         
         data = res.json()
         cluster_sync_status = data['status']['sync']['status']
@@ -27,15 +27,15 @@ def sync_request(endpoint, token, application):
             return True
         else:
             print(f'Sync request successful, application was not in sync')
-            return False
+            return True
 
     except ValueError as e:
         print(f'ERROR: Decoding JSON has failed: {e}')
-        return False
+        exit(1)
         
     except Exception as e:
         print(f'ERROR: Request failed: {e}')
-        return False
+        exit(1)
 
 
 def is_cluster_insync(endpoint, token, application, target_revision):
