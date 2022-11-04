@@ -23,3 +23,4 @@
 /sast/                           @ovotech/consumer-products-production-engineering
 /setup-scheduled-pipeline/       @ovotech/consumer-products-production-engineering
 /kap-kmi-deploy/                 @ovotech/agent-platform-enablement
+/build-utilities                 @ovotech/ohs-domainleads
