@@ -8,7 +8,7 @@ executors:
 
 commands:
   wait_for_sync:
-    description: "Sends a sync request and then waits for the Argo application to become in sync with a target revision. Expects ARGOCD_TOKEN environment variable to be set."
+    description: "Optionally sends a sync request and then waits for the Argo application to become in sync with a target revision. Expects ARGOCD_TOKEN environment variable to be set."
     parameters:
       wait_for:
         type: integer
@@ -26,7 +26,7 @@ commands:
       sync_request:
         type: boolean
         default: false
-        description: "whether to send a sync request before polling"        
+        description: "whether to send a sync request before polling"
     steps:
       - run:
           name: "Wait for ArgoCD to sync"
@@ -54,7 +54,7 @@ jobs:
       sync_request:
         type: boolean
         default: false
-        description: "whether to send a sync request before polling"        
+        description: "whether to send a sync request before polling"
     steps:
       - wait_for_sync:
           wait_for: << parameters.wait_for >>
