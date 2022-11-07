@@ -26,9 +26,9 @@ jobs:
         application: journey-meter-tariff-extractor
         argocd_url: https://argocd.metering-shared-non-prod.ovotech.org.uk/
         target: $ARGO_TARGET_REVISION
+        sync_request: True
     - run-test
 ```
-
 ## Debugging issues
 
 If you encounter any issues with the orb, set the environment to `ARGOCD_ORB_DEBUG` to `true` to have the orb print out the state of the target application.
