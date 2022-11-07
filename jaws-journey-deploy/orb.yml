@@ -9,7 +9,7 @@ orbs:
   snyk: snyk/snyk@1.1.2
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
-  argocd: ovotech/argocd@dev:masc-410-argo-sync-request
+  argocd: ovotech/argocd@1.1.0
 
 executors:
   kotlin:

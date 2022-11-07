@@ -1,5 +1,5 @@
 # 2.0.1
-* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target. Doesn't by default
+* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target. Using sync request
 
 # 2.0.0
 
