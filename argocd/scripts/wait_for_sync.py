@@ -118,7 +118,7 @@ if __name__ == '__main__':
     parser.add_argument("--application", help="Application to check")
     parser.add_argument("--target", help="Target Git hash cluster should be synced to")
     parser.add_argument("--argocd-url", help="API endpoint of ArgoCD")
-    parser.add_argument("--sync-request", action=argparse.BooleanOptionalAction, help="API endpoint of ArgoCD")
+    parser.add_argument("--sync-request", action=argparse.BooleanOptionalAction, help="Optional sync request")
     
     args = parser.parse_args()
 

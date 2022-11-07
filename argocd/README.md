@@ -26,6 +26,7 @@ jobs:
         application: journey-meter-tariff-extractor
         argocd_url: https://argocd.metering-shared-non-prod.ovotech.org.uk/
         target: $ARGO_TARGET_REVISION
+        sync_request: True
     - run-test
 ```
 ## Debugging issues
