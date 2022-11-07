@@ -4,7 +4,7 @@ description: "Defines jobs for interacting with an ArgoCD instance"
 executors:
   python:
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:3.9
 
 commands:
   wait_for_sync:
@@ -23,6 +23,10 @@ commands:
       target:
         type: string
         description: "Commit hash to check for"
+      sync_request:
+        type: boolean
+        default: false
+        description: "whether to send a sync request before polling"        
     steps:
       - run:
           name: "Wait for ArgoCD to sync"
@@ -47,9 +51,14 @@ jobs:
       target:
         type: string
         description: "Commit hash to check for"
+      sync_request:
+        type: boolean
+        default: false
+        description: "whether to send a sync request before polling"        
     steps:
       - wait_for_sync:
           wait_for: << parameters.wait_for >>
           argocd_url: << parameters.argocd_url >>
           application: << parameters.application >>
           target: << parameters.target >>
+          sync_request: << parameters.sync_request >>

@@ -118,10 +118,12 @@ if __name__ == '__main__':
     parser.add_argument("--application", help="Application to check")
     parser.add_argument("--target", help="Target Git hash cluster should be synced to")
     parser.add_argument("--argocd-url", help="API endpoint of ArgoCD")
+    parser.add_argument("--sync-request", action=argparse.BooleanOptionalAction, help="API endpoint of ArgoCD")
     
     args = parser.parse_args()
 
-    sync_request(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application)
+    if args.sync_request == True:
+        sync_request(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application);
 
     t_end = time.time() + int(args.wait_for)
     while time.time() <= t_end:
