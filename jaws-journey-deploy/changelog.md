@@ -1,5 +1,6 @@
 # 2.0.1
-* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target. Using sync request
+* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target. 
+* new sync_request parameter for gitops-deploy, false by default
 
 # 2.0.0
 

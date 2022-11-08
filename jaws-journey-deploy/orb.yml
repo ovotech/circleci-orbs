@@ -1074,6 +1074,10 @@ jobs:
       update_build_tag:
         type: boolean
         default: true
+      sync_request:
+        type: boolean
+        default: false
+        description: "whether to send a sync request before polling"
       <<: *environment
       <<: *resourceClass
     resource_class: << parameters.resourceClass >>
@@ -1108,7 +1112,7 @@ jobs:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
-                sync_request: true
+                sync_request: << parameters.sync_request >>
   
   run-automation-test:
     parameters:
