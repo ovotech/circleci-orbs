@@ -1122,12 +1122,20 @@ jobs:
       isPrimaryDeployment:
         type: string
         default: ""
+      oidc:
+        type: boolean
+        default: false
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
+      - when:
+          condition: << parameters.oidc >>
+          steps:
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - make-gradle-executable
       - run-automated-tests:
           environment: << parameters.environment >>
