@@ -9,7 +9,7 @@ orbs:
   snyk: snyk/snyk@1.1.2
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
-  argocd: ovotech/argocd@1.0.2
+  argocd: ovotech/argocd@1.1.0
 
 executors:
   kotlin:
@@ -17,7 +17,7 @@ executors:
       - image: cimg/openjdk:11.0.12
   python:
     docker:
-      - image: cimg/python:3.8.0
+      - image: cimg/python:3.9.0
   node:
     docker:
       - image: cimg/node:14.17.3
@@ -1074,6 +1074,10 @@ jobs:
       update_build_tag:
         type: boolean
         default: true
+      sync_request:
+        type: boolean
+        default: false
+        description: "whether to send a sync request before polling"
       <<: *environment
       <<: *resourceClass
     resource_class: << parameters.resourceClass >>
@@ -1108,6 +1112,7 @@ jobs:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
+                sync_request: << parameters.sync_request >>
   
   run-automation-test:
     parameters:
