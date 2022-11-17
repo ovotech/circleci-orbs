@@ -89,6 +89,7 @@ aliases:
     destroy_first: << parameters.destroy_first >>
     environment: << parameters.environment >>
     vars_dir: << parameters.vars_dir >>
+    var: << parameters.var >>
 
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
