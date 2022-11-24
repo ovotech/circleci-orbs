@@ -73,3 +73,6 @@ Parameters:
 * `region` - AWS region that the stack is being removed from
 
 
+## Changelog
+
+- **2.0.0** - Removed serverless-plugin-aws-alerts

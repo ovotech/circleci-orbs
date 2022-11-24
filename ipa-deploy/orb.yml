@@ -177,9 +177,6 @@ commands:
           name: "Install serverless CLI"
           command: sudo npm install -g serverless@3.11.0
       - run:
-          command: serverless plugin install -n serverless-plugin-aws-alerts
-          name: Install serverless-aws-alerts
-      - run:
           command: |
             export DEPLOYMENT_TYPE=integrationTest
             serverless deploy --stage ${STAGE} --region ${AWS_REGION}
@@ -255,9 +252,6 @@ jobs:
       - run:
           name: "Install Serverless CLI"
           command: sudo npm install -g serverless@3.11.0
-      - run:
-          command: serverless plugin install -n serverless-plugin-aws-alerts
-          name: Install serverless-aws-alerts
       - run:
           name: Setting stage from branch name
           command: |
