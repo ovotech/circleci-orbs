@@ -1,1 +1,1 @@
-ovotech/ipa-deploy@2.0.0
+ovotech/ipa-deploy@2.0.1

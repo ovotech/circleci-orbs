@@ -75,4 +75,5 @@ Parameters:
 
 ## Changelog
 
+- **2.0.1** - Add npm ci step
 - **2.0.0** - Removed serverless-plugin-aws-alerts
