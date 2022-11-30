@@ -308,9 +308,10 @@ commands:
     description: "Check that Terraform configuration files are in canonical format"
     parameters: &fmt-check-parameters
       <<: *path
+      <<: *label
     steps:
       - run:
-          name: "terraform fmt"
+          name: "terraform fmt << parameters.path >> << parameters.label >>"
           shell: /bin/bash -eo pipefail
           command: |
             include setup.sh
