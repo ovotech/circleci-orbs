@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.4.18
+- Changed fmt-check command name to include path and optionally label
+
 ## ovotech/terraform-v2@2.4.17
 - Added authentication to the API call for `/versions`
 
