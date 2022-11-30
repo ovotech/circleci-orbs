@@ -264,6 +264,9 @@ jobs:
             fi
             echo ${STAGE}
       - run:
+          name: "Install NPM dependencies."
+          command: npm ci
+      - run:
           command: |
             export DEPLOYMENT_TYPE=normal
             serverless deploy --stage ${STAGE} --region ${AWS_REGION}
