@@ -12,7 +12,7 @@ commands:
             root-directory:
                 default: .
                 description: |
-                    The root directory to create the .terraformrc file within.
+                    The root directory to create the .terraformrc file within
                 type: string
             token:
                 description: |
