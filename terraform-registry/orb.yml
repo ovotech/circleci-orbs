@@ -1,0 +1,70 @@
+version: 2.1
+description: |
+    Publish Terraform Cloud artefacts to a private registry
+display:
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/terraform-registry/README.md
+    source_url: https://github.com/ovotech/team-cppe
+commands:
+    setup:
+        description: |
+            Configure and store Terraform Cloud credentials in .terraformrc
+        parameters:
+            root-directory:
+                default: .
+                description: |
+                    The root directory to create the .terraformrc file within.
+                type: string
+            token:
+                description: |
+                    The API token to be used to access Terraform Cloud
+                type: string
+        steps:
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    ##
+                    # is_empty will return 0 if the environment variable passed has
+                    # an empty value or is missing, or 1 otherwise
+                    is_empty() {
+                        local _TESTENV=$1
+
+                        test -z "$(printenv "$_TESTENV")"
+                        return $?
+                    }
+
+                    ##
+                    # assert_non_empty will return 0 if the environment variable passed has
+                    # a non-empty value or 1 if otherwise
+                    assert_non_empty() {
+                        local _TESTENV=$1
+
+                        if is_empty "$_TESTENV"; then
+                            echo "Required environment variable '$_TESTENV' is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+                    setup() {
+                        assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
+                        assert_non_empty PARAM_ROOT_DIRECTORY || exit 2
+
+                        echo "credentials \"app.terraform.io\" {token =
+                            \"${PARAM_TERRAFORM_TOKEN}\"}" > "${PARAM_ROOT_DIRECTORY}"/.terraformrc
+
+                        printf "Credential file successfully created: %s" "${PARAM_ROOT_DIRECTORY}"
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        setup
+                    fi
+                environment:
+                    PARAM_ROOT_DIRECTORY: <<parameters.root-directory>>
+                    PARAM_TERRAFORM_TOKEN: <<parameters.token>>
+                name: Configure Terraform Cloud credentials
+
