@@ -1,6 +1,7 @@
 # CircleCI Scheduled Trigger Creation orb
 
-This orb is responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started). Previously the only way to do this was via the [CircleCI API](https://circleci.com/docs/api/v2/) or via the UI. This orb aims to bring the maintainability aspect to these schedules by capturing the config natively within the CircleCI config.
+This orb is responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started). Previously the only way to do this was via the [CircleCI API](https://circleci.com/docs/api/v2/) or via the UI. 
+This orb aims to bring the maintainability aspect to these schedules by capturing the config natively within the CircleCI config.
 
 ## Pre-requisites
 
