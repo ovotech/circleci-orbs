@@ -5,7 +5,7 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/terraform-registry/README.md
     source_url: https://github.com/ovotech/team-cppe
 commands:
-    can-publish-module-version:
+    can_publish_module_version:
         description: |
             Determines if a module version has not already been published
         parameters:
