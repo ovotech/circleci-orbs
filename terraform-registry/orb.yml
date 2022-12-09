@@ -5,6 +5,30 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/terraform-registry/README.md
     source_url: https://github.com/ovotech/team-cppe
 commands:
+    can-publish-module-version:
+        description: |
+            Determines if a module version has not already been published
+        parameters:
+            module-name:
+                description: |
+                    The module name
+                type: string
+            module-version:
+                description: |
+                    The module version number to check
+                type: string
+            provider-name:
+                description: |
+                    The name of the module provider
+                type: string
+        steps:
+            - run:
+                command: "#!/bin/bash\nset -euo pipefail\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\ncan_publish_module_version() {\n    echo \"TODO\"\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    can_publish_module_version\nfi\n"
+                environment:
+                    PARAM_MODULE_NAME: <<parameters.module-name>>
+                    PARAM_MODULE_VERSION: <<parameters.module-version>>
+                    PARAM_PROVIDER_NAME: <<parameters.provider-name>>
+                name: Check if the module version has been published
     setup:
         description: |
             Configure and store Terraform Cloud credentials in .terraformrc
