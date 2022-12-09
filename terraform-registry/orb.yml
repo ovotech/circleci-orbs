@@ -5,7 +5,7 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/terraform-registry/README.md
     source_url: https://github.com/ovotech/team-cppe
 commands:
-    can_publish_module_version:
+    module-version-check:
         description: |
             Determines if a module version has not already been published
         parameters:
@@ -21,13 +21,18 @@ commands:
                 description: |
                     The name of the module provider
                 type: string
+            token:
+                description: |
+                    The API token to be used to access Terraform Cloud
+                type: string
         steps:
             - run:
-                command: "#!/bin/bash\nset -euo pipefail\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\ncan_publish_module_version() {\n    echo \"TODO\"\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    can_publish_module_version\nfi\n"
+                command: "#!/bin/bash\nset -euo pipefail\n\nreadonly ORGANISATION_NAME=\"ovotech\"\nreadonly API_BASE_PATH=\"https://app.terraform.io/api\"\n\n# shellcheck source=/dev/null\nsource \"circleci-orbs/terraform-registry/scripts/common.sh\"\n\ncan_publish_module_version() {\n    assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2\n    assert_non_empty PARAM_MODULE_NAME || exit 2\n    assert_non_empty PARAM_PROVIDER_NAME || exit 2\n    assert_non_empty PARAM_MODULE_VERSION || exit 2\n    \n    assert_dependency jq || exit 2\n    assert_dependency curl || exit 2\n    \n    printf \"Checking for an existing version for:\\n\"\n    printf \"Provider name:  %s\\n\" \"${PARAM_PROVIDER_NAME}\"\n    printf \"Module name:    %s\\n\" \"${PARAM_MODULE_NAME}\"\n    printf \"Module version: %s\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    \n    _VERSION_LIST=$(curl \\\n        --fail-early \\\n        --silent \\\n        --request GET \\\n        --header \"Authorization: Bearer ${PARAM_TERRAFORM_TOKEN}\" \\\n        --header \"Content-Type: application/vnd.api+json\" \\\n    \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/${PARAM_MODULE_NAME}/${PARAM_PROVIDER_NAME}\") || _EC=$?\n    \n    if [[ \"${_EC:-0}\" -ne 0 ]]; then\n        printf \"Fail: Unable to query the registry for module:'%s' provider:'%s'.\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"${PARAM_MODULE_NAME}\" \"${PARAM_PROVIDER_NAME}\"\n        exit 2\n    fi\n    \n    EXISTING_VERSION=$(echo \"$_VERSION_LIST\" | jq --arg version \"${PARAM_MODULE_VERSION}\" -c '.data.attributes.\"version-statuses\"[]? | select(.version == $version)')\n    if [[ -n \"${EXISTING_VERSION}\" ]]; then\n        printf  \"Fail: Version '%s' has already been published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n        return 1\n    fi\n    \n    printf  \"Success: Version '%s' can be published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    can_publish_module_version\nfi\n"
                 environment:
                     PARAM_MODULE_NAME: <<parameters.module-name>>
                     PARAM_MODULE_VERSION: <<parameters.module-version>>
                     PARAM_PROVIDER_NAME: <<parameters.provider-name>>
+                    PARAM_TERRAFORM_TOKEN: <<parameters.token>>
                 name: Check if the module version has been published
     setup:
         description: |
@@ -48,29 +53,8 @@ commands:
                     #!/bin/bash
                     set -euo pipefail
 
-                    ##
-                    # is_empty will return 0 if the environment variable passed has
-                    # an empty value or is missing, or 1 otherwise
-                    is_empty() {
-                        local _TESTENV=$1
-
-                        test -z "$(printenv "$_TESTENV")"
-                        return $?
-                    }
-
-                    ##
-                    # assert_non_empty will return 0 if the environment variable passed has
-                    # a non-empty value or 1 if otherwise
-                    assert_non_empty() {
-                        local _TESTENV=$1
-
-                        if is_empty "$_TESTENV"; then
-                            echo "Required environment variable '$_TESTENV' is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
+                    # shellcheck source=/dev/null
+                    source "circleci-orbs/terraform-registry/scripts/common.sh"
 
                     setup() {
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
@@ -79,7 +63,7 @@ commands:
                         echo "credentials \"app.terraform.io\" {token =
                             \"${PARAM_TERRAFORM_TOKEN}\"}" > "${PARAM_ROOT_DIRECTORY}"/.terraformrc
 
-                        printf "Credential file successfully created: %s" "${PARAM_ROOT_DIRECTORY}"
+                        printf "Credential file successfully created in the '%s' directory.\n\n" "${PARAM_ROOT_DIRECTORY}"
                     }
 
                     # Will not run if sourced for bats-core tests.
