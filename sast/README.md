@@ -1,7 +1,9 @@
 # SAST CircleCI Orb
 
 This orb can be used to run SAST analysis tools via the CI against your
-codebase. It currently has support for scanning:
+codebase. 
+
+It currently has support for scanning:
 
 - Dockerfiles
 - Terraform
