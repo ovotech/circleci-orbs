@@ -24,7 +24,7 @@ commands:
             token:
                 default: TF_CLOUD_TOKEN
                 description: |
-                    The API token to be used to access Terraform Cloud
+                    Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
                 type: env_var_name
         steps:
             - run:
@@ -47,7 +47,7 @@ commands:
             token:
                 default: TF_CLOUD_TOKEN
                 description: |
-                    The API token to be used to access Terraform Cloud
+                    Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
                 type: env_var_name
         steps:
             - run:
