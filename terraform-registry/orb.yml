@@ -429,12 +429,11 @@ commands:
 
                     setup() {
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
-                        assert_non_empty PARAM_ROOT_DIRECTORY || exit 2
 
                         echo "credentials \"app.terraform.io\" {token =
-                            \"${PARAM_TERRAFORM_TOKEN}\"}" > "${PARAM_ROOT_DIRECTORY}"/.terraformrc
+                            \"${PARAM_TERRAFORM_TOKEN}\"}" > "$HOME"/.terraformrc
 
-                        printf "Credential file successfully created in the '%s' directory.\n\n" "${PARAM_ROOT_DIRECTORY}"
+                        printf ".terraformrc file successfully created in the home directory.\n\n"
                     }
 
                     # Will not run if sourced for bats-core tests.
