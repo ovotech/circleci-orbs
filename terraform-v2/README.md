@@ -53,12 +53,12 @@ This is to ensure that the orb only applies changes that have been reviewed by a
 You can disable this behaviour by setting `auto_approve: true` in the `apply` step,
 which will always apply any terraform changes.
 
-See (the orb doc)[https://circleci.com/developer/orbs/orb/ovotech/terraform#commands]
+See [the orb doc](https://circleci.com/developer/orbs/orb/ovotech/terraform#commands)
 for a list of available commands.
 
 ## Jobs
 
-See (the orb doc)[https://circleci.com/developer/orbs/orb/ovotech/terraform#jobs]
+See [the orb docs](https://circleci.com/developer/orbs/orb/ovotech/terraform#jobs)
 for a list of available jobs.
 
 These jobs run their respective command in the default executor.
