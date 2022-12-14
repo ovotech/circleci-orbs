@@ -443,6 +443,6 @@ commands:
                     fi
                 environment:
                     PARAM_ROOT_DIRECTORY: <<parameters.root-directory>>
-                    PARAM_TERRAFORM_TOKEN: <<parameters.token>>
+                    PARAM_TERRAFORM_TOKEN: ${<< parameters.token >>}
                 name: Configure Terraform Cloud credentials
 
