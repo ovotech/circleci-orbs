@@ -381,6 +381,12 @@ commands:
         steps:
             - run:
                 command: |
+                    {
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
+                    } >> $BASH_ENV
+                name: Setting variables
+            - run:
+                command: |
                     #!/bin/bash
                     set -euo pipefail
 
@@ -436,7 +442,5 @@ commands:
                     if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
                         setup
                     fi
-                environment:
-                    PARAM_TERRAFORM_TOKEN: $<< parameters.token >>
                 name: Configure Terraform Cloud credentials
 
