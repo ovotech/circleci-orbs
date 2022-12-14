@@ -373,20 +373,12 @@ commands:
         description: |
             Configure and store Terraform Cloud credentials in .terraformrc
         parameters:
-            root-directory:
-                default: .
-                description: |
-                    The root directory to create the .terraformrc file within
-                type: string
             token:
                 default: TF_CLOUD_TOKEN
                 description: |
                     Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
                 type: env_var_name
         steps:
-            - run:
-                command: |
-                    export PARAM_TERRAFORM_TOKEN="${<< parameters.token >>}"
             - run:
                 command: |
                     #!/bin/bash
@@ -445,6 +437,6 @@ commands:
                         setup
                     fi
                 environment:
-                    PARAM_ROOT_DIRECTORY: <<parameters.root-directory>>
+                    PARAM_TERRAFORM_TOKEN: ${<< parameters.token >>}
                 name: Configure Terraform Cloud credentials
 
