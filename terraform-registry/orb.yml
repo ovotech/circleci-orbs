@@ -49,7 +49,7 @@ commands:
                     The location path for the module to publish
                 type: string
             module-version:
-                default: ""
+                default: UNDEFINED
                 description: |
                     The module version number.  Set this to define the version number explicitly overriding the module-version-path parameter.
                 type: string
@@ -273,7 +273,7 @@ commands:
 
                         # Use the specified version if one
                         # has been provided.
-                        if test ! -z "$_MODULE_VERSION"; then
+                        if [ -n "$_MODULE_VERSION" ] && [ "$_MODULE_VERSION" "!=" "UNDEFINED" ]; then
                           echo "$_MODULE_VERSION"
 
                           return 0
@@ -281,8 +281,8 @@ commands:
 
                         # Use the module file path if one
                         # has been provided.
-                        if test ! -z "$_MODULE_VERSION_FILE_PATH"; then
-                          if test ! -f "$_MODULE_VERSION_FILE_PATH"; then
+                        if [ -n "$_MODULE_VERSION_FILE_PATH" ]; then
+                          if [ ! -f "$_MODULE_VERSION_FILE_PATH" ]; then
                             printf "Module version file does not exists at: %s\n" "$_MODULE_VERSION_FILE_PATH"
                             return 2
                           fi
