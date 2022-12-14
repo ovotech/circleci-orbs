@@ -386,6 +386,9 @@ commands:
         steps:
             - run:
                 command: |
+                    export PARAM_TERRAFORM_TOKEN="${<< parameters.token >>}"
+            - run:
+                command: |
                     #!/bin/bash
                     set -euo pipefail
 
@@ -443,6 +446,5 @@ commands:
                     fi
                 environment:
                     PARAM_ROOT_DIRECTORY: <<parameters.root-directory>>
-                    PARAM_TERRAFORM_TOKEN: ${<< parameters.token >>}
                 name: Configure Terraform Cloud credentials
 
