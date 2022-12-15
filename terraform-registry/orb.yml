@@ -49,7 +49,7 @@ commands:
                     The location path for the module to publish
                 type: string
             module-version:
-                default: UNDEFINED
+                default: ""
                 description: |
                     The module version number.  Set this to define the version number explicitly overriding the module-version-path parameter.
                 type: string
@@ -68,6 +68,13 @@ commands:
                     Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
                 type: env_var_name
         steps:
+            - run:
+                command: |
+                    {
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
+                      echo "export PARAM_MODULE_VERSION=$(echo ${<< parameters.module-version >>:UNDEFINED})"
+                    } >> $BASH_ENV
+                name: Setting variables
             - run:
                 command: |
                     #!/bin/bash
@@ -364,10 +371,8 @@ commands:
                 environment:
                     PARAM_MODULE_NAME: <<parameters.module-name>>
                     PARAM_MODULE_PATH: <<parameters.module-path>>
-                    PARAM_MODULE_VERSION: <<parameters.module-version>>
                     PARAM_MODULE_VERSION_FILE_PATH: <<parameters.module-version-file-path>>
                     PARAM_PROVIDER_NAME: <<parameters.provider-name>>
-                    PARAM_TERRAFORM_TOKEN: <<parameters.token>>
                 name: Publish module version to Terraform Cloud
     setup:
         description: |
