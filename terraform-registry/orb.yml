@@ -32,7 +32,56 @@ commands:
                     echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})" >> $BASH_ENV
                 name: Setting variables
             - run:
-                command: "#!/bin/bash\nset -euo pipefail\n\nreadonly ORGANISATION_NAME=\"ovotech\"\nreadonly API_BASE_PATH=\"https://app.terraform.io/api\"\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_dependency will return 0 if the command is found on the path\n# or 1 if otherwise\nassert_dependency() {\n    local _DEPENDENCY=$1\n    \n    if ! command -v \"$_DEPENDENCY\" >/dev/null; then\n        echo \"Required dependency $_DEPENDENCY is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s' Last 4 token chars: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\" \"${PARAM_TERRAFORM_TOKEN:${#PARAM_TERRAFORM_TOKEN}<4?0:-4}\"\n        return 2\n    fi\n    \n    return 0\n}\n\nmodule_version_check() {\n    assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2\n    assert_non_empty PARAM_MODULE_NAME || exit 2\n    assert_non_empty PARAM_PROVIDER_NAME || exit 2\n    assert_non_empty PARAM_MODULE_VERSION || exit 2\n    \n    assert_dependency jq || exit 2\n    assert_dependency curl || exit 2\n    \n    verify_bearer_token || exit 2\n    \n    printf \"Checking for an existing version for:\\n\"\n    printf \"Provider name:  %s\\n\" \"${PARAM_PROVIDER_NAME}\"\n    printf \"Module name:    %s\\n\" \"${PARAM_MODULE_NAME}\"\n    printf \"Module version: %s\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    \n    _VERSION_LIST=$(curl \\\n        --fail-early \\\n        --silent \\\n        --request GET \\\n        --header \"Authorization: Bearer ${PARAM_TERRAFORM_TOKEN}\" \\\n        --header \"Content-Type: application/vnd.api+json\" \\\n    \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/${PARAM_MODULE_NAME}/${PARAM_PROVIDER_NAME}\") || _EC=$?\n    \n    if [[ \"${_EC:-0}\" -ne 0 ]]; then\n        printf \"Fail: Unable to query the registry for module:'%s' provider:'%s'.\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"${PARAM_MODULE_NAME}\" \"${PARAM_PROVIDER_NAME}\"\n        exit 2\n    fi\n    \n    EXISTING_VERSION=$(echo \"$_VERSION_LIST\" | jq --arg version \"${PARAM_MODULE_VERSION}\" -c '.data.attributes.\"version-statuses\"[]? | select(.version == $version)')\n    if [[ -n \"${EXISTING_VERSION}\" ]]; then\n        printf  \"Fail: Version '%s' has already been published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n        return 1\n    fi\n    \n    printf  \"Success: Version '%s' can be published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    module_version_check\nfi\n"
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    ##
+                    # is_empty will return 0 if the environment variable passed has
+                    # an empty value or is missing, or 1 otherwise
+                    function is_empty() {
+                        local _TESTENV=$1
+
+                        test -z "$(printenv "$_TESTENV")"
+                        return $?
+                    }
+
+                    ##
+                    # assert_dependency will return 0 if the command is found on the path
+                    # or 1 if otherwise
+                    function assert_dependency() {
+                        local _DEPENDENCY=$1
+
+                        if ! command -v "$_DEPENDENCY" >/dev/null; then
+                            echo "Required dependency $_DEPENDENCY is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+                    ##
+                    # assert_non_empty will return 0 if the environment variable passed has
+                    # a non-empty value or 1 if otherwise
+                    function assert_non_empty() {
+                        local _TESTENV=$1
+
+                        if is_empty "$_TESTENV"; then
+                            echo "Required environment variable '$_TESTENV' is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        declare -pf is_empty assert_dependency assert_non_empty >> "${BASH_ENV}"
+                    fi
+                name: Loading script dependencies
+            - run:
+                command: "#!/bin/bash\nset -euo pipefail\n\nreadonly ORGANISATION_NAME=\"ovotech\"\nreadonly API_BASE_PATH=\"https://app.terraform.io/api\"\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s' Last 4 token chars: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\" \"${PARAM_TERRAFORM_TOKEN:${#PARAM_TERRAFORM_TOKEN}<4?0:-4}\"\n        return 2\n    fi\n    \n    return 0\n}\n\nmodule_version_check() {\n    assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2\n    assert_non_empty PARAM_MODULE_NAME || exit 2\n    assert_non_empty PARAM_PROVIDER_NAME || exit 2\n    assert_non_empty PARAM_MODULE_VERSION || exit 2\n    \n    assert_dependency jq || exit 2\n    assert_dependency curl || exit 2\n    \n    verify_bearer_token || exit 2\n    \n    printf \"Checking for an existing version for:\\n\"\n    printf \"Provider name:  %s\\n\" \"${PARAM_PROVIDER_NAME}\"\n    printf \"Module name:    %s\\n\" \"${PARAM_MODULE_NAME}\"\n    printf \"Module version: %s\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    \n    _VERSION_LIST=$(curl \\\n        --fail-early \\\n        --silent \\\n        --request GET \\\n        --header \"Authorization: Bearer ${PARAM_TERRAFORM_TOKEN}\" \\\n        --header \"Content-Type: application/vnd.api+json\" \\\n    \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/${PARAM_MODULE_NAME}/${PARAM_PROVIDER_NAME}\") || _EC=$?\n    \n    if [[ \"${_EC:-0}\" -ne 0 ]]; then\n        printf \"Fail: Unable to query the registry for module:'%s' provider:'%s'.\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"${PARAM_MODULE_NAME}\" \"${PARAM_PROVIDER_NAME}\"\n        exit 2\n    fi\n    \n    EXISTING_VERSION=$(echo \"$_VERSION_LIST\" | jq --arg version \"${PARAM_MODULE_VERSION}\" -c '.data.attributes.\"version-statuses\"[]? | select(.version == $version)')\n    if [[ -n \"${EXISTING_VERSION}\" ]]; then\n        printf  \"Fail: Version '%s' has already been published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n        return 1\n    fi\n    \n    printf  \"Success: Version '%s' can be published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    module_version_check\nfi\n"
                 environment:
                     PARAM_MODULE_NAME: <<parameters.module-name>>
                     PARAM_MODULE_VERSION: <<parameters.module-version>>
@@ -80,13 +129,10 @@ commands:
                     #!/bin/bash
                     set -euo pipefail
 
-                    readonly ORGANISATION_NAME="ovotech"
-                    readonly API_BASE_PATH="https://app.terraform.io/api"
-
                     ##
                     # is_empty will return 0 if the environment variable passed has
                     # an empty value or is missing, or 1 otherwise
-                    is_empty() {
+                    function is_empty() {
                         local _TESTENV=$1
 
                         test -z "$(printenv "$_TESTENV")"
@@ -96,7 +142,7 @@ commands:
                     ##
                     # assert_dependency will return 0 if the command is found on the path
                     # or 1 if otherwise
-                    assert_dependency() {
+                    function assert_dependency() {
                         local _DEPENDENCY=$1
 
                         if ! command -v "$_DEPENDENCY" >/dev/null; then
@@ -110,7 +156,7 @@ commands:
                     ##
                     # assert_non_empty will return 0 if the environment variable passed has
                     # a non-empty value or 1 if otherwise
-                    assert_non_empty() {
+                    function assert_non_empty() {
                         local _TESTENV=$1
 
                         if is_empty "$_TESTENV"; then
@@ -120,6 +166,20 @@ commands:
 
                         return 0
                     }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        declare -pf is_empty assert_dependency assert_non_empty >> "${BASH_ENV}"
+                    fi
+                name: Loading script dependencies
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    readonly ORGANISATION_NAME="ovotech"
+                    readonly API_BASE_PATH="https://app.terraform.io/api"
 
                     ##
                     # module_exists will return true if the module exists
@@ -410,13 +470,17 @@ commands:
         steps:
             - run:
                 command: |
+                    echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})" >> $BASH_ENV
+                name: Setting variables
+            - run:
+                command: |
                     #!/bin/bash
                     set -euo pipefail
 
                     ##
                     # is_empty will return 0 if the environment variable passed has
                     # an empty value or is missing, or 1 otherwise
-                    is_empty() {
+                    function is_empty() {
                         local _TESTENV=$1
 
                         test -z "$(printenv "$_TESTENV")"
@@ -426,7 +490,7 @@ commands:
                     ##
                     # assert_dependency will return 0 if the command is found on the path
                     # or 1 if otherwise
-                    assert_dependency() {
+                    function assert_dependency() {
                         local _DEPENDENCY=$1
 
                         if ! command -v "$_DEPENDENCY" >/dev/null; then
@@ -440,7 +504,7 @@ commands:
                     ##
                     # assert_non_empty will return 0 if the environment variable passed has
                     # a non-empty value or 1 if otherwise
-                    assert_non_empty() {
+                    function assert_non_empty() {
                         local _TESTENV=$1
 
                         if is_empty "$_TESTENV"; then
@@ -450,6 +514,17 @@ commands:
 
                         return 0
                     }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        declare -pf is_empty assert_dependency assert_non_empty >> "${BASH_ENV}"
+                    fi
+                name: Loading script dependencies
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
 
                     setup() {
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
@@ -465,7 +540,5 @@ commands:
                     if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
                         setup
                     fi
-                environment:
-                    PARAM_TERRAFORM_TOKEN: ${!<< parameters.token >>}
                 name: Configure Terraform Cloud credentials
 
