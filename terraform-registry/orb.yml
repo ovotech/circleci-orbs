@@ -466,6 +466,6 @@ commands:
                         setup
                     fi
                 environment:
-                    PARAM_TERRAFORM_TOKEN: $<< parameters.token >>
+                    PARAM_TERRAFORM_TOKEN: ${!<< parameters.token >>}
                 name: Configure Terraform Cloud credentials
 
