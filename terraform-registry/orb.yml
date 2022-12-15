@@ -70,10 +70,8 @@ commands:
         steps:
             - run:
                 command: |
-                    {
-                      echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
-                      echo "export PARAM_MODULE_VERSION=$(echo ${<< parameters.module-version >>:UNDEFINED})"
-                    } >> $BASH_ENV
+                    echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})" >> $BASH_ENV
+                    echo "export PARAM_MODULE_VERSION=$(echo ${<< parameters.module-version >>:UNDEFINED})" >> $BASH_ENV
                 name: Setting variables
             - run:
                 command: |
