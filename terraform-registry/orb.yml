@@ -425,43 +425,7 @@ commands:
                     #!/bin/bash
                     set -euo pipefail
 
-                    ##
-                    # is_empty will return 0 if the environment variable passed has
-                    # an empty value or is missing, or 1 otherwise
-                    is_empty() {
-                        local _TESTENV=$1
-
-                        test -z "$(printenv "$_TESTENV")"
-                        return $?
-                    }
-
-                    ##
-                    # assert_dependency will return 0 if the command is found on the path
-                    # or 1 if otherwise
-                    assert_dependency() {
-                        local _DEPENDENCY=$1
-
-                        if ! command -v "$_DEPENDENCY" >/dev/null; then
-                            echo "Required dependency $_DEPENDENCY is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
-
-                    ##
-                    # assert_non_empty will return 0 if the environment variable passed has
-                    # a non-empty value or 1 if otherwise
-                    assert_non_empty() {
-                        local _TESTENV=$1
-
-                        if is_empty "$_TESTENV"; then
-                            echo "Required environment variable '$_TESTENV' is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
+                    ## Requires common.sh to be in scope for environment variables and common functions.
 
                     setup() {
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
