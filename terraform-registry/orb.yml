@@ -5,21 +5,21 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/terraform-registry/README.md
     source_url: https://github.com/ovotech/team-cppe
 commands:
-    module-version-check:
+    check_module_publishability:
         description: |
             Determines if a module version has not already been published
         parameters:
-            module-name:
+            module_name:
                 description: |
                     The module name
                 type: string
-            module-version:
-                description: |
-                    The module version number to check
-                type: string
-            provider-name:
+            module_provider:
                 description: |
                     The name of the module provider
+                type: string
+            module_version:
+                description: |
+                    The module version number to check
                 type: string
             token:
                 default: TF_CLOUD_TOKEN
@@ -32,87 +32,38 @@ commands:
                     echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})" >> $BASH_ENV
                 name: Setting variables
             - run:
-                command: |
-                    #!/bin/bash
-                    set -euo pipefail
-
-                    ##
-                    # is_empty will return 0 if the environment variable passed has
-                    # an empty value or is missing, or 1 otherwise
-                    function is_empty() {
-                        local _TESTENV=$1
-
-                        test -z "$(printenv "$_TESTENV")"
-                        return $?
-                    }
-
-                    ##
-                    # assert_dependency will return 0 if the command is found on the path
-                    # or 1 if otherwise
-                    function assert_dependency() {
-                        local _DEPENDENCY=$1
-
-                        if ! command -v "$_DEPENDENCY" >/dev/null; then
-                            echo "Required dependency $_DEPENDENCY is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
-
-                    ##
-                    # assert_non_empty will return 0 if the environment variable passed has
-                    # a non-empty value or 1 if otherwise
-                    function assert_non_empty() {
-                        local _TESTENV=$1
-
-                        if is_empty "$_TESTENV"; then
-                            echo "Required environment variable '$_TESTENV' is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
-
-                    # Will not run if sourced for bats-core tests.
-                    ORB_TEST_ENV="bats-core"
-                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
-                        declare -pf is_empty assert_dependency assert_non_empty >> "${BASH_ENV}"
-                    fi
-                name: Loading script dependencies
-            - run:
-                command: "#!/bin/bash\nset -euo pipefail\n\nreadonly ORGANISATION_NAME=\"ovotech\"\nreadonly API_BASE_PATH=\"https://app.terraform.io/api\"\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s' Last 4 token chars: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\" \"${PARAM_TERRAFORM_TOKEN:${#PARAM_TERRAFORM_TOKEN}<4?0:-4}\"\n        return 2\n    fi\n    \n    return 0\n}\n\nmodule_version_check() {\n    assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2\n    assert_non_empty PARAM_MODULE_NAME || exit 2\n    assert_non_empty PARAM_PROVIDER_NAME || exit 2\n    assert_non_empty PARAM_MODULE_VERSION || exit 2\n    \n    assert_dependency jq || exit 2\n    assert_dependency curl || exit 2\n    \n    verify_bearer_token || exit 2\n    \n    printf \"Checking for an existing version for:\\n\"\n    printf \"Provider name:  %s\\n\" \"${PARAM_PROVIDER_NAME}\"\n    printf \"Module name:    %s\\n\" \"${PARAM_MODULE_NAME}\"\n    printf \"Module version: %s\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    \n    _VERSION_LIST=$(curl \\\n        --fail-early \\\n        --silent \\\n        --request GET \\\n        --header \"Authorization: Bearer ${PARAM_TERRAFORM_TOKEN}\" \\\n        --header \"Content-Type: application/vnd.api+json\" \\\n    \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/${PARAM_MODULE_NAME}/${PARAM_PROVIDER_NAME}\") || _EC=$?\n    \n    if [[ \"${_EC:-0}\" -ne 0 ]]; then\n        printf \"Fail: Unable to query the registry for module:'%s' provider:'%s'.\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"${PARAM_MODULE_NAME}\" \"${PARAM_PROVIDER_NAME}\"\n        exit 2\n    fi\n    \n    EXISTING_VERSION=$(echo \"$_VERSION_LIST\" | jq --arg version \"${PARAM_MODULE_VERSION}\" -c '.data.attributes.\"version-statuses\"[]? | select(.version == $version)')\n    if [[ -n \"${EXISTING_VERSION}\" ]]; then\n        printf  \"Fail: Version '%s' has already been published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n        return 1\n    fi\n    \n    printf  \"Success: Version '%s' can be published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    module_version_check\nfi\n"
+                command: "#!/bin/bash\nset -euo pipefail\n\nreadonly ORGANISATION_NAME=\"ovotech\"\nreadonly API_BASE_PATH=\"https://app.terraform.io/api\"\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_dependency will return 0 if the command is found on the path\n# or 1 if otherwise\nassert_dependency() {\n    local _DEPENDENCY=$1\n    \n    if ! command -v \"$_DEPENDENCY\" >/dev/null; then\n        echo \"Required dependency $_DEPENDENCY is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\"\n        return 2\n    fi\n    \n    return 0\n}\n\nmodule_version_check() {\n    assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2\n    assert_non_empty PARAM_MODULE_NAME || exit 2\n    assert_non_empty PARAM_MODULE_PROVIDER || exit 2\n    assert_non_empty PARAM_MODULE_VERSION || exit 2\n    \n    assert_dependency jq || exit 2\n    assert_dependency curl || exit 2\n    \n    verify_bearer_token || exit 2\n    \n    printf \"Checking for an existing version for:\\n\"\n    printf \"Module provider:   %s\\n\" \"${PARAM_MODULE_PROVIDER}\"\n    printf \"Module name:     %s\\n\" \"${PARAM_MODULE_NAME}\"\n    printf \"Module version:  %s\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    \n    _VERSION_LIST=$(curl \\\n        --fail-early \\\n        --silent \\\n        --request GET \\\n        --header \"Authorization: Bearer ${PARAM_TERRAFORM_TOKEN}\" \\\n        --header \"Content-Type: application/vnd.api+json\" \\\n    \"$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/${PARAM_MODULE_NAME}/${PARAM_MODULE_PROVIDER}\") || _EC=$?\n    \n    if [[ \"${_EC:-0}\" -ne 0 ]]; then\n        printf \"Fail: Unable to query the registry for module:'%s' provider:'%s'.\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"${PARAM_MODULE_NAME}\" \"${PARAM_PROVIDER_NAME}\"\n        exit 2\n    fi\n    \n    EXISTING_VERSION=$(echo \"$_VERSION_LIST\" | jq --arg version \"${PARAM_MODULE_VERSION}\" -c '.data.attributes.\"version-statuses\"[]? | select(.version == $version)')\n    if [[ -n \"${EXISTING_VERSION}\" ]]; then\n        printf  \"Fail: Version '%s' has already been published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n        return 1\n    fi\n    \n    printf  \"Success: Version '%s' can be published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    module_version_check\nfi\n"
                 environment:
-                    PARAM_MODULE_NAME: <<parameters.module-name>>
-                    PARAM_MODULE_VERSION: <<parameters.module-version>>
-                    PARAM_PROVIDER_NAME: <<parameters.provider-name>>
+                    PARAM_MODULE_NAME: <<parameters.module_name>>
+                    PARAM_MODULE_PROVIDER: <<parameters.module_provider>>
+                    PARAM_MODULE_VERSION: <<parameters.module_version>>
                 name: Check if the module version has been published
-    publish-module:
+    publish_module:
         description: |
             Publish a new module version
         parameters:
-            module-name:
+            module_name:
                 description: |
                     The module name
                 type: string
-            module-path:
+            module_path:
                 default: ""
                 description: |
                     The location path for the module to publish
                 type: string
-            module-version:
+            module_provider:
+                description: |
+                    The name of the module provider
+                type: string
+            module_version:
                 default: ""
                 description: |
                     The module version number.  Set this to define the version number explicitly overriding the module-version-path parameter.
                 type: string
-            module-version-file-path:
+            module_version_file_path:
                 default: ""
                 description: |
                     The location of the module file version.
-                type: string
-            provider-name:
-                description: |
-                    The name of the module provider
                 type: string
             token:
                 default: TF_CLOUD_TOKEN
@@ -124,55 +75,6 @@ commands:
                 command: |
                     echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})" >> $BASH_ENV
                 name: Setting variables
-            - run:
-                command: |
-                    #!/bin/bash
-                    set -euo pipefail
-
-                    ##
-                    # is_empty will return 0 if the environment variable passed has
-                    # an empty value or is missing, or 1 otherwise
-                    function is_empty() {
-                        local _TESTENV=$1
-
-                        test -z "$(printenv "$_TESTENV")"
-                        return $?
-                    }
-
-                    ##
-                    # assert_dependency will return 0 if the command is found on the path
-                    # or 1 if otherwise
-                    function assert_dependency() {
-                        local _DEPENDENCY=$1
-
-                        if ! command -v "$_DEPENDENCY" >/dev/null; then
-                            echo "Required dependency $_DEPENDENCY is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
-
-                    ##
-                    # assert_non_empty will return 0 if the environment variable passed has
-                    # a non-empty value or 1 if otherwise
-                    function assert_non_empty() {
-                        local _TESTENV=$1
-
-                        if is_empty "$_TESTENV"; then
-                            echo "Required environment variable '$_TESTENV' is missing."
-                            return 1
-                        fi
-
-                        return 0
-                    }
-
-                    # Will not run if sourced for bats-core tests.
-                    ORB_TEST_ENV="bats-core"
-                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
-                        declare -pf is_empty assert_dependency assert_non_empty >> "${BASH_ENV}"
-                    fi
-                name: Loading script dependencies
             - run:
                 command: |
                     #!/bin/bash
@@ -182,6 +84,44 @@ commands:
                     readonly API_BASE_PATH="https://app.terraform.io/api"
 
                     ##
+                    # is_empty will return 0 if the environment variable passed has
+                    # an empty value or is missing, or 1 otherwise
+                    is_empty() {
+                        local _TESTENV=$1
+
+                        test -z "$(printenv "$_TESTENV")"
+                        return $?
+                    }
+
+                    ##
+                    # assert_dependency will return 0 if the command is found on the path
+                    # or 1 if otherwise
+                    assert_dependency() {
+                        local _DEPENDENCY=$1
+
+                        if ! command -v "$_DEPENDENCY" >/dev/null; then
+                            echo "Required dependency $_DEPENDENCY is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+                    ##
+                    # assert_non_empty will return 0 if the environment variable passed has
+                    # a non-empty value or 1 if otherwise
+                    assert_non_empty() {
+                        local _TESTENV=$1
+
+                        if is_empty "$_TESTENV"; then
+                            echo "Required environment variable '$_TESTENV' is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+                    ##
                     # module_exists will return true if the module exists
                     # in Terraform cloud, or otherwise false
                     # Expected params:
@@ -189,7 +129,7 @@ commands:
                     #  $2 - The provider name
                     module_exists() {
                         local _MODULE_NAME=$1
-                        local _PROVIDER_NAME=$2
+                        local _MODULE_PROVIDER_NAME=$2
 
                         local -i _RESULT
 
@@ -199,7 +139,7 @@ commands:
                             --write-out '%{http_code}' \
                             --silent \
                             --output /dev/null \
-                            --url "$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/$_MODULE_NAME/$_PROVIDER_NAME"
+                            --url "$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME"
                         )
 
                         if [ "$_RESULT" -eq "200" ]; then
@@ -221,14 +161,14 @@ commands:
                     module_version_exists() {
                         local _RESULT
                         local _MODULE_NAME=$1
-                        local _PROVIDER_NAME=$2
+                        local _MODULE_PROVIDER_NAME=$2
                         local _VERSION=$3
 
                         _RESULT=$(curl \
                             --header "Authorization: Bearer $PARAM_TERRAFORM_TOKEN" \
                             --header "Content-Type: application/vnd.api+json" \
                             --silent \
-                            --url "$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/$_MODULE_NAME/$_PROVIDER_NAME"
+                            --url "$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME"
                         )
 
                         local _EXISTING_VERSION
@@ -253,7 +193,7 @@ commands:
                     create_module_version() {
                         local _DATA
                         local _MODULE_NAME=$1
-                        local _PROVIDER_NAME=$2
+                        local _MODULE_PROVIDER_NAME=$2
                         local _VERSION=$3
 
                         _DATA=$(jq -cn \
@@ -278,7 +218,7 @@ commands:
                             --silent \
                             --max-time 5 \
                             --data "${_DATA}" \
-                            --url "$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/$_MODULE_NAME/$_PROVIDER_NAME/versions"
+                            --url "$API_BASE_PATH/v2/organizations/$ORGANISATION_NAME/registry-modules/private/$ORGANISATION_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME/versions"
                         )
 
                         echo "$_RESULT" | jq -c -r '.data.links.upload'
@@ -340,7 +280,7 @@ commands:
 
                         # Use the specified version if one
                         # has been provided.
-                        if [ -n "$_MODULE_VERSION" ] && [ "$_MODULE_VERSION" "!=" "UNDEFINED" ]; then
+                        if [ -n "$_MODULE_VERSION" ]; then
                           echo "$_MODULE_VERSION"
 
                           return 0
@@ -381,7 +321,7 @@ commands:
                         )
 
                         if [ "$_RESULT" -ne "200" ]; then
-                            printf "Fail: Unable to query the registry. Result: '%s' Last 4 token chars: '%s'\n\nPlease review the input values and check that the Terraform Cloud credentials are correct.\n\n" "$_RESULT" "${PARAM_TERRAFORM_TOKEN:${#PARAM_TERRAFORM_TOKEN}<4?0:-4}"
+                            printf "Fail: Unable to query the registry. Result: '%s'\n\nPlease review the input values and check that the Terraform Cloud credentials are correct.\n\n" "$_RESULT"
                             return 2
                         fi
 
@@ -392,7 +332,7 @@ commands:
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
                         assert_non_empty PARAM_MODULE_PATH || exit 2
                         assert_non_empty PARAM_MODULE_NAME || exit 2
-                        assert_non_empty PARAM_PROVIDER_NAME || exit 2
+                        assert_non_empty PARAM_MODULE_PROVIDER || exit 2
 
                         assert_dependency jq || exit 2
                         assert_dependency tar || exit 2
@@ -407,12 +347,12 @@ commands:
 
                         _VERSION=$(get_module_version "$PARAM_MODULE_VERSION" "$PARAM_MODULE_VERSION_FILE_PATH") || exit 2
 
-                        printf "\n\nProvider name:  %s\n" "${PARAM_PROVIDER_NAME}"
-                        printf "Module name:    %s\n" "${PARAM_MODULE_NAME}"
+                        printf "\n\nModule name:    %s\n" "${PARAM_MODULE_NAME}"
+                        printf "Module provider:  %s\n" "${PARAM_MODULE_PROVIDER}"
                         printf "Module path:    %s\n" "${PARAM_MODULE_PATH}"
                         printf "Module version: %s\n\n" "${_VERSION}"
 
-                        _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_PROVIDER_NAME")
+                        _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER")
                         if [ "$_MODULE_EXISTS" = true ]; then
                             printf "Module '%s' found.\n" "${PARAM_MODULE_NAME}"
                         else
@@ -420,7 +360,7 @@ commands:
                             exit 2
                         fi
 
-                        _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_PROVIDER_NAME" "$_VERSION")
+                        _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
                         if [ "$_MODULE_VERSION_EXISTS" = true ]; then
                             printf "Fail: Version %s has already been published to Terraform Cloud.\n\n" "$_VERSION"
                             exit 2
@@ -431,13 +371,13 @@ commands:
                         tar -czf "/tmp/$_VERSION.tar.gz" ./*
 
                         printf "Creating module version: '%s'\n" "$_VERSION"
-                        _PRESIGNED_URL=$(create_module_version "$PARAM_MODULE_NAME" "$PARAM_PROVIDER_NAME" "$_VERSION")
+                        _PRESIGNED_URL=$(create_module_version "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
 
                         printf "Uploading module.\n"
                         upload_module "$_PRESIGNED_URL" "/tmp/$_VERSION.tar.gz"
 
                         printf "Verifying version.\n"
-                        _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_PROVIDER_NAME" "$_VERSION")
+                        _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
                         if [ "$_MODULE_VERSION_EXISTS" = false ]; then
                             printf "Fail: Unbale to download the module version.  Publishing has failed.\n"
                             exit 2
@@ -452,11 +392,11 @@ commands:
                         publish
                     fi
                 environment:
-                    PARAM_MODULE_NAME: <<parameters.module-name>>
-                    PARAM_MODULE_PATH: <<parameters.module-path>>
-                    PARAM_MODULE_VERSION: <<parameters.module-version>>
-                    PARAM_MODULE_VERSION_FILE_PATH: <<parameters.module-version-file-path>>
-                    PARAM_PROVIDER_NAME: <<parameters.provider-name>>
+                    PARAM_MODULE_NAME: <<parameters.module_name>>
+                    PARAM_MODULE_PATH: <<parameters.module_path>>
+                    PARAM_MODULE_PROVIDER: <<parameters.module_provider>>
+                    PARAM_MODULE_VERSION: <<parameters.module_version>>
+                    PARAM_MODULE_VERSION_FILE_PATH: <<parameters.module_version_file_path>>
                 name: Publish module version to Terraform Cloud
     setup:
         description: |
@@ -470,7 +410,9 @@ commands:
         steps:
             - run:
                 command: |
-                    echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})" >> $BASH_ENV
+                    {
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
+                    } >> $BASH_ENV
                 name: Setting variables
             - run:
                 command: |
@@ -480,7 +422,7 @@ commands:
                     ##
                     # is_empty will return 0 if the environment variable passed has
                     # an empty value or is missing, or 1 otherwise
-                    function is_empty() {
+                    is_empty() {
                         local _TESTENV=$1
 
                         test -z "$(printenv "$_TESTENV")"
@@ -490,7 +432,7 @@ commands:
                     ##
                     # assert_dependency will return 0 if the command is found on the path
                     # or 1 if otherwise
-                    function assert_dependency() {
+                    assert_dependency() {
                         local _DEPENDENCY=$1
 
                         if ! command -v "$_DEPENDENCY" >/dev/null; then
@@ -504,7 +446,7 @@ commands:
                     ##
                     # assert_non_empty will return 0 if the environment variable passed has
                     # a non-empty value or 1 if otherwise
-                    function assert_non_empty() {
+                    assert_non_empty() {
                         local _TESTENV=$1
 
                         if is_empty "$_TESTENV"; then
@@ -515,22 +457,11 @@ commands:
                         return 0
                     }
 
-                    # Will not run if sourced for bats-core tests.
-                    ORB_TEST_ENV="bats-core"
-                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
-                        declare -pf is_empty assert_dependency assert_non_empty >> "${BASH_ENV}"
-                    fi
-                name: Loading script dependencies
-            - run:
-                command: |
-                    #!/bin/bash
-                    set -euo pipefail
-
                     setup() {
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
 
                         echo "credentials \"app.terraform.io\" {token =
-                            \"${PARAM_TERRAFORM_TOKEN}\"}" > "$HOME"/.terraformrc
+                            \"${PARAM_TERRAFORM_TOKEN}\"}" >> "$HOME"/.terraformrc
 
                         printf ".terraformrc file successfully created in the home directory.\n\n"
                     }

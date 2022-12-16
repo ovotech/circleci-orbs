@@ -2,11 +2,11 @@
 
 Orb to perform the following operations against Terraform Cloud:
 
-| Command              | Description                                                       |
-| ---------------------| ------------------------------------------------------------------|
-| setup                | Configure and store Terraform Cloud credentials in `.terraformrc` |
-| publish-module       | Publish a new module version to Terraform Cloud                   |
-| module-version-check | Determines if a module version has not already been published     |
+| Command                     | Description                                                       |
+| ----------------------------| ------------------------------------------------------------------|
+| setup                       | Configure and store Terraform Cloud credentials in `.terraformrc` |
+| publish_module              | Publish a new module version to Terraform Cloud                   |
+| check_module_publishability | Determines if a module version has not already been published     |
 
 
 ## setup
@@ -31,7 +31,7 @@ jobs:
       - terraform-registry/setup
 ```
 
-## publish-module
+## publish_module
 
 Publishes a new version of a module to Terraform Cloud.  Please note that
 before you can publish a module version you must register your module
@@ -49,18 +49,18 @@ executors:
       - image: "cimg/base:current"
 
 jobs:
-  publish-module:
+  publish_module:
     executor: base
     steps:
-      - terraform-registry/publish-module:
-          provider-name: aws
-          module-name: cppe-s3-bucket
-          module-version: 1.0.1
-          module-path: /path/to/module
+      - terraform-registry/publish_module:
+          module_name: cppe-s3-bucket
+          module_provider_name: aws
+          module_version: 1.0.1
+          module_path: /path/to/module
 
 ```
 
-## module-version-check
+## check_module_publishability
 
 Determines if a module version has not already been published.  Returns a
 non-zero exit code if the module version already exists.
@@ -76,11 +76,11 @@ executors:
       - image: "cimg/base:current"
 
 jobs:
-  module-version-check:
+  check_module_publishability:
     executor: base
     steps:
-      - terraform-registry/module-version-check:
-          provider-name: aws
-          module-name: cppe-s3-bucket
-          module-version: 1.0.1
+      - terraform-registry/check_module_publishability:
+          module_name: cppe-s3-bucket
+          module_provider_name: aws
+          module_version: 1.0.1
 ```
