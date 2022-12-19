@@ -301,12 +301,12 @@ commands:
                         printf "Module version: %s\n\n" "${_VERSION}"
 
                         _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER") || exit 2
-                        if [ "$_MODULE_EXISTS" = true ]; then
-                            printf "Module '%s' found.\n" "${PARAM_MODULE_NAME}"
-                        else
+                        if [ "$_MODULE_EXISTS" = false ]; then
                             printf "Fail: No module defintion found for %s in Terraform Cloud.\n\n" "$PARAM_MODULE_NAME"
                             exit 2
                         fi
+
+                        printf "Module '%s' found.\n" "${PARAM_MODULE_NAME}"
 
                         _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
                         if [ "$_MODULE_VERSION_EXISTS" = true ]; then
