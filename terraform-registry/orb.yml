@@ -31,9 +31,9 @@ commands:
                 command: |
                     {
                       echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
-                      echo "export PARAM_MODULE_NAME=$(echo ${<< parameters.module_name >>})"
-                      echo "export PARAM_MODULE_PROVIDER=$(echo ${<< parameters.module_provider >>})"
-                      echo "export PARAM_MODULE_VERSION=$(echo ${<< parameters.module_version >>})"
+                      echo "export PARAM_MODULE_NAME=$(echo << parameters.module_name >>)"
+                      echo "export PARAM_MODULE_PROVIDER=$(echo << parameters.module_provider >>)"
+                      echo "export PARAM_MODULE_VERSION=$(echo << parameters.module_version >>)"
                     } >> $BASH_ENV
                 name: Setting variables
             - run:
@@ -79,11 +79,11 @@ commands:
                 command: |
                     {
                       echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
-                      echo "export PARAM_MODULE_NAME=$(echo ${<< parameters.module_name >>})"
-                      echo "export PARAM_MODULE_PROVIDER=$(echo ${<< parameters.module_provider >>})"
-                      echo "export PARAM_MODULE_VERSION=$(echo ${<< parameters.module_version >>})"
-                      echo "export PARAM_MODULE_VERSION_FILE_PATH=$(echo ${<< parameters.module_version_file_path >>})"
-                      echo "export PARAM_MODULE_PATH=$(echo ${<< parameters.module_path >>})"
+                      echo "export PARAM_MODULE_NAME=$(echo << parameters.module_name >>)"
+                      echo "export PARAM_MODULE_PROVIDER=$(echo << parameters.module_provider >>)"
+                      echo "export PARAM_MODULE_VERSION=$(echo << parameters.module_version >>)"
+                      echo "export PARAM_MODULE_VERSION_FILE_PATH=$(echo << parameters.module_version_file_path >>)"
+                      echo "export PARAM_MODULE_PATH=$(echo << parameters.module_path >>)"
                     } >> $BASH_ENV
                 name: Setting variables
             - run:
