@@ -296,7 +296,7 @@ commands:
                         _VERSION=$(get_module_version "$PARAM_MODULE_VERSION" "$PARAM_MODULE_VERSION_FILE_PATH") || exit 2
 
                         printf "\n\nModule name:    %s\n" "${PARAM_MODULE_NAME}"
-                        printf "Module provider:  %s\n" "${PARAM_MODULE_PROVIDER}"
+                        printf "Module provider: %s\n" "${PARAM_MODULE_PROVIDER}"
                         printf "Module path:    %s\n" "${PARAM_MODULE_PATH}"
                         printf "Module version: %s\n\n" "${_VERSION}"
 
