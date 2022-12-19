@@ -108,10 +108,15 @@ commands:
                             --url "$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME/registry-modules/private/$TF_CLOUD_REGISTRY_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME"
                         )
 
-                        if [ "$_RESULT" -eq "200" ]; then
+                        if [ "$_RESULT" -eq "200" ];
+                        then
                             echo true
-                        else
+                        elif [ "$_RESULT" -eq "404" ];
+                        then
                             echo false
+                        else
+                            printf "Fail: Unable verify if module exists.  Error: %s\n" "$_RESULT"
+                            return 2
                         fi
 
                         return 0
@@ -221,7 +226,7 @@ commands:
                         )
 
                         if [ "$_RESULT" -ne "200" ]; then
-                            printf "Error when publishing the module: %s\n" "$_RESULT"
+                            printf "Fail: Error when publishing module: Error: %s\n" "$_RESULT"
                             return 2
                         fi
 
@@ -267,7 +272,7 @@ commands:
                           return 0
                         fi
 
-                        printf "Unable to determine module version from parameters.\n"
+                        printf "Fail: Unable to determine module version from parameters.\n"
                         return 2
                     }
 
@@ -295,7 +300,7 @@ commands:
                         printf "Module path:    %s\n" "${PARAM_MODULE_PATH}"
                         printf "Module version: %s\n\n" "${_VERSION}"
 
-                        _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER")
+                        _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER") || exit 2
                         if [ "$_MODULE_EXISTS" = true ]; then
                             printf "Module '%s' found.\n" "${PARAM_MODULE_NAME}"
                         else
