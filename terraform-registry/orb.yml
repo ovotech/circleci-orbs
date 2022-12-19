@@ -322,7 +322,7 @@ commands:
                         printf "Verifying version.\n"
                         _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
                         if [ "$_MODULE_VERSION_EXISTS" = false ]; then
-                            printf "Fail: Unbale to download the module version.  Publishing has failed.\n"
+                            printf "Fail: Unable to download the module version.  Publishing has failed.\n"
                             exit 2
                         fi
 
