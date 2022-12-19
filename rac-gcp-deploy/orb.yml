@@ -167,6 +167,10 @@ commands:
       snyk-project-name:
         description: "Name of the target Snyk project"
         type: string
+      monitor-on-build:
+        description: "Take a current application dependencies snapshot for continuous monitoring by Snyk, if test was successful."
+        type: boolean
+        default: false
     steps:
       - snyk/scan:
           # Do not fail builds while we bed this command in - but note that it may be enforced at some point.
@@ -177,8 +181,9 @@ commands:
           target-file: target/docker/stage/Dockerfile
           fail-on-issues: false
           severity-threshold: high
-          monitor-on-build: false
+          monitor-on-build: <<parameters.monitor-on-build>>
           project: <<parameters.snyk-project-name>>
+          organization: reads-and-consumption
 
 jobs:
   compile:
