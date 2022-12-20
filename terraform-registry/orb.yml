@@ -22,15 +22,15 @@ commands:
                     The module version number to check
                 type: string
             token:
-                default: TF_CLOUD_TOKEN
+                default: $TF_CLOUD_TOKEN
                 description: |
-                    Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
-                type: env_var_name
+                    The API token to access Terraform Cloud Defaults to $TF_CLOUD_TOKEN
+                type: string
         steps:
             - run:
                 command: |
                     {
-                      echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo << parameters.token >>)"
                       echo "export PARAM_MODULE_NAME=$(echo << parameters.module_name >>)"
                       echo "export PARAM_MODULE_PROVIDER=$(echo << parameters.module_provider >>)"
                       echo "export PARAM_MODULE_VERSION=$(echo << parameters.module_version >>)"
@@ -70,15 +70,15 @@ commands:
                     The location of the module file version.
                 type: string
             token:
-                default: TF_CLOUD_TOKEN
+                default: $TF_CLOUD_TOKEN
                 description: |
-                    Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
-                type: env_var_name
+                    The API token to access Terraform Cloud Defaults to $TF_CLOUD_TOKEN
+                type: string
         steps:
             - run:
                 command: |
                     {
-                      echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo << parameters.token >>)"
                       echo "export PARAM_MODULE_NAME=$(echo << parameters.module_name >>)"
                       echo "export PARAM_MODULE_PROVIDER=$(echo << parameters.module_provider >>)"
                       echo "export PARAM_MODULE_VERSION=$(echo << parameters.module_version >>)"
