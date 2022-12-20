@@ -427,6 +427,6 @@ commands:
                     fi
                 environment:
                     PARAM_REGISTRY_HOSTNAME: << parameters.registry_hostname >>
-                    PARAM_TERRAFORM_TOKEN: << parameters.token >>
+                    PARAM_TERRAFORM_TOKEN: ${<< parameters.token >>}
                 name: Configure Terraform Cloud credentials
 
