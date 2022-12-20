@@ -352,6 +352,11 @@ commands:
         description: |
             Configure and store Terraform Cloud credentials in .terraformrc
         parameters:
+            registry_hostname:
+                default: app.terraform.io
+                description: |
+                    The Terraform Cloud registry hostname. Default to app.terraform.io
+                type: string
             token:
                 default: TF_CLOUD_TOKEN
                 description: |
@@ -362,6 +367,7 @@ commands:
                 command: |
                     {
                       echo "export PARAM_TERRAFORM_TOKEN=$(echo ${<< parameters.token >>})"
+                      echo "export PARAM_REGISTRY_HOSTNAME=$(echo << parameters.registry_hostname >>)"
                     } >> $BASH_ENV
                 name: Setting variables
             - run:
@@ -375,9 +381,10 @@ commands:
                     ## Requires common.sh to be in scope for environment variables and common functions.
 
                     setup() {
+                        assert_non_empty PARAM_REGISTRY_HOSTNAME || exit 2
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
 
-                        echo "credentials \"app.terraform.io\" {token =
+                        echo "credentials \"${PARAM_REGISTRY_HOSTNAME}\" {token =
                             \"${PARAM_TERRAFORM_TOKEN}\"}" >> "$HOME"/.terraformrc
 
                         printf ".terraformrc file successfully created in the home directory.\n\n"
