@@ -358,10 +358,10 @@ commands:
                     The Terraform Cloud registry hostname. Default to app.terraform.io
                 type: string
             token:
-                default: $TF_CLOUD_TOKEN
+                default: TF_CLOUD_TOKEN
                 description: |
-                    The API token to access Terraform Cloud Defaults to $TF_CLOUD_TOKEN
-                type: string
+                    Env var of the API token to access Terraform Cloud Defaults to TF_CLOUD_TOKEN
+                type: env_var_name
         steps:
             - run:
                 command: |
