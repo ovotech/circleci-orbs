@@ -410,8 +410,6 @@ commands:
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
                         assert_non_empty PARAM_REGISTRY_HOSTNAME || exit 2
 
-                        PARAM_TERRAFORM_TOKEN=$(eval echo "$PARAM_TERRAFORM_TOKEN")
-
                         echo "credentials \"${PARAM_REGISTRY_HOSTNAME}\" {token =
                             \"${PARAM_TERRAFORM_TOKEN}\"}" >> "$HOME"/.terraformrc
 
@@ -425,6 +423,6 @@ commands:
                     fi
                 environment:
                     PARAM_REGISTRY_HOSTNAME: << parameters.registry_hostname >>
-                    PARAM_TERRAFORM_TOKEN: << parameters.token >>
+                    PARAM_TERRAFORM_TOKEN: $<< parameters.token >>
                 name: Configure Terraform Cloud credentials
 
