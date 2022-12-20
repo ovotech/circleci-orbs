@@ -433,4 +433,5 @@ commands:
                         setup
                     fi
                 name: Configure Terraform Cloud credentials
+                shell: /bin/bash
 
