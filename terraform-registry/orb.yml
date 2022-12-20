@@ -89,6 +89,7 @@ commands:
             - run:
                 command: "#!/bin/bash\nset -euo pipefail\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_dependency will return 0 if the command is found on the path\n# or 1 if otherwise\nassert_dependency() {\n    local _DEPENDENCY=$1\n    \n    if ! command -v \"$_DEPENDENCY\" >/dev/null; then\n        echo \"Required dependency $_DEPENDENCY is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\"\n        return 2\n    fi\n    \n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    {\n        echo \"export TF_CLOUD_ORGANISATION_NAME=ovotech\"\n        echo \"export TF_CLOUD_REGISTRY_NAME=ovotech\"\n        echo \"export TF_CLOUD_API_BASE_PATH=https://app.terraform.io/api\"\n    } >> \"$BASH_ENV\"\n    \n    declare -pf is_empty assert_dependency assert_non_empty verify_bearer_token >> \"${BASH_ENV}\"\nfi\n"
                 name: Loading script dependencies
+                shell: /bin/bash
             - run:
                 command: |
                     #!/bin/bash
@@ -348,6 +349,7 @@ commands:
                         publish
                     fi
                 name: Publish module version to Terraform Cloud
+                shell: /bin/bash
     setup:
         description: |
             Configure and store Terraform Cloud credentials in .terraformrc
