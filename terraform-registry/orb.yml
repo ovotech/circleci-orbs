@@ -414,8 +414,8 @@ commands:
                     }
 
                     setup() {
-                        assert_non_empty PARAM_REGISTRY_HOSTNAME || exit 2
                         assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
+                        assert_non_empty PARAM_REGISTRY_HOSTNAME || exit 2
 
                         echo "credentials \"${PARAM_REGISTRY_HOSTNAME}\" {token =
                             \"${PARAM_TERRAFORM_TOKEN}\"}" >> "$HOME"/.terraformrc
