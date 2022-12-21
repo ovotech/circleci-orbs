@@ -308,6 +308,8 @@ jobs:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run: sbt -v +test:test <<parameters.sbt-extra-options>>
+      - store_test_results:
+          path: target/test-reports/
 
   service-tests-with-docker:
     parameters:
