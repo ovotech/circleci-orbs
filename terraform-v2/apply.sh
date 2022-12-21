@@ -28,7 +28,13 @@ function update_status() {
 
 function apply() {
     set +e
-    terraform -chdir=${module_path} apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+
+    if [[ "<< parameters.timeout >>" -gt 0 ]]; then
+        timeout "<< parameters.timeout >>" terraform -chdir=${module_path} apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    else
+        terraform -chdir=${module_path} apply -input=false -no-color -auto-approve -lock-timeout=300s plan.out | $TFMASK
+    fi
+
     local TF_EXIT=${PIPESTATUS[0]}
     set -e
 
