@@ -36,6 +36,7 @@ workflows:
             setup-scheduled-pipeline/.* run-setup-scheduled-pipeline true
             ssh-proxy/.* run-ssh-proxy true
             terraform/.* run-terraform true
+            terraform-registry/.* run-terraform-registry true
             terraform-v2/.* run-terraform-v2 true
             tools/.* run-tools true
             tools-install/.* run-tools-install true

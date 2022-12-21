@@ -75,6 +75,9 @@ parameters:
   run-terraform:
     type: boolean
     default: false
+  run-terraform-registry:
+    type: boolean
+    default: false
   run-terraform-v2:
     type: boolean
     default: false
@@ -96,7 +99,7 @@ parameters:
   run-build-utilities:
     type: boolean
     default: false
-    
+
 jobs:
   test_python:
     description: Tests python code within an orb
@@ -466,6 +469,15 @@ workflows:
           path: terraform
           requires:
             - test_python
+            - validate_orb
+  terraform-registry:
+    when: << pipeline.parameters.run-terraform-registry >>
+    jobs:
+      - validate_orb:
+          path: terraform-registry
+      - publish_orb:
+          path: terraform-registry
+          requires:
             - validate_orb
   terraform-v2:
     when: << pipeline.parameters.run-terraform-v2 >>

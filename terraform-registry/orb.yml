@@ -1,0 +1,431 @@
+version: 2.1
+description: |
+    Publish Terraform Cloud artefacts to a private registry
+display:
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/terraform-registry/README.md
+    source_url: https://github.com/ovotech/team-cppe
+commands:
+    check_module_publishability:
+        description: |
+            Determines if a module version has not already been published
+        parameters:
+            module_name:
+                description: |
+                    The module name
+                type: string
+            module_provider:
+                description: |
+                    The name of the module provider
+                type: string
+            module_version:
+                description: |
+                    The module version number to check
+                type: string
+            token:
+                default: $TF_CLOUD_TOKEN
+                description: |
+                    The API token to access Terraform Cloud Defaults to $TF_CLOUD_TOKEN
+                type: string
+        steps:
+            - run:
+                command: |
+                    {
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo << parameters.token >>)"
+                      echo "export PARAM_MODULE_NAME=$(echo << parameters.module_name >>)"
+                      echo "export PARAM_MODULE_PROVIDER=$(echo << parameters.module_provider >>)"
+                      echo "export PARAM_MODULE_VERSION=$(echo << parameters.module_version >>)"
+                    } >> $BASH_ENV
+                name: Setting variables
+            - run:
+                command: "#!/bin/bash\nset -euo pipefail\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_dependency will return 0 if the command is found on the path\n# or 1 if otherwise\nassert_dependency() {\n    local _DEPENDENCY=$1\n    \n    if ! command -v \"$_DEPENDENCY\" >/dev/null; then\n        echo \"Required dependency $_DEPENDENCY is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\"\n        return 2\n    fi\n    \n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    {\n        echo \"export TF_CLOUD_ORGANISATION_NAME=ovotech\"\n        echo \"export TF_CLOUD_REGISTRY_NAME=ovotech\"\n        echo \"export TF_CLOUD_API_BASE_PATH=https://app.terraform.io/api\"\n    } >> \"$BASH_ENV\"\n    \n    declare -pf is_empty assert_dependency assert_non_empty verify_bearer_token >> \"${BASH_ENV}\"\nfi\n"
+                name: Loading script dependencies
+            - run:
+                command: "#!/bin/bash\nset -euo pipefail\n\n## Requires common.sh to be in scope for environment variables and common functions.\n\nmodule_version_check() {\n    assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2\n    assert_non_empty PARAM_MODULE_NAME || exit 2\n    assert_non_empty PARAM_MODULE_PROVIDER || exit 2\n    assert_non_empty PARAM_MODULE_VERSION || exit 2\n    \n    assert_dependency jq || exit 2\n    assert_dependency curl || exit 2\n    \n    verify_bearer_token || exit 2\n    \n    printf \"Checking for an existing version for:\\n\"\n    printf \"Module provider:   %s\\n\" \"${PARAM_MODULE_PROVIDER}\"\n    printf \"Module name:     %s\\n\" \"${PARAM_MODULE_NAME}\"\n    printf \"Module version:  %s\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    \n    _VERSION_LIST=$(curl \\\n        --fail-early \\\n        --silent \\\n        --request GET \\\n        --header \"Authorization: Bearer ${PARAM_TERRAFORM_TOKEN}\" \\\n        --header \"Content-Type: application/vnd.api+json\" \\\n    \"$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME/registry-modules/private/$TF_CLOUD_REGISTRY_NAME/${PARAM_MODULE_NAME}/${PARAM_MODULE_PROVIDER}\") || _EC=$?\n    \n    if [[ \"${_EC:-0}\" -ne 0 ]]; then\n        printf \"Fail: Unable to query the registry for module:'%s' provider:'%s'.\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"${PARAM_MODULE_NAME}\" \"${PARAM_PROVIDER_NAME}\"\n        exit 2\n    fi\n    \n    EXISTING_VERSION=$(echo \"$_VERSION_LIST\" | jq --arg version \"${PARAM_MODULE_VERSION}\" -c '.data.attributes.\"version-statuses\"[]? | select(.version == $version)')\n    if [[ -n \"${EXISTING_VERSION}\" ]]; then\n        printf  \"Fail: Version '%s' has already been published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n        return 1\n    fi\n    \n    printf  \"Success: Version '%s' can be published to Terraform Cloud.\\n\\n\" \"${PARAM_MODULE_VERSION}\"\n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    module_version_check\nfi\n"
+                name: Check if the module version has been published
+    publish_module:
+        description: |
+            Publish a new module version
+        parameters:
+            module_name:
+                description: |
+                    The module name
+                type: string
+            module_path:
+                default: ""
+                description: |
+                    The location path for the module to publish
+                type: string
+            module_provider:
+                description: |
+                    The name of the module provider
+                type: string
+            module_version:
+                default: ""
+                description: |
+                    The module version number.  Set this to define the version number explicitly overriding the module-version-path parameter.
+                type: string
+            module_version_file_path:
+                default: ""
+                description: |
+                    The location of the module file version.
+                type: string
+            token:
+                default: $TF_CLOUD_TOKEN
+                description: |
+                    The API token to access Terraform Cloud Defaults to $TF_CLOUD_TOKEN
+                type: string
+        steps:
+            - run:
+                command: |
+                    {
+                      echo "export PARAM_TERRAFORM_TOKEN=$(echo << parameters.token >>)"
+                      echo "export PARAM_MODULE_NAME=$(echo << parameters.module_name >>)"
+                      echo "export PARAM_MODULE_PROVIDER=$(echo << parameters.module_provider >>)"
+                      echo "export PARAM_MODULE_VERSION=$(echo << parameters.module_version >>)"
+                      echo "export PARAM_MODULE_VERSION_FILE_PATH=$(echo << parameters.module_version_file_path >>)"
+                      echo "export PARAM_MODULE_PATH=$(echo << parameters.module_path >>)"
+                    } >> $BASH_ENV
+                name: Setting variables
+            - run:
+                command: "#!/bin/bash\nset -euo pipefail\n\n##\n# is_empty will return 0 if the environment variable passed has\n# an empty value or is missing, or 1 otherwise\nis_empty() {\n    local _TESTENV=$1\n    \n    test -z \"$(printenv \"$_TESTENV\")\"\n    return $?\n}\n\n##\n# assert_dependency will return 0 if the command is found on the path\n# or 1 if otherwise\nassert_dependency() {\n    local _DEPENDENCY=$1\n    \n    if ! command -v \"$_DEPENDENCY\" >/dev/null; then\n        echo \"Required dependency $_DEPENDENCY is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# assert_non_empty will return 0 if the environment variable passed has\n# a non-empty value or 1 if otherwise\nassert_non_empty() {\n    local _TESTENV=$1\n    \n    if is_empty \"$_TESTENV\"; then\n        echo \"Required environment variable '$_TESTENV' is missing.\"\n        return 1\n    fi\n    \n    return 0\n}\n\n##\n# verify_bearer_token will return 0 if the PARAM_TERRAFORM_TOKEN\n# is valid, or 2 otherwise\nverify_bearer_token() {\n    local -i _RESULT\n    \n    _RESULT=$(curl \\\n        --fail-early \\\n        --silent \\\n        --write-out '%{http_code}' \\\n        --output /dev/null \\\n        --header \"Authorization: Bearer $PARAM_TERRAFORM_TOKEN\" \\\n        --url \"$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME\"\n    )\n    \n    if [ \"$_RESULT\" -ne \"200\" ]; then\n        printf \"Fail: Unable to query the registry. Result: '%s'\\n\\nPlease review the input values and check that the Terraform Cloud credentials are correct.\\n\\n\" \"$_RESULT\"\n        return 2\n    fi\n    \n    return 0\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n    {\n        echo \"export TF_CLOUD_ORGANISATION_NAME=ovotech\"\n        echo \"export TF_CLOUD_REGISTRY_NAME=ovotech\"\n        echo \"export TF_CLOUD_API_BASE_PATH=https://app.terraform.io/api\"\n    } >> \"$BASH_ENV\"\n    \n    declare -pf is_empty assert_dependency assert_non_empty verify_bearer_token >> \"${BASH_ENV}\"\nfi\n"
+                name: Loading script dependencies
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    ## Requires common.sh to be in scope for environment variables and common functions.
+
+                    # module_exists will return true if the module exists
+                    # in Terraform cloud, or otherwise false
+                    # Expected params:
+                    #  $1 - The module name
+                    #  $2 - The provider name
+                    module_exists() {
+                        local _MODULE_NAME=$1
+                        local _MODULE_PROVIDER_NAME=$2
+
+                        local -i _RESULT
+
+                        _RESULT=$(curl \
+                            --header "Authorization: Bearer $PARAM_TERRAFORM_TOKEN" \
+                            --header "Content-Type: application/vnd.api+json" \
+                            --write-out '%{http_code}' \
+                            --silent \
+                            --output /dev/null \
+                            --url "$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME/registry-modules/private/$TF_CLOUD_REGISTRY_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME"
+                        )
+
+                        if [ "$_RESULT" -eq "200" ];
+                        then
+                            echo true
+                        elif [ "$_RESULT" -eq "404" ];
+                        then
+                            echo false
+                        else
+                            printf "Fail: Unable verify if module exists.  Error: %s\n" "$_RESULT"
+                            return 2
+                        fi
+
+                        return 0
+                    }
+
+                    ##
+                    # module_version_exists will return true if the module version
+                    # exists in Terraform cloud, or otherwise false
+                    # Expected params:
+                    #  $1 - The module name
+                    #  $2 - The provider name
+                    #  $3 - The module version
+                    module_version_exists() {
+                        local _RESULT
+                        local _MODULE_NAME=$1
+                        local _MODULE_PROVIDER_NAME=$2
+                        local _VERSION=$3
+
+                        _RESULT=$(curl \
+                            --header "Authorization: Bearer $PARAM_TERRAFORM_TOKEN" \
+                            --header "Content-Type: application/vnd.api+json" \
+                            --silent \
+                            --url "$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME/registry-modules/private/$TF_CLOUD_REGISTRY_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME"
+                        )
+
+                        local _EXISTING_VERSION
+                        _EXISTING_VERSION=$(echo "$_RESULT" | jq -c ".data.attributes.\"version-statuses\"[] | select(.version == \"$_VERSION\")")
+
+                        if [[ -n "$_EXISTING_VERSION" ]]; then
+                            echo true
+                        else
+                            echo false
+                        fi
+
+                        return 0
+                    }
+
+                    ##
+                    # create_module_version will create a new version of
+                    # module and return a pre-signed URL for publishing.
+                    # Expected params:
+                    #  $1 - The module name
+                    #  $2 - The provider name
+                    #  $3 - The module version
+                    create_module_version() {
+                        local _DATA
+                        local _MODULE_NAME=$1
+                        local _MODULE_PROVIDER_NAME=$2
+                        local _VERSION=$3
+
+                        _DATA=$(jq -cn \
+                            --arg version "$_VERSION" \
+                            '
+                            {
+                                "data": {
+                                    "type": "registry-module-versions",
+                                    "attributes": {
+                                        "version": $version,
+                                    }
+                                }
+                            }
+                            '
+                        )
+
+                        local _RESULT
+                        _RESULT=$(curl \
+                            --header "Authorization: Bearer $PARAM_TERRAFORM_TOKEN" \
+                            --header "Content-Type: application/vnd.api+json" \
+                            --request POST \
+                            --silent \
+                            --max-time 5 \
+                            --data "${_DATA}" \
+                            --url "$TF_CLOUD_API_BASE_PATH/v2/organizations/$TF_CLOUD_ORGANISATION_NAME/registry-modules/private/$TF_CLOUD_REGISTRY_NAME/$_MODULE_NAME/$_MODULE_PROVIDER_NAME/versions"
+                        )
+
+                        echo "$_RESULT" | jq -c -r '.data.links.upload'
+
+                        return 0
+                    }
+
+                    ##
+                    # upload_module uploads a new version of the
+                    # module to Terraform cloud.  A module version
+                    # must be created before using this function to obtain
+                    # the required presigned url parameter.
+                    #
+                    # Expected params:
+                    #  $1 - The presigned URL for the version. This value
+                    #  must be obtained by using the `create_module_version`
+                    #  first.
+                    #  $2 - The location of the module tar file
+                    upload_module() {
+                        local _PRESIGNED_URL=$1
+                        local _MODULE_FILE_PATH=$2
+
+                        local -i _RESULT
+
+                        _RESULT=$(curl \
+                            --header "Content-Type: application/octet-stream" \
+                            --request PUT \
+                            --silent \
+                            --write-out '%{http_code}' \
+                            --max-time 60 \
+                            --output /dev/null \
+                            --data-binary @"$_MODULE_FILE_PATH" \
+                            --url "$_PRESIGNED_URL"
+                        )
+
+                        if [ "$_RESULT" -ne "200" ]; then
+                            printf "Fail: Error when publishing module: Error: %s\n" "$_RESULT"
+                            return 2
+                        fi
+
+                        return 0
+                    }
+
+                    ##
+                    # returns the module version based on
+                    # the version and version path parameters.
+                    #
+                    # The version parameter will take precedence
+                    # over setting a file path.
+                    #
+                    # Expected params:
+                    #  $1 - The presigned URL for the version. This value
+                    #  must be obtained by using the `create_module_version`
+                    #  first.
+                    #  $2 - The location of the module tar file
+                    get_module_version() {
+                        local _MODULE_VERSION=$1
+                        local _MODULE_VERSION_FILE_PATH=$2
+
+                        # Use the specified version if one
+                        # has been provided.
+                        if [ -n "$_MODULE_VERSION" ]; then
+                          echo "$_MODULE_VERSION"
+
+                          return 0
+                        fi
+
+                        # Use the module file path if one
+                        # has been provided.
+                        if [ -n "$_MODULE_VERSION_FILE_PATH" ]; then
+                          if [ ! -f "$_MODULE_VERSION_FILE_PATH" ]; then
+                            printf "Module version file does not exists at: %s\n" "$_MODULE_VERSION_FILE_PATH"
+                            return 2
+                          fi
+
+                          local _VERSION
+                          _VERSION=$(<"$_MODULE_VERSION_FILE_PATH")
+                          echo "$_VERSION"
+
+                          return 0
+                        fi
+
+                        printf "Fail: Unable to determine module version from parameters.\n"
+                        return 2
+                    }
+
+                    publish() {
+                        assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
+                        assert_non_empty PARAM_MODULE_PATH || exit 2
+                        assert_non_empty PARAM_MODULE_NAME || exit 2
+                        assert_non_empty PARAM_MODULE_PROVIDER || exit 2
+
+                        assert_dependency jq || exit 2
+                        assert_dependency tar || exit 2
+                        assert_dependency curl || exit 2
+
+                        local _VERSION
+                        local _MODULE_EXISTS
+                        local _MODULE_VERSION_EXISTS
+                        local _PRESIGNED_URL
+
+                        verify_bearer_token || exit 2
+
+                        _VERSION=$(get_module_version "$PARAM_MODULE_VERSION" "$PARAM_MODULE_VERSION_FILE_PATH") || exit 2
+
+                        printf "\n\nModule name:     %s\n" "${PARAM_MODULE_NAME}"
+                        printf "Module provider: %s\n" "${PARAM_MODULE_PROVIDER}"
+                        printf "Module path:     %s\n" "${PARAM_MODULE_PATH}"
+                        printf "Module version:  %s\n\n" "${_VERSION}"
+
+                        _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER") || exit 2
+                        if [ "$_MODULE_EXISTS" = false ]; then
+                            printf "Fail: No module defintion found for %s in Terraform Cloud.\n\n" "$PARAM_MODULE_NAME"
+                            exit 2
+                        fi
+
+                        printf "Module '%s' found.\n" "${PARAM_MODULE_NAME}"
+
+                        _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
+                        if [ "$_MODULE_VERSION_EXISTS" = true ]; then
+                            printf "Fail: Version %s has already been published to Terraform Cloud.\n\n" "$_VERSION"
+                            exit 2
+                        fi
+
+                        printf "Creating tar file: '%s'.\n" "/tmp/$_VERSION.tar.gz"
+                        cd "$PARAM_MODULE_PATH"
+                        tar -czf "/tmp/$_VERSION.tar.gz" ./*
+
+                        printf "Creating module version: '%s'\n" "$_VERSION"
+                        _PRESIGNED_URL=$(create_module_version "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
+
+                        printf "Uploading module.\n"
+                        upload_module "$_PRESIGNED_URL" "/tmp/$_VERSION.tar.gz"
+
+                        printf "Verifying version.\n"
+                        _MODULE_VERSION_EXISTS=$(module_version_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER" "$_VERSION")
+                        if [ "$_MODULE_VERSION_EXISTS" = false ]; then
+                            printf "Fail: Unable to download the module version.  Publishing has failed.\n"
+                            exit 2
+                        fi
+
+                        printf "Success: %s:%s published to Terraform Cloud.\n\n" "$PARAM_MODULE_NAME" "$_VERSION"
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        publish
+                    fi
+                name: Publish module version to Terraform Cloud
+    setup:
+        description: |
+            Configure and store Terraform Cloud credentials in .terraformrc
+        parameters:
+            registry_hostname:
+                default: app.terraform.io
+                description: |
+                    The Terraform Cloud registry hostname. Default to app.terraform.io
+                type: string
+            token:
+                default: $TF_CLOUD_TOKEN
+                description: |
+                    The API token to access Terraform Cloud Defaults to $TF_CLOUD_TOKEN
+                type: string
+        steps:
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    ##
+                    # is_empty will return 0 if the environment variable passed has
+                    # an empty value or is missing, or 1 otherwise
+                    is_empty() {
+                        local _TESTENV=$1
+
+                        test -z "$(printenv "$_TESTENV")"
+                        return $?
+                    }
+
+                    ##
+                    # assert_dependency will return 0 if the command is found on the path
+                    # or 1 if otherwise
+                    assert_dependency() {
+                        local _DEPENDENCY=$1
+
+                        if ! command -v "$_DEPENDENCY" >/dev/null; then
+                            echo "Required dependency $_DEPENDENCY is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+                    ##
+                    # assert_non_empty will return 0 if the environment variable passed has
+                    # a non-empty value or 1 if otherwise
+                    assert_non_empty() {
+                        local _TESTENV=$1
+
+                        if is_empty "$_TESTENV"; then
+                            echo "Required environment variable '$_TESTENV' is missing."
+                            return 1
+                        fi
+
+                        return 0
+                    }
+
+
+                    setup() {
+                        assert_non_empty PARAM_TERRAFORM_TOKEN || exit 2
+                        assert_non_empty PARAM_REGISTRY_HOSTNAME || exit 2
+
+                        PARAM_TERRAFORM_TOKEN=$(eval echo "$PARAM_TERRAFORM_TOKEN")
+
+                        echo "credentials \"${PARAM_REGISTRY_HOSTNAME}\" {token =
+                            \"${PARAM_TERRAFORM_TOKEN}\"}" >> "$HOME"/.terraformrc
+
+                        printf ".terraformrc file successfully created in the home directory.\n\n"
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        setup
+                    fi
+                environment:
+                    PARAM_REGISTRY_HOSTNAME: << parameters.registry_hostname >>
+                    PARAM_TERRAFORM_TOKEN: << parameters.token >>
+                name: Configure Terraform Cloud credentials
+
