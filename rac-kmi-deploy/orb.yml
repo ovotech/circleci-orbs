@@ -6,7 +6,7 @@ aliases:
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
-  core: ovotech/rac-gcp-deploy@1
+  core: ovotech/rac-gcp-deploy@1.1.0
 
 executors:
   docker:
@@ -77,6 +77,10 @@ jobs:
             # sbt unconditionally builds image tagged as nonprod
             docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage $<<parameters.container-name>>
       - core/snyk_monitor
+      - core/snyk_scan_image:
+          docker-image-name: $<<parameters.container-name>>
+          snyk-project-name: CIRCLE_PROJECT_REPONAME
+          monitor-on-build: true
       - core/persist_workspace:
           to: <<parameters.workspace-dir>>
 
