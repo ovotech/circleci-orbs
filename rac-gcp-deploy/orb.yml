@@ -15,7 +15,7 @@ aliases:
   google-compute-zone: <<parameters.google-compute-zone>>
 
 orbs:
-  snyk: snyk/snyk@1.1.2
+  snyk: snyk/snyk@1.4.0
   aws-ecr: circleci/aws-ecr@7.2.0
 
 executors:
@@ -167,6 +167,10 @@ commands:
       snyk-project-name:
         description: "Name of the target Snyk project"
         type: string
+      monitor-on-build:
+        description: "Take a current application dependencies snapshot for continuous monitoring by Snyk, if test was successful."
+        type: boolean
+        default: false
     steps:
       - snyk/scan:
           # Do not fail builds while we bed this command in - but note that it may be enforced at some point.
@@ -174,10 +178,12 @@ commands:
           # result in a duplicate Snyk project for the image, as our Kubernetes integration uses a project
           # name that incorporates the namespace & object type (and so is likely to differ from snyk-project-name).
           docker-image-name: <<parameters.docker-image-name>>
+          target-file: target/docker/stage/Dockerfile
           fail-on-issues: false
           severity-threshold: high
-          monitor-on-build: false
+          monitor-on-build: <<parameters.monitor-on-build>>
           project: <<parameters.snyk-project-name>>
+          organization: reads-and-consumption
 
 jobs:
   compile:
