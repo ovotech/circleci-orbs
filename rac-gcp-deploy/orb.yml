@@ -15,7 +15,7 @@ aliases:
   google-compute-zone: <<parameters.google-compute-zone>>
 
 orbs:
-  snyk: snyk/snyk@1.4.0
+  snyk: snyk/snyk@1.3.0
   aws-ecr: circleci/aws-ecr@7.2.0
 
 executors:
