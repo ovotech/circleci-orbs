@@ -135,7 +135,7 @@ jobs:
       kmi-region:
         description: "The region of KMI to deploy to"
         type: enum
-        default: all
+        default: "all"
         enum: ["eu1", "ap1", "all"]
       version-field-name:
         description: "The field name of the value which contains the target version"
