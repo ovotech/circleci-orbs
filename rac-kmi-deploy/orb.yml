@@ -163,7 +163,7 @@ jobs:
           name: Patch deployment
           command: |
             cd ~/gitops/<<parameters.kmi-application-name>>
-            if [ "$<<parameters.kmi-region>>" = "all" ]; then 
+            if [ "<<parameters.kmi-region>>" = "all" ]; then 
               yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-ap1.yaml
               yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-eu1.yaml
             else
