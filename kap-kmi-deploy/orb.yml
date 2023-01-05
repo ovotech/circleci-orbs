@@ -73,7 +73,7 @@ commands:
           at: .
       - add_ssh_keys:
           fingerprints:
-            - "ae:42:d4:4b:23:f1:01:36:32:06:3e:c2:64:89:03:9a"
+            - "dd:a6:46:b6:f6:c2:dc:61:bd:b9:ea:96:3b:8c:8a:81"
       - run:
           name: Add host keys
           command: |
