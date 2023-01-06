@@ -2,7 +2,7 @@ version: 2.1
 description: "Push to KMI via KAP-managed gitops."
 
 orbs:
-  aws-ecr: circleci/aws-ecr@8.1.2
+  aws-ecr: circleci/aws-ecr@8.2.1
 
 commands:
   deploy-image:
@@ -66,7 +66,7 @@ commands:
       tag-line-match:
         type: string
         description: "Search string to use to find the beginning of the appropriate line in the gitops manifest to interpolate the image urn."
-        default: '      tag'
+        default: "      tag"
 
     steps:
       - attach_workspace:
@@ -144,7 +144,7 @@ jobs:
       tag-line-match:
         type: string
         description: "Search string to use to find the beginning of the appropriate line in the gitops manifest to interpolate the image urn."
-        default: '      tag'
+        default: "      tag"
       push-image:
         type: boolean
         description: "Whether a new image should be built and pushed. If false, it is assumed that the image has already been pushed."
