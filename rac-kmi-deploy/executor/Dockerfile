@@ -57,6 +57,13 @@ RUN set -ex \
   && which docker \
   && (docker version || true)
 
+# Install docker compose
+RUN set -ex \
+    && apk --update add --no-cache --virtual .build-deps curl \
+    && curl --silent --show-error --location --fail --retry 3 "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /tmp/docker-compose \
+    && chmod +x /tmp/docker-compose \
+    && mv /tmp/docker-compose /usr/local/bin/docker-compose
+
 RUN id -u circleci 2> /dev/null || useradd --system --create-home --uid 1001 --gid 0 circleci
 
 WORKDIR /home/circleci
