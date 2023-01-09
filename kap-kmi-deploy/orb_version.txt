@@ -1,1 +1,1 @@
-ovotech/kap-kmi-deploy@1.0.1
+ovotech/kap-kmi-deploy@1.0.2
