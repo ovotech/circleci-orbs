@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM eclipse-temurin:11-jre-alpine
 
 ARG SBT_VERSION
 ENV SBT_VERSION ${SBT_VERSION:-1.6.2}
@@ -20,8 +20,6 @@ RUN set -x \
   && sed -i -r 's#run \"\$\@\"#unset JAVA_TOOL_OPTIONS\nrun \"\$\@\"#g' /opt/sbt/sbt/bin/sbt \
   && apk del --purge .build-deps \
   && rm -rf /tmp/sbt-${SBT_VERSION}.tgz /var/cache/apk/*
-
-RUN apk add openjdk11
 
 # Install snyk
 RUN apk add -q --no-progress --no-cache wget libstdc++ sudo \
