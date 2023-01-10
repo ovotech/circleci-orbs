@@ -60,6 +60,14 @@ RUN set -ex \
 # Install docker compose
 RUN apk --update add --no-cache docker-compose
 
+# Install dockerize
+RUN apk add --no-cache openssl
+
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
 RUN id -u circleci 2> /dev/null || useradd --system --create-home --uid 1001 --gid 0 circleci
 
 WORKDIR /home/circleci
