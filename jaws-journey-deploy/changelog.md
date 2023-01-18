@@ -1,3 +1,6 @@
+# 2.3.0
+* Node upgrade from 14.17.3 to 19.3.0 as semantic-release requires node version >=18
+
 # 2.0.1
 * using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target. 
 * new sync_request parameter for gitops-deploy, false by default
