@@ -3,102 +3,102 @@ version: 2.1
 # Reuse a common job for publishing each orb
 
 parameters:
-  run-argocd:
-    type: boolean
-    default: false
-  run-asp-deploy:
-    type: boolean
-    default: false
-  run-aws-configure-credentials-oidc:
-    type: boolean
-    default: false
-  run-aws-get-parameters:
-    type: boolean
-    default: false
-  run-aws-rotate-keys:
-    type: boolean
-    default: false
-  run-clair-scanner:
-    type: boolean
-    default: false
-  run-clojure:
-    type: boolean
-    default: false
-  run-comms-commands:
-    type: boolean
-    default: false
-  run-gcp-rotate-keys:
-    type: boolean
-    default: false
-  run-helm-ci:
-    type: boolean
-    default: false
-  run-ipa-deploy:
-    type: boolean
-    default: false
-  run-jaws-journey-deploy:
-    type: boolean
-    default: false
-  run-oot-deploy:
-    type: boolean
-    default: false
-  run-oot-eks:
-    type: boolean
-    default: false
-  run-pipeline-utils:
-    type: boolean
-    default: false
-  run-rac-gcp-deploy:
-    type: boolean
-    default: false
-  run-rac-kmi-deploy:
-    type: boolean
-    default: false
-  run-realm:
-    type: boolean
-    default: false
-  run-sast:
-    type: boolean
-    default: false
-  run-sbt-deploy:
-    type: boolean
-    default: false
-  run-set-current-environment:
-    type: boolean
-    default: false
-  run-setup-scheduled-pipeline:
-    type: boolean
-    default: false
-  run-ssh-proxy:
-    type: boolean
-    default: false
+  # run-argocd:
+  #   type: boolean
+  #   default: false
+  # run-asp-deploy:
+  #   type: boolean
+  #   default: false
+  # run-aws-configure-credentials-oidc:
+  #   type: boolean
+  #   default: false
+  # run-aws-get-parameters:
+  #   type: boolean
+  #   default: false
+  # run-aws-rotate-keys:
+  #   type: boolean
+  #   default: false
+  # run-clair-scanner:
+  #   type: boolean
+  #   default: false
+  # run-clojure:
+  #   type: boolean
+  #   default: false
+  # run-comms-commands:
+  #   type: boolean
+  #   default: false
+  # run-gcp-rotate-keys:
+  #   type: boolean
+  #   default: false
+  # run-helm-ci:
+  #   type: boolean
+  #   default: false
+  # run-ipa-deploy:
+  #   type: boolean
+  #   default: false
+  # run-jaws-journey-deploy:
+  #   type: boolean
+  #   default: false
+  # run-oot-deploy:
+  #   type: boolean
+  #   default: false
+  # run-oot-eks:
+  #   type: boolean
+  #   default: false
+  # run-pipeline-utils:
+  #   type: boolean
+  #   default: false
+  # run-rac-gcp-deploy:
+  #   type: boolean
+  #   default: false
+  # run-rac-kmi-deploy:
+  #   type: boolean
+  #   default: false
+  # run-realm:
+  #   type: boolean
+  #   default: false
+  # run-sast:
+  #   type: boolean
+  #   default: false
+  # run-sbt-deploy:
+  #   type: boolean
+  #   default: false
+  # run-set-current-environment:
+  #   type: boolean
+  #   default: false
+  # run-setup-scheduled-pipeline:
+  #   type: boolean
+  #   default: false
+  # run-ssh-proxy:
+  #   type: boolean
+  #   default: false
   run-terraform:
     type: boolean
     default: false
-  run-terraform-registry:
-    type: boolean
-    default: false
-  run-terraform-v2:
-    type: boolean
-    default: false
-  run-tools:
-    type: boolean
-    default: false
-  run-tools-install:
-    type: boolean
-    default: false
-  run-versioned-lambda:
-    type: boolean
-    default: false
-  run-with-git-deploy-key:
-    type: boolean
-    default: false
-  run-kap-kmi-deploy:
-    type: boolean
-    default: false
-  run-build-utilities:
-    type: boolean
-    default: false
+  # run-terraform-registry:
+  #   type: boolean
+  #   default: false
+  # run-terraform-v2:
+  #   type: boolean
+  #   default: false
+  # run-tools:
+  #   type: boolean
+  #   default: false
+  # run-tools-install:
+  #   type: boolean
+  #   default: false
+  # run-versioned-lambda:
+  #   type: boolean
+  #   default: false
+  # run-with-git-deploy-key:
+  #   type: boolean
+  #   default: false
+  # run-kap-kmi-deploy:
+  #   type: boolean
+  #   default: false
+  # run-build-utilities:
+  #   type: boolean
+  #   default: false
 
 jobs:
   test_python:
@@ -168,21 +168,21 @@ jobs:
                   BUILD_TAG="${TAG}_${CIRCLE_BRANCH}_$(date "+%d-%m-%Y")"
               fi
 
-              docker build --tag "ovotech/${ORB}:${BUILD_TAG}" \
+              docker build --tag "playsportsgroup/${ORB}:${BUILD_TAG}" \
               --label org.label-schema.vcs-ref="$CIRCLE_SHA1" \
               --label org.label-schema.vcs-url="$CIRCLE_REPOSITORY_URL" \
               --label org.label-schema.schema-version="1.0" \
               --file $path \
               "${ORB}/executor"
 
-              docker push "ovotech/${ORB}:${BUILD_TAG}"
+              docker push "playsportsgroup/${ORB}:${BUILD_TAG}"
 
-              DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "ovotech/${ORB}:${BUILD_TAG}")
+              DIGEST=$(docker image inspect --format="{{index .RepoDigests 0}}" "playsportsgroup/${ORB}:${BUILD_TAG}")
               echo $DIGEST > "${ORB}_${TAG}_digest.txt"
 
               if [ "$CIRCLE_BRANCH" = "master" ]; then
-                  docker tag "ovotech/${ORB}:${BUILD_TAG}" "ovotech/${ORB}:${TAG}"
-                  docker push "ovotech/${ORB}:${TAG}"
+                  docker tag "playsportsgroup/${ORB}:${BUILD_TAG}" "playsportsgroup/${ORB}:${TAG}"
+                  docker push "playsportsgroup/${ORB}:${TAG}"
               fi
             done
       - run:
@@ -207,32 +207,32 @@ jobs:
 
                 # update the executor image tag to point at the image that was just published
                 DIGEST=$(<"${ORB}_${TAG}_digest.txt")
-                sed -i -e "s|ovotech/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
+                sed -i -e "s|playsportsgroup/${ORB}:$TAG|$DIGEST|" "/tmp/${ORB}_orb.yml"
               fi
 
             done
 
             DEV_VERSION=dev:$(echo $CIRCLE_BRANCH | tr / _)
 
-            echo "Creating orb ovotech/${ORB} if it wasn't created before"
-            circleci orb list ovotech | grep -q -F "ovotech/${ORB} " || circleci orb create ovotech/"${ORB}" --no-prompt --token "$CIRCLECI_PROD_TOKEN"
+            echo "Creating orb playsportsgroup/${ORB} if it wasn't created before"
+            circleci orb list playsportsgroup | grep -q -F "playsportsgroup/${ORB} " || circleci orb create playsportsgroup/"${ORB}" --no-prompt --token "$CIRCLECI_PROD_TOKEN"
 
-            echo "Publishing branch development-version: ovotech/${ORB}@$DEV_VERSION"
-            circleci orb publish "/tmp/${ORB}_orb.yml" "ovotech/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
+            echo "Publishing branch development-version: playsportsgroup/${ORB}@$DEV_VERSION"
+            circleci orb publish "/tmp/${ORB}_orb.yml" "playsportsgroup/${ORB}@$DEV_VERSION" --token "$CIRCLECI_TOKEN"
 
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              echo "Publishing master to ovotech/${ORB}"
+              echo "Publishing master to playsportsgroup/${ORB}"
 
-              if ! circleci orb source "ovotech/${ORB}" > "/tmp/${ORB}_current.yml"; then
+              if ! circleci orb source "playsportsgroup/${ORB}" > "/tmp/${ORB}_current.yml"; then
                 # This is the first version
-                circleci orb publish promote "ovotech/${ORB}@$DEV_VERSION" major --token "$CIRCLECI_PROD_TOKEN"
+                circleci orb publish promote "playsportsgroup/${ORB}@$DEV_VERSION" major --token "$CIRCLECI_PROD_TOKEN"
                 exit 0
               fi
 
               if [[ -f "${ORB}/orb_version.txt" ]]; then
                 # This is a specific version
                 VERSION=$(<"${ORB}/orb_version.txt")
-                CURRENT_VERSION=$(circleci orb info ovotech/${ORB} | grep "Latest" | cut -d' ' -f2)
+                CURRENT_VERSION=$(circleci orb info playsportsgroup/${ORB} | grep "Latest" | cut -d' ' -f2)
 
                 if [[ "$VERSION" != "$CURRENT_VERSION" ]]; then
                     circleci orb publish "/tmp/${ORB}_orb.yml" "$VERSION" --token "$CIRCLECI_PROD_TOKEN"
@@ -242,222 +242,222 @@ jobs:
 
               elif ! cmp -s "/tmp/${ORB}_orb.yml" "/tmp/${ORB}_current.yml"; then
                 # This is a new version
-                circleci orb publish increment "/tmp/${ORB}_orb.yml" "ovotech/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
+                circleci orb publish increment "/tmp/${ORB}_orb.yml" "playsportsgroup/${ORB}" patch --token "$CIRCLECI_PROD_TOKEN"
               fi
             else
               echo "Orb can now be tested using the following circleci config"
               echo "  orbs:"
-              echo "    ${ORB}: ovotech/${ORB}@dev:$CIRCLE_BRANCH"
+              echo "    ${ORB}: playsportsgroup/${ORB}@dev:$CIRCLE_BRANCH"
             fi
 
 workflows:
-  argocd:
-    when: << pipeline.parameters.run-argocd >>
-    jobs:
-      - validate_orb:
-          path: argocd
-      - publish_orb:
-          path: argocd
-          requires:
-            - validate_orb
-  asp-deploy:
-    when: << pipeline.parameters.run-asp-deploy >>
-    jobs:
-      - validate_orb:
-          path: asp-deploy
-      - publish_orb:
-          path: asp-deploy
-          requires:
-            - validate_orb
-  aws-configure-credentials-oidc:
-    when: << pipeline.parameters.run-aws-configure-credentials-oidc >>
-    jobs:
-      - validate_orb:
-          path: aws-configure-credentials-oidc
-      - publish_orb:
-          path: aws-configure-credentials-oidc
-          requires:
-            - validate_orb
-  aws-get-parameters:
-    when: << pipeline.parameters.run-aws-get-parameters >>
-    jobs:
-      - validate_orb:
-          path: aws-get-parameters
-      - publish_orb:
-          path: aws-get-parameters
-          requires:
-            - validate_orb
-  aws-rotate-keys:
-    when: << pipeline.parameters.run-aws-rotate-keys >>
-    jobs:
-      - validate_orb:
-          path: aws-rotate-keys
-      - publish_orb:
-          path: aws-rotate-keys
-          requires:
-            - validate_orb
-  clair-scanner:
-    when: << pipeline.parameters.run-clair-scanner >>
-    jobs:
-      - validate_orb:
-          path: clair-scanner
-      - publish_orb:
-          path: clair-scanner
-          requires:
-            - validate_orb
-  clojure:
-    when: << pipeline.parameters.run-clojure >>
-    jobs:
-      - validate_orb:
-          path: clojure
-      - publish_orb:
-          path: clojure
-          requires:
-            - validate_orb
-  comms-commands:
-    when: << pipeline.parameters.run-comms-commands >>
-    jobs:
-      - validate_orb:
-          path: comms-commands
-      - publish_orb:
-          path: comms-commands
-          requires:
-            - validate_orb
-  gcp-rotate-keys:
-    when: << pipeline.parameters.run-gcp-rotate-keys >>
-    jobs:
-      - validate_orb:
-          path: gcp-rotate-keys
-      - publish_orb:
-          path: gcp-rotate-keys
-          requires:
-            - validate_orb
-  helm-ci:
-    when: << pipeline.parameters.run-helm-ci >>
-    jobs:
-      - validate_orb:
-          path: helm-ci
-      - publish_orb:
-          path: helm-ci
-          requires:
-            - validate_orb
-  ipa-deploy:
-    when: << pipeline.parameters.run-ipa-deploy >>
-    jobs:
-      - validate_orb:
-          path: ipa-deploy
-      - publish_orb:
-          path: ipa-deploy
-          requires:
-            - validate_orb
-  jaws-journey-deploy:
-    when: << pipeline.parameters.run-jaws-journey-deploy >>
-    jobs:
-      - validate_orb:
-          path: jaws-journey-deploy
-      - publish_orb:
-          path: jaws-journey-deploy
-          requires:
-            - validate_orb
-  oot-deploy:
-    when: << pipeline.parameters.run-oot-deploy >>
-    jobs:
-      - validate_orb:
-          path: oot-deploy
-      - publish_orb:
-          path: oot-deploy
-          requires:
-            - validate_orb
-  oot-eks:
-    when: << pipeline.parameters.run-oot-eks >>
-    jobs:
-      - validate_orb:
-          path: oot-eks
-      - publish_orb:
-          path: oot-eks
-          requires:
-            - validate_orb
-  pipeline-utils:
-    when: << pipeline.parameters.run-pipeline-utils >>
-    jobs:
-      - validate_orb:
-          path: pipeline-utils
-      - publish_orb:
-          path: pipeline-utils
-          requires:
-            - validate_orb
-  rac-gcp-deploy:
-    when: << pipeline.parameters.run-rac-gcp-deploy >>
-    jobs:
-      - validate_orb:
-          path: rac-gcp-deploy
-      - publish_orb:
-          path: rac-gcp-deploy
-          requires:
-            - validate_orb
-  rac-kmi-deploy:
-    when: << pipeline.parameters.run-rac-kmi-deploy >>
-    jobs:
-      - validate_orb:
-          path: rac-kmi-deploy
-      - publish_orb:
-          path: rac-kmi-deploy
-          requires:
-            - validate_orb
-  realm:
-    when: << pipeline.parameters.run-realm >>
-    jobs:
-      - validate_orb:
-          path: realm
-      - publish_orb:
-          path: realm
-          requires:
-            - validate_orb
-  sast:
-    when: << pipeline.parameters.run-sast >>
-    jobs:
-      - validate_orb:
-          path: sast
-      - publish_orb:
-          path: sast
-          requires:
-            - validate_orb
-  sbt-deploy:
-    when: << pipeline.parameters.run-sbt-deploy >>
-    jobs:
-      - validate_orb:
-          path: sbt-deploy
-      - publish_orb:
-          path: sbt-deploy
-          requires:
-            - validate_orb
-  set-current-environment:
-    when: << pipeline.parameters.run-set-current-environment >>
-    jobs:
-      - validate_orb:
-          path: set-current-environment
-      - publish_orb:
-          path: set-current-environment
-          requires:
-            - validate_orb
-  setup-scheduled-pipeline:
-    when: << pipeline.parameters.run-setup-scheduled-pipeline >>
-    jobs:
-      - validate_orb:
-          path: setup-scheduled-pipeline
-      - publish_orb:
-          path: setup-scheduled-pipeline
-          requires:
-            - validate_orb
-  ssh-proxy:
-    when: << pipeline.parameters.run-ssh-proxy >>
-    jobs:
-      - validate_orb:
-          path: ssh-proxy
-      - publish_orb:
-          path: ssh-proxy
-          requires:
-            - validate_orb
+  # argocd:
+  #   when: << pipeline.parameters.run-argocd >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: argocd
+  #     - publish_orb:
+  #         path: argocd
+  #         requires:
+  #           - validate_orb
+  # asp-deploy:
+  #   when: << pipeline.parameters.run-asp-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: asp-deploy
+  #     - publish_orb:
+  #         path: asp-deploy
+  #         requires:
+  #           - validate_orb
+  # aws-configure-credentials-oidc:
+  #   when: << pipeline.parameters.run-aws-configure-credentials-oidc >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: aws-configure-credentials-oidc
+  #     - publish_orb:
+  #         path: aws-configure-credentials-oidc
+  #         requires:
+  #           - validate_orb
+  # aws-get-parameters:
+  #   when: << pipeline.parameters.run-aws-get-parameters >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: aws-get-parameters
+  #     - publish_orb:
+  #         path: aws-get-parameters
+  #         requires:
+  #           - validate_orb
+  # aws-rotate-keys:
+  #   when: << pipeline.parameters.run-aws-rotate-keys >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: aws-rotate-keys
+  #     - publish_orb:
+  #         path: aws-rotate-keys
+  #         requires:
+  #           - validate_orb
+  # clair-scanner:
+  #   when: << pipeline.parameters.run-clair-scanner >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: clair-scanner
+  #     - publish_orb:
+  #         path: clair-scanner
+  #         requires:
+  #           - validate_orb
+  # clojure:
+  #   when: << pipeline.parameters.run-clojure >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: clojure
+  #     - publish_orb:
+  #         path: clojure
+  #         requires:
+  #           - validate_orb
+  # comms-commands:
+  #   when: << pipeline.parameters.run-comms-commands >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: comms-commands
+  #     - publish_orb:
+  #         path: comms-commands
+  #         requires:
+  #           - validate_orb
+  # gcp-rotate-keys:
+  #   when: << pipeline.parameters.run-gcp-rotate-keys >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: gcp-rotate-keys
+  #     - publish_orb:
+  #         path: gcp-rotate-keys
+  #         requires:
+  #           - validate_orb
+  # helm-ci:
+  #   when: << pipeline.parameters.run-helm-ci >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: helm-ci
+  #     - publish_orb:
+  #         path: helm-ci
+  #         requires:
+  #           - validate_orb
+  # ipa-deploy:
+  #   when: << pipeline.parameters.run-ipa-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: ipa-deploy
+  #     - publish_orb:
+  #         path: ipa-deploy
+  #         requires:
+  #           - validate_orb
+  # jaws-journey-deploy:
+  #   when: << pipeline.parameters.run-jaws-journey-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: jaws-journey-deploy
+  #     - publish_orb:
+  #         path: jaws-journey-deploy
+  #         requires:
+  #           - validate_orb
+  # oot-deploy:
+  #   when: << pipeline.parameters.run-oot-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: oot-deploy
+  #     - publish_orb:
+  #         path: oot-deploy
+  #         requires:
+  #           - validate_orb
+  # oot-eks:
+  #   when: << pipeline.parameters.run-oot-eks >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: oot-eks
+  #     - publish_orb:
+  #         path: oot-eks
+  #         requires:
+  #           - validate_orb
+  # pipeline-utils:
+  #   when: << pipeline.parameters.run-pipeline-utils >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: pipeline-utils
+  #     - publish_orb:
+  #         path: pipeline-utils
+  #         requires:
+  #           - validate_orb
+  # rac-gcp-deploy:
+  #   when: << pipeline.parameters.run-rac-gcp-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: rac-gcp-deploy
+  #     - publish_orb:
+  #         path: rac-gcp-deploy
+  #         requires:
+  #           - validate_orb
+  # rac-kmi-deploy:
+  #   when: << pipeline.parameters.run-rac-kmi-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: rac-kmi-deploy
+  #     - publish_orb:
+  #         path: rac-kmi-deploy
+  #         requires:
+  #           - validate_orb
+  # realm:
+  #   when: << pipeline.parameters.run-realm >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: realm
+  #     - publish_orb:
+  #         path: realm
+  #         requires:
+  #           - validate_orb
+  # sast:
+  #   when: << pipeline.parameters.run-sast >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: sast
+  #     - publish_orb:
+  #         path: sast
+  #         requires:
+  #           - validate_orb
+  # sbt-deploy:
+  #   when: << pipeline.parameters.run-sbt-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: sbt-deploy
+  #     - publish_orb:
+  #         path: sbt-deploy
+  #         requires:
+  #           - validate_orb
+  # set-current-environment:
+  #   when: << pipeline.parameters.run-set-current-environment >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: set-current-environment
+  #     - publish_orb:
+  #         path: set-current-environment
+  #         requires:
+  #           - validate_orb
+  # setup-scheduled-pipeline:
+  #   when: << pipeline.parameters.run-setup-scheduled-pipeline >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: setup-scheduled-pipeline
+  #     - publish_orb:
+  #         path: setup-scheduled-pipeline
+  #         requires:
+  #           - validate_orb
+  # ssh-proxy:
+  #   when: << pipeline.parameters.run-ssh-proxy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: ssh-proxy
+  #     - publish_orb:
+  #         path: ssh-proxy
+  #         requires:
+  #           - validate_orb
   terraform:
     when: << pipeline.parameters.run-terraform >>
     jobs:
@@ -470,78 +470,78 @@ workflows:
           requires:
             - test_python
             - validate_orb
-  terraform-registry:
-    when: << pipeline.parameters.run-terraform-registry >>
-    jobs:
-      - validate_orb:
-          path: terraform-registry
-      - publish_orb:
-          path: terraform-registry
-          requires:
-            - validate_orb
-  terraform-v2:
-    when: << pipeline.parameters.run-terraform-v2 >>
-    jobs:
-      - test_python:
-          path: terraform-v2
-      - validate_orb:
-          path: terraform-v2
-      - publish_orb:
-          path: terraform-v2
-          requires:
-            - test_python
-            - validate_orb
-  tools:
-    when: << pipeline.parameters.run-tools >>
-    jobs:
-      - validate_orb:
-          path: tools
-      - publish_orb:
-          path: tools
-          requires:
-            - validate_orb
-  tools-install:
-    when: << pipeline.parameters.run-tools-install >>
-    jobs:
-      - validate_orb:
-          path: tools-install
-      - publish_orb:
-          path: tools-install
-          requires:
-            - validate_orb
-  versioned-lambda:
-    when: << pipeline.parameters.run-versioned-lambda >>
-    jobs:
-      - validate_orb:
-          path: versioned-lambda
-      - publish_orb:
-          path: versioned-lambda
-          requires:
-            - validate_orb
-  with-git-deploy-key:
-    when: << pipeline.parameters.run-with-git-deploy-key >>
-    jobs:
-      - validate_orb:
-          path: with-git-deploy-key
-      - publish_orb:
-          path: with-git-deploy-key
-          requires:
-            - validate_orb
-  kap-kmi-deploy:
-    when: << pipeline.parameters.run-kap-kmi-deploy >>
-    jobs:
-      - validate_orb:
-          path: kap-kmi-deploy
-      - publish_orb:
-          path: kap-kmi-deploy
-          requires:
-            - validate_orb
-  build-utilities:
-    when: << pipeline.parameters.run-build-utilities >>
-    jobs:
-      - validate_orb:
-          path: build-utilities
-      - publish_orb:
-          path: build-utilities
-          requires:
-            - validate_orb
+  # terraform-registry:
+  #   when: << pipeline.parameters.run-terraform-registry >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: terraform-registry
+  #     - publish_orb:
+  #         path: terraform-registry
+  #         requires:
+  #           - validate_orb
+  # terraform-v2:
+  #   when: << pipeline.parameters.run-terraform-v2 >>
+  #   jobs:
+  #     - test_python:
+  #         path: terraform-v2
+  #     - validate_orb:
+  #         path: terraform-v2
+  #     - publish_orb:
+  #         path: terraform-v2
+  #         requires:
+  #           - test_python
+  #           - validate_orb
+  # tools:
+  #   when: << pipeline.parameters.run-tools >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: tools
+  #     - publish_orb:
+  #         path: tools
+  #         requires:
+  #           - validate_orb
+  # tools-install:
+  #   when: << pipeline.parameters.run-tools-install >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: tools-install
+  #     - publish_orb:
+  #         path: tools-install
+  #         requires:
+  #           - validate_orb
+  # versioned-lambda:
+  #   when: << pipeline.parameters.run-versioned-lambda >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: versioned-lambda
+  #     - publish_orb:
+  #         path: versioned-lambda
+  #         requires:
+  #           - validate_orb
+  # with-git-deploy-key:
+  #   when: << pipeline.parameters.run-with-git-deploy-key >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: with-git-deploy-key
+  #     - publish_orb:
+  #         path: with-git-deploy-key
+  #         requires:
+  #           - validate_orb
+  # kap-kmi-deploy:
+  #   when: << pipeline.parameters.run-kap-kmi-deploy >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: kap-kmi-deploy
+  #     - publish_orb:
+  #         path: kap-kmi-deploy
+  #         requires:
+  #           - validate_orb
+  # build-utilities:
+  #   when: << pipeline.parameters.run-build-utilities >>
+  #   jobs:
+  #     - validate_orb:
+  #         path: build-utilities
+  #     - publish_orb:
+  #         path: build-utilities
+  #         requires:
+  #           - validate_orb
