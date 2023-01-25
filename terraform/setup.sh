@@ -36,17 +36,27 @@ export TF_IN_AUTOMATION=yep
 GCLOUD_SERVICE_KEY="${GCLOUD_SERVICE_KEY:-$GOOGLE_SERVICE_ACCOUNT}"
 
 if [[ -n "$GCLOUD_SERVICE_KEY" ]]; then
+  GCLOUD_AUTH_KEY=$GCLOUD_SERVICE_KEY
+elif [[ -n "$GCLOUD_OIDC_KEY" ]]; then
+  GCLOUD_AUTH_KEY=$GCLOUD_OIDC_KEY
+fi
 
-    if echo "$GCLOUD_SERVICE_KEY" | grep "{" >/dev/null; then
-        echo "$GCLOUD_SERVICE_KEY" >/tmp/google_creds
+if [[ -n "$GCLOUD_AUTH_KEY" ]]; then
+
+    if echo "$GCLOUD_AUTH_KEY" | grep "{" >/dev/null; then
+        echo "$GCLOUD_AUTH_KEY" >/tmp/google_creds
     else
-        echo "$GCLOUD_SERVICE_KEY" \
+        echo "$GCLOUD_AUTH_KEY" \
             | base64 --decode --ignore-garbage \
                 >/tmp/google_creds
     fi
 
     export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google_creds
-    gcloud auth activate-service-account --key-file /tmp/google_creds
+    if [[ -n "$GCLOUD_SERVICE_KEY" ]]; then
+      gcloud auth activate-service-account --key-file /tmp/google_creds
+    elif [[ -n "$GCLOUD_OIDC_KEY" ]]; then
+      gcloud auth login --brief --cred-file /tmp/google_creds
+    fi
 fi
 
 if [[ -n "$GOOGLE_PROJECT_ID" ]]; then
