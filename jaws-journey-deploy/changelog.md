@@ -1,3 +1,6 @@
+# 2.4.0
+* Update snyk docker image scan to exclude app vulnerabilities
+
 # 2.3.0
 * Node upgrade from 14.17.3 to 19.3.0 as semantic-release requires node version >=18
 

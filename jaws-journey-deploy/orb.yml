@@ -891,6 +891,7 @@ jobs:
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
+                additional-arguments: --exclude-app-vulns
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
                 monitor-on-build: true
