@@ -1,4 +1,4 @@
-# KAP KMI [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/kap-kmi-deploy)](https://circleci.com/orbs/registry/orb/ovotech/kap-kmi-deploy)
+# KAP KMI [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/kap-kmi-deploy-oidc)](https://circleci.com/orbs/registry/orb/ovotech/kap-kmi-deploy-oidc)
 
 Provides commands for deploying images to the KAP KMI registry and pushing those images to KMI.
 
@@ -41,7 +41,7 @@ Using the `deploy` job:
 
 ```yaml
 orbs:
-  kmi-deploy: ovotech/kap-kmi-deploy@1.0.0
+  kmi-deploy: ovotech/kap-kmi-deploy-oidc@1.0.0
 
 workflows:
   version: 2.1
@@ -62,7 +62,7 @@ For more granular control using the commands:
 
 ```yaml
 orbs:
-  kmi-deploy: ovotech/kap-kmi-deploy@1.0.0
+  kmi-deploy: ovotech/kap-kmi-deploy-oidc@1.0.0
 
 jobs:
   deploy:
