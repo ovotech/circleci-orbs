@@ -1,0 +1,165 @@
+version: 2.1
+description: "Push to KMI via KAP-managed gitops."
+
+orbs:
+  aws-ecr: circleci/aws-ecr@8.2.1
+
+commands:
+  deploy-image:
+    description: "Builds and deploys an image to AWS ECR."
+    parameters:
+      image-name:
+        type: string
+        description: "Name of the image to deploy for the service. Defaults to the name of the github repository from where the source was pulled."
+        default: ${CIRCLE_PROJECT_REPONAME}
+      kmi-k8s-namespace:
+        type: string
+        description: "The kubernetes namespace to deploy to. Defaults to the name of the github repository from where the source was pulled."
+        default: ${CIRCLE_PROJECT_REPONAME}
+      aws-deploy-role-arn:
+        description: "Terraformed role arn for AWS access. Can be found from oot-infra terraform state."
+        type: string
+        default: AWS_DEPLOY_ROLE_ARN
+      tag:
+        type: string
+        default: kmi-${CIRCLE_SHA1}
+        description: "Tag to apply to the image before pushing to the container registry to uniquely identify this version of the image."
+    steps:
+      - attach_workspace:
+          at: .
+      - aws-ecr/build-and-push-image:
+          checkout: false
+          aws-deploy-role-arn: << parameters.aws-deploy-role-arn >>
+          repo: << parameters.kmi-k8s-namespace >>/<< parameters.image-name >>
+          tag: << parameters.tag >>
+
+  update-gitops:
+    parameters:
+      service-name:
+        type: string
+        description: "Name of the service being deployed. Defaults to the name of the github repository from where the source was pulled."
+        default: "${CIRCLE_PROJECT_REPONAME}"
+      environment:
+        type: string
+        description: "The deployment environment."
+      kmi-region:
+        type: string
+        description: "The KMI region to update gitops for. Defaults to updating all regions."
+        default: "*"
+      gitops-username:
+        description: "The username of the git user to push gitops changes as."
+        type: string
+        default: "${KAP_GITOPS_USERNAME}"
+      gitops-email:
+        description: "The email address of the git user to push gitops changes as."
+        type: string
+        default: "${KAP_GITOPS_EMAIL}"
+      tag:
+        type: string
+        description: "Tag used to uniquely identify the version of the service image to be updated to."
+        default: "kmi-${CIRCLE_SHA1}"
+      tag-line-match:
+        type: string
+        description: "Search string to use to find the beginning of the appropriate line in the gitops manifest to interpolate the image urn."
+        default: "      tag"
+
+    steps:
+      - attach_workspace:
+          at: .
+      - add_ssh_keys:
+          fingerprints:
+            - "dd:a6:46:b6:f6:c2:dc:61:bd:b9:ea:96:3b:8c:8a:81"
+      - run:
+          name: Add host keys
+          command: |
+            ssh-keyscan github.com > ~/.ssh/known_hosts
+      - run:
+          name: Sync repo
+          command: |
+            git clone git@github.com:ovotech/kap-kmi-gitops.git /tmp/kmi/gitops
+      - run:
+          name: Update Values
+          command: |
+            cd /tmp/kmi/gitops/services/<< parameters.service-name >>
+            sed -i "s/<< parameters.tag-line-match >>\:.*$/<< parameters.tag-line-match >>\: << parameters.tag >>/" values-kmi-<< parameters.environment >>-<< parameters.kmi-region >>.yaml
+      - run:
+          name: Git push kmi changes
+          command: |
+            cd /tmp/kmi/gitops
+            git config user.email "<< parameters.gitops-email >>"
+            git config user.name "<< parameters.gitops-username >>"
+            git add --all
+            if [ -z "$(git status --porcelain)" ]; then
+              echo "No changes detected."
+            else
+              git commit -m "Bumped << parameters.service-name >> in << parameters.environment >> to tag << parameters.tag >>"
+              git push origin main
+            fi
+
+jobs:
+  deploy:
+    executor: aws
+    description: "Builds, pushes a resulting image and then triggers a redeployment of that image via gitops."
+    parameters:
+      environment:
+        type: string
+        description: "The deployment environment."
+      image-name:
+        type: string
+        description: "Name of the image to deploy for the service. Defaults to the name of the github repository from where the source was pulled."
+        default: "${CIRCLE_PROJECT_REPONAME}"
+      kmi-k8s-namespace:
+        type: string
+        description: "The kubernetes namespace to deploy to. Defaults to the name of the github repository from where the source was pulled."
+        default: "${CIRCLE_PROJECT_REPONAME}"
+      service-name:
+        type: string
+        description: "Name of the service being deployed. Defaults to the name of the github repository from where the source was pulled."
+        default: "${CIRCLE_PROJECT_REPONAME}"
+      aws-deploy-role-arn:
+        description: "Terraformed role arn for AWS access. Can be found from oot-infra terraform state."
+        type: string
+        default: AWS_DEPLOY_ROLE_ARN
+      tag:
+        type: string
+        default: "kmi-${CIRCLE_SHA1}"
+        description: "Tag to apply to the image before pushing to the container registry to uniquely identify this version of the image."
+      gitops-username:
+        description: "The username of the git user to push gitops changes as."
+        type: string
+        default: "${KAP_GITOPS_USERNAME}"
+      gitops-email:
+        description: "The email address of the git user to push gitops changes as."
+        type: string
+        default: "${KAP_GITOPS_EMAIL}"
+      tag-line-match:
+        type: string
+        description: "Search string to use to find the beginning of the appropriate line in the gitops manifest to interpolate the image urn."
+        default: "      tag"
+      push-image:
+        type: boolean
+        description: "Whether a new image should be built and pushed. If false, it is assumed that the image has already been pushed."
+        default: false
+
+    steps:
+      - when:
+          condition: << parameters.push-image >>
+          steps:
+            - deploy-image:
+                image-name: << parameters.image-name >>
+                kmi-k8s-namespace: << parameters.kmi-k8s-namespace >>
+                aws-deploy-role-arn: << parameters.aws-deploy-role-arn >>
+                tag: << parameters.tag >>
+
+      - update-gitops:
+          service-name: << parameters.service-name >>
+          environment: << parameters.environment >>
+          gitops-username: << parameters.gitops-username >>
+          gitops-email: << parameters.gitops-email >>
+          tag: << parameters.tag >>
+          tag-line-match: << parameters.tag-line-match >>
+
+executors:
+  aws:
+    machine:
+      image: ubuntu-2004:202201-02
