@@ -1,4 +1,4 @@
-version: 1.0
+version: 2.1
 description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR. This orb tests using the circle ci oidc provider instead of an aws iam user."
 
 orbs:
