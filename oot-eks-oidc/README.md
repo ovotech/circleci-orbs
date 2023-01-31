@@ -10,13 +10,13 @@ Provides commands for packaging images for deployment to [AWS EKS](https://aws.a
 
 ```yaml
 orbs:
-  oot-eks: ovotech/oot-eks-oidc@2.0.0
+  oot-eks-oidc: ovotech/oot-eks-oidc@2.0.0
 
 jobs:
   push-image-nonprod:
-    executor: oot-eks/aws
+    executor: oot-eks-oidc/aws
     steps:
-      - oot-eks/push-image:
+      - oot-eks-oidc/push-image:
           service: my-service
           account: "1234567890"
 ```
