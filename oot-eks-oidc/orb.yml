@@ -1,5 +1,5 @@
 version: 1.0
-description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR. Test to use an oidc provider."
+description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR. This orb tests using the circle ci oidc provider instead of an aws iam user."
 
 orbs:
   aws-cli: circleci/aws-cli@3.1.4
