@@ -26,6 +26,7 @@ workflows:
             jaws-journey-deploy/.* run-jaws-journey-deploy true
             oot-deploy/.* run-oot-deploy true
             oot-eks/.* run-oot-eks true
+            oot-eks-oidc/.* run-oot-eks-oidc true
             pipeline-utils/.* run-pipeline-utils true
             rac-gcp-deploy/.* run-rac-gcp-deploy true
             rac-kmi-deploy/.* run-rac-kmi-deploy true

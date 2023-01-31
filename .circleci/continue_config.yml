@@ -45,6 +45,9 @@ parameters:
   run-oot-eks:
     type: boolean
     default: false
+  run-oot-eks-oidc:
+    type: boolean
+    default: false
   run-pipeline-utils:
     type: boolean
     default: false
@@ -375,6 +378,15 @@ workflows:
           path: oot-eks
       - publish_orb:
           path: oot-eks
+          requires:
+            - validate_orb
+  oot-eks-oidc:
+    when: << pipeline.parameters.run-oot-eks-oidc >>
+    jobs:
+      - validate_orb:
+          path: oot-eks-oidc
+      - publish_orb:
+          path: oot-eks-oidc
           requires:
             - validate_orb
   pipeline-utils:
