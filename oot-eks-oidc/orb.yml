@@ -1,5 +1,5 @@
-version: 1.0
-description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR. Test to use an oidc provider."
+version: 2.1
+description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR. This orb tests using the circle ci oidc provider instead of an aws iam user."
 
 orbs:
   aws-cli: circleci/aws-cli@3.1.4
@@ -48,17 +48,25 @@ commands:
             echo "export AWS_REGION=eu-west-1" >> $BASH_ENV
             echo "export AWS_ECR_ACCOUNT_URL=<< parameters.account >>.dkr.ecr.<< parameters.region >>.amazonaws.com" >> $BASH_ENV
 
-      - aws-cli/install
-      - aws-cli/setup:
+      # - aws-cli/install
+      # - aws-cli/setup:
+      #     role-arn: << parameters.aws-deploy-role-arn >>
+
+      # - aws-ecr/build-image:
+      #     account-url: AWS_ECR_ACCOUNT_URL
+      #     role-arn: << parameters.aws-deploy-role-arn >>
+      #     repo: << parameters.service >>
+      #     tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
+      #     ecr-login: true
+      #     extra-build-args: << parameters.extra-build-args >>
+
+      - aws-ecr/ecr-login:
+          # account-url: AWS_ECR_ACCOUNT_URL
           role-arn: << parameters.aws-deploy-role-arn >>
 
       - aws-ecr/build-image:
-          account-url: AWS_ECR_ACCOUNT_URL
-          role-arn: << parameters.aws-deploy-role-arn >>
-
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          ecr-login: true
           extra-build-args: << parameters.extra-build-args >>
 
       - snyk/scan:
@@ -71,6 +79,13 @@ commands:
       - aws-ecr/push-image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
+
+      # - aws-ecr/build-and-push-image:
+      #     checkout: false
+      #     role-arn: << parameters.aws-deploy-role-arn >>
+
+      #     repo: << parameters.service >>
+      #     tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
 
 executors:
   aws:
