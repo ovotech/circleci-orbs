@@ -61,7 +61,7 @@ commands:
       #     extra-build-args: << parameters.extra-build-args >>
 
       - aws-ecr/ecr-login:
-          account-url: AWS_ECR_ACCOUNT_URL
+          # account-url: AWS_ECR_ACCOUNT_URL
           role-arn: << parameters.aws-deploy-role-arn >>
 
       - aws-ecr/build-image:
