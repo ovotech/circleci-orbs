@@ -19,14 +19,14 @@ function test_case() {
         exit 1
     fi
 
-    if ! grep "$VERSION" /tmp/output > /dev/null; then
+    if ! grep "$VERSION" /tmp/output >/dev/null; then
         echo "Failed test $JOB"
         exit 2
     fi
 }
 
-test_case terraform_11_aiven "provider.aiven v1.0.10"
+test_case terraform_11_aiven "provider.aiven v1.1.0"
 test_case terraform_11 "provider.aiven v0.0.1"
-test_case terraform_12 "provider.aiven v1.0.10"
+test_case terraform_12 "provider.aiven v1.1.0"
 
 echo "All tests passed"
