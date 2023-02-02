@@ -185,6 +185,9 @@ commands:
 
   publish-image-kmi:
     parameters:
+      oidc:
+        type: boolean
+        default: false
       path:
         type: string
       repo:
@@ -210,6 +213,11 @@ commands:
           repo: << parameters.repo >>
           tag: '<< parameters.tag >>'
           skip-when-tags-exist: << parameters.skipWhenTagExists >>
+          assume-web-identity: << parameters.oidc >>
+          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>> 
+          registry-id: AWS_ACCOUNT_ID
+          region: $AWS_DEFAULT_REGION
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
           fail-on-issues: true
