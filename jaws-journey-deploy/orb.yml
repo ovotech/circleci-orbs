@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1  
+  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1
   aws-ecr: circleci/aws-ecr@8.1.3
   terraform: ovotech/terraform-v2@2.4.17
   openjdk-install: cloudesire/openjdk-install@1.2.3
@@ -38,12 +38,21 @@ aliases:
     resourceClass: &resourceClass
       resourceClass:
         type: "enum"
-        enum: ["small", "medium", "medium+", "large", "xlarge", "2xlarge", "2xlarge+"]
+        enum:
+          [
+            "small",
+            "medium",
+            "medium+",
+            "large",
+            "xlarge",
+            "2xlarge",
+            "2xlarge+",
+          ]
         default: "medium"
     parallelism: &parallelism
-       parallelism:
-         type: integer
-         default: 1
+      parallelism:
+        type: integer
+        default: 1
     image: &image
       image:
         type: "string"
@@ -71,7 +80,7 @@ aliases:
         default: false
       oidc:
         type: boolean
-        default: false  
+        default: false
       vars_dir:
         type: string
         description: "Path to directory containing Terraform variables file.  Do not supply the ending slash /"
@@ -100,7 +109,7 @@ aliases:
 
   slack-notification: &slack-notification
     event: fail
-    mentions: '@jaws-support'
+    mentions: "@jaws-support"
     template: basic_fail_1
 
 commands:
@@ -120,7 +129,6 @@ commands:
             include ./scripts/make_gradle_executable.sh
             include ./scripts/avro.sh
 
-
   snyk-scan:
     steps:
       - attach_workspace:
@@ -131,7 +139,7 @@ commands:
           severity-threshold: high
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -163,7 +171,7 @@ commands:
 
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -211,12 +219,12 @@ commands:
           checkout: false
           path: << parameters.path >>
           repo: << parameters.repo >>
-          tag: '<< parameters.tag >>'
+          tag: "<< parameters.tag >>"
           skip-when-tags-exist: << parameters.skipWhenTagExists >>
           assume-web-identity: << parameters.oidc >>
           role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>> 
-          registry-id: AWS_ACCOUNT_ID
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
+          registry-id: AWS_ACCOUNT
           region: $AWS_DEFAULT_REGION
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
@@ -254,7 +262,7 @@ commands:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false         
+        default: false
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -302,9 +310,9 @@ commands:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                assume-web-identity: << parameters.oidc >>                   
+                assume-web-identity: << parameters.oidc >>
                 role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>> 
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
@@ -321,7 +329,7 @@ commands:
                 target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -352,7 +360,7 @@ commands:
       command:
         description: indicate whether to build or publish
         type: "enum"
-        enum: [ build, publish ]
+        enum: [build, publish]
         default: build
       <<: *resourceClass
       <<: *parallelism
@@ -387,7 +395,7 @@ commands:
                 path: ./reports/jacoco
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -430,7 +438,7 @@ commands:
       command:
         description: indicate whether to build or publish
         type: "enum"
-        enum: [ build, publish ]
+        enum: [build, publish]
       <<: *environment
     steps:
       - run:
@@ -440,7 +448,6 @@ commands:
             include ./scripts/set_profile.sh
             include ./scripts/make_gradle_executable.sh
             include ./scripts/build_lib.sh
-
 
   save-test-result:
     description: "Run commands to save test results"
@@ -581,7 +588,7 @@ commands:
       username:
         type: string
       token:
-        type: string       
+        type: string
     steps:
       - run:
           shell: /bin/bash -eo pipefail
@@ -594,7 +601,7 @@ commands:
       <<: *tf-common-parameters
       command:
         type: "enum"
-        enum: [ "plan", "apply" ]         
+        enum: ["plan", "apply"]
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -608,20 +615,20 @@ commands:
             - checkout
       - when:
           condition: << parameters.oidc >>
-          steps:            
+          steps:
             - aws-configure-credentials-oidc/aws-configure-credentials:
-                role-arn: $CIRCLE_IAM_ROLE_ARN              
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
       - when:
           condition:
-            equal: [ "plan", << parameters.command >> ]
+            equal: ["plan", << parameters.command >>]
           steps:
             - terraform/plan: *tf-parameters
       - when:
           condition:
-            equal: [ "apply", << parameters.command >> ]
+            equal: ["apply", << parameters.command >>]
           steps:
             - when:
                 condition: << parameters.destroy_first >>
@@ -633,7 +640,7 @@ commands:
                 <<: *tf-parameters
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -702,7 +709,7 @@ jobs:
       command:
         description: indicate whether to build or publish
         type: "enum"
-        enum: [ build, publish ]
+        enum: [build, publish]
         default: build
       <<: *resourceClass
       <<: *parallelism
@@ -744,7 +751,7 @@ jobs:
                 path: ./reports/jacoco
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -766,7 +773,7 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false             
+        default: false
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -780,13 +787,13 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - github-repo-login:
           username: << parameters.username >>
-          token: << parameters.token >>        
+          token: << parameters.token >>
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          assume-web-identity: << parameters.oidc >>                   
+          assume-web-identity: << parameters.oidc >>
           role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
           registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
@@ -803,7 +810,7 @@ jobs:
           target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -836,7 +843,7 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false              
+        default: false
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -884,13 +891,13 @@ jobs:
           steps:
             - github-repo-login:
                 username: << parameters.username >>
-                token: << parameters.token >>              
+                token: << parameters.token >>
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                assume-web-identity: << parameters.oidc >>                   
+                assume-web-identity: << parameters.oidc >>
                 role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
@@ -908,7 +915,7 @@ jobs:
                 target-file: ./<< parameters.serviceName >>/Dockerfile
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -957,7 +964,7 @@ jobs:
 
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -979,7 +986,7 @@ jobs:
           severity-threshold: << parameters.severityThreshold >>
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -1003,7 +1010,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask     
+      <<: *tf-mask
     steps:
       - tf:
           <<: *tf-command-parameters
@@ -1015,7 +1022,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask       
+      <<: *tf-mask
     steps:
       - tf:
           <<: *tf-command-parameters
@@ -1027,12 +1034,12 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask      
+      <<: *tf-mask
     steps:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
-          oidc: << parameters.oidc >>          
+          oidc: << parameters.oidc >>
           command: plan
 
   tf-apply-java:
@@ -1040,7 +1047,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask      
+      <<: *tf-mask
     steps:
       - tf-install-adoptopenjdk
       - tf:
@@ -1069,10 +1076,10 @@ jobs:
       argocd_url:
         type: string
         default: ""
-      argocd_token: 
+      argocd_token:
         type: string
         default: ""
-      yq_version: 
+      yq_version:
         type: string
         default: "v4.6.2"
       commit_tag_name:
@@ -1080,7 +1087,7 @@ jobs:
         default: ""
       deploy_branch_name:
         type: string
-        default: 'master'
+        default: "master"
       update_build_tag:
         type: boolean
         default: true
@@ -1102,19 +1109,19 @@ jobs:
           name: "Install yq"
           command: |
             include ./scripts/install_yq.sh
-      - run:  
+      - run:
           name: "Update helm values"
-          command: |   
+          command: |
             include ./scripts/update_helm.sh
       - when:
-          condition: 
+          condition:
             and:
               - << parameters.argocd_url >>
               - << parameters.argocd_token >>
           steps:
-            - run:  
+            - run:
                 name: "Set environment variables"
-                command: |   
+                command: |
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - install-python-dependencies
@@ -1123,7 +1130,7 @@ jobs:
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
                 sync_request: << parameters.sync_request >>
-  
+
   run-automation-test:
     parameters:
       <<: *environment
@@ -1164,7 +1171,7 @@ jobs:
           path: ~/test-results/junit
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -1180,7 +1187,7 @@ jobs:
           path: ./reports/jacoco
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -1196,7 +1203,7 @@ jobs:
           path: ./reports/diagrams
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -1216,7 +1223,7 @@ jobs:
           key: npm-build-dependencies-cache-{{ checksum "package-lock.json" }}
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification
@@ -1239,7 +1246,7 @@ jobs:
             - docs/*
       - when:
           condition:
-            equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
+            equal: ["true", $SLACK_INTEGRATION_ENABLED]
           steps:
             - slack/notify:
                 <<: *slack-notification

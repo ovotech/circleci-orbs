@@ -52,6 +52,8 @@ commands:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr-login:
           role-arn: << parameters.aws-deploy-role-arn >>
+          registry-id: ${AWS_ACCOUNT}
+
       - aws-ecr/build-image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
