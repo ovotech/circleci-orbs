@@ -13,6 +13,10 @@ commands:
                 default: CIRCLECI_TOKEN
                 description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
                 type: env_var_name
+            config_path:
+                default: ""
+                description: Path of the scheduled scan config yml file
+                type: string
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
                 type: string
@@ -102,6 +106,13 @@ commands:
                             export TARGET_BRANCH=$PARAM_TARGET_BRANCH
                         fi
 
+                        if [ -z "$PARAM_CONFIG_PATH" ]; then
+                            echo "Mandatory parameters have not been set! You must specify a config path for your schedule."
+                            exit 1
+                        else
+                            export CONFIG_PATH="${PARAM_CONFIG_PATH}"
+                        fi
+
                         JSON_BODY=$(jq -rcn '
                             {
                                 "name": env.SCHEDULE_NAME,
@@ -109,6 +120,7 @@ commands:
                                 "attribution-actor": "system",
                                 "parameters": {
                                     "branch": env.TARGET_BRANCH
+                                    "config-path": env.CONFIG_PATH
                                 },
                                 "timetable": {
                                     "per-hour": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,
@@ -158,6 +170,7 @@ commands:
                     fi
                 environment:
                     PARAM_CIRCLECI_TOKEN: <<parameters.circleci_token>>
+                    PARAM_CONFIG_PATH: <<parameters.config_path>>
                     PARAM_SCHEDULE_DAYS: <<parameters.schedule_days>>
                     PARAM_SCHEDULE_DESCRIPTION: <<parameters.schedule_description>>
                     PARAM_SCHEDULE_HOUR_FREQUENCY: <<parameters.schedule_hour_frequency>>
@@ -176,6 +189,10 @@ jobs:
                 default: CIRCLECI_TOKEN
                 description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
                 type: env_var_name
+            config_path:
+                default: ""
+                description: Path of the scheduled scan config yml file
+                type: string
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
                 type: string
@@ -200,6 +217,7 @@ jobs:
         steps:
             - create_scheduled_pipeline:
                 circleci_token: <<parameters.circleci_token>>
+                config_path: <<parameters.config_path>>
                 schedule_days: <<parameters.schedule_days>>
                 schedule_description: <<parameters.schedule_description>>
                 schedule_hour_frequency: <<parameters.schedule_hour_frequency>>
@@ -219,6 +237,7 @@ examples:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
                             circleci_token: SERVICE_USER_CIRCLECI_TOKEN
+                            config_path: circleci/scheduled_scan_config.yml
                             schedule_days: MON
                             schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
