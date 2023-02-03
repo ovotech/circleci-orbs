@@ -19,8 +19,8 @@ commands:
         default: ${AWS_DEPLOY_ROLE_ARN}
       account:
         description: "The numeric identifier for the AWS account on which the operation will be run."
-        type: string
-        default: ${AWS_ACCOUNT}
+        type: env_var_name
+        default: AWS_ACCOUNT
       region:
         description: "The AWS region on which the operation will be run."
         type: env_var_name
@@ -52,6 +52,8 @@ commands:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr-login:
           role-arn: << parameters.aws-deploy-role-arn >>
+          registry-id: AWS_ACCOUNT
+
       - aws-ecr/build-image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
