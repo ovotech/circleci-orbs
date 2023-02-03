@@ -19,8 +19,8 @@ commands:
         default: ${AWS_DEPLOY_ROLE_ARN}
       account:
         description: "The numeric identifier for the AWS account on which the operation will be run."
-        type: env_var_name
-        default: AWS_ACCOUNT
+        type: string
+        default: ${AWS_ACCOUNT}
       region:
         description: "The AWS region on which the operation will be run."
         type: env_var_name
@@ -45,6 +45,7 @@ commands:
       - run:
           command: |
             echo "export AWS_DEFAULT_REGION=<< parameters.region >>" >> $BASH_ENV
+            echo "export AWS_ACCOUNT_ID=<< parameters.account >>" >> $BASH_ENV 
             echo "export AWS_ECR_ACCOUNT_URL=<< parameters.account >>.dkr.ecr.<< parameters.region >>.amazonaws.com" >> $BASH_ENV
 
       - aws-cli/install
@@ -52,7 +53,7 @@ commands:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr-login:
           role-arn: << parameters.aws-deploy-role-arn >>
-          registry-id: AWS_ACCOUNT
+          registry-id: AWS_ACCOUNT_ID
 
       - aws-ecr/build-image:
           repo: << parameters.service >>
