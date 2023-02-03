@@ -50,8 +50,7 @@ commands:
 
       - aws-cli/install
       - aws-cli/setup:
-          aws-region: <<parameters.region>>
-          role-arn: ${<<parameters.aws-deploy-role-arn>>}
+          role-arn: <<parameters.aws-deploy-role-arn>>
       - aws-ecr/ecr-login:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/build-image:
