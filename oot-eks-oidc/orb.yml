@@ -48,6 +48,7 @@ commands:
             echo "export AWS_REGION=eu-west-1" >> $BASH_ENV
             echo "export AWS_ECR_ACCOUNT_URL=<< parameters.account >>.dkr.ecr.<< parameters.region >>.amazonaws.com" >> $BASH_ENV
 
+      - aws-cli/install
       - aws-cli/setup:
           aws-region: <<parameters.region>>
           role-arn: ${<<parameters.aws-deploy-role-arn>>}
