@@ -16,7 +16,7 @@ commands:
       aws-deploy-role-arn:
         description: "Terraformed role arn for AWS access. Can be found from oot-infra terraform state."
         type: string
-        default: AWS_DEPLOY_ROLE_ARN
+        default: ${AWS_DEPLOY_ROLE_ARN}
       account:
         description: "The numeric identifier for the AWS account on which the operation will be run."
         type: string
@@ -49,7 +49,7 @@ commands:
 
       - aws-cli/install
       - aws-cli/setup:
-          role-arn: <<parameters.aws-deploy-role-arn>>
+          role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr-login:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/build-image:
