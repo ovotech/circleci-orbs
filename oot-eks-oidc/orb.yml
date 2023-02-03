@@ -20,7 +20,7 @@ commands:
       account:
         description: "The numeric identifier for the AWS account on which the operation will be run."
         type: env_var_name
-        default: ${AWS_ACCOUNT}
+        default: AWS_ACCOUNT
       region:
         description: "The AWS region on which the operation will be run."
         type: env_var_name
