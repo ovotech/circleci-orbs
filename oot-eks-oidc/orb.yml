@@ -24,7 +24,7 @@ commands:
       region:
         description: "The AWS region on which the operation will be run."
         type: env_var_name
-        default: eu-west-1
+        default: ${AWS_REGION}
       extra-build-args:
         description: "Extra arguments to pass when running docker build"
         type: string
@@ -45,7 +45,6 @@ commands:
       - run:
           command: |
             echo "export AWS_DEFAULT_REGION=<< parameters.region >>" >> $BASH_ENV
-            echo "export AWS_REGION=eu-west-1" >> $BASH_ENV
             echo "export AWS_ECR_ACCOUNT_URL=<< parameters.account >>.dkr.ecr.<< parameters.region >>.amazonaws.com" >> $BASH_ENV
 
       - aws-cli/install
