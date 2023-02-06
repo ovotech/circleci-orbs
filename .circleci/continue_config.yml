@@ -30,6 +30,9 @@ parameters:
   run-gcp-rotate-keys:
     type: boolean
     default: false
+  run-gitops:
+    type: boolean
+    default: false
   run-helm-ci:
     type: boolean
     default: false
@@ -333,6 +336,15 @@ workflows:
           path: gcp-rotate-keys
       - publish_orb:
           path: gcp-rotate-keys
+          requires:
+            - validate_orb
+  gitops:
+    when: << pipeline.parameters.run-gitops >>
+    jobs:
+      - validate_orb:
+          path: gitops
+      - publish_orb:
+          path: gitops
           requires:
             - validate_orb
   helm-ci:
