@@ -1,6 +1,7 @@
 # CircleCI Scheduled Trigger Creation orb
 
-This orb is responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started). Previously the only way to do this was via the [CircleCI API](https://circleci.com/docs/api/v2/) or via the UI. This orb aims to bring the maintainability aspect to these schedules by capturing the config natively within the CircleCI config.
+This orb is responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started). Previously the only way to do this was via the [CircleCI API](https://circleci.com/docs/api/v2/) or via the UI. 
+This orb aims to bring the maintainability aspect to these schedules by capturing the config natively within the CircleCI config.
 
 ## Pre-requisites
 
@@ -24,7 +25,8 @@ This is the only command that exists within this orb and makes use of a wrapper 
 - `schedule_hours` - Comma separated hours in a day in which the schedule triggers
 - `schedule_days` - Comma separated days in a week in which the schedule triggers
 - `target_branch` - Branch on which the scheduled pipeline will trigger
-- `circleci_token` - Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+- `circleci_token` - Environment variable containing CircleCI personal API token. If not set, will try and look for 
+- `config_path` - Path of the scheduled scan config yml file
 
 ## Examples
 
@@ -48,6 +50,7 @@ usage:
             schedule_days: 'MON'
             target_branch: 'main'
             circleci_token: SERVICE_USER_CIRCLECI_TOKEN
+            config_path: "circleci/scheduled_scan_config.yml"
 ```
 
 ## Consuming the schedule and adding workflow filtering
