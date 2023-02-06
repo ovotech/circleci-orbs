@@ -24,7 +24,7 @@ commands:
       region:
         description: "The AWS region on which the operation will be run."
         type: env_var_name
-        default: AWS_REGION
+        default: ${AWS_REGION}
       extra-build-args:
         description: "Extra arguments to pass when running docker build"
         type: string
