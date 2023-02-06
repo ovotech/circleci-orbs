@@ -81,6 +81,11 @@ aliases:
         type: "string"
         description: "Path to the json file to save the output variables to"
         default: ""
+    timeout: &timeout
+      timeout:
+        type: "integer"
+        description: "Timeout in seconds applied to terraform apply. Default is 0 (no timeout)"
+        default: 0
 
   init-parameter-passthrough: &init-parameter-passthrough
     path: << parameters.path >>
@@ -152,6 +157,7 @@ commands:
       <<: *target
       <<: *output_path
       <<: *reuse_plan
+      <<: *timeout
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
