@@ -119,7 +119,7 @@ commands:
                                 "description": env.SCHEDULE_DESCRIPTION,
                                 "attribution-actor": "system",
                                 "parameters": {
-                                    "branch": env.TARGET_BRANCH
+                                    "branch": env.TARGET_BRANCH,
                                     "config-path": env.CONFIG_PATH
                                 },
                                 "timetable": {
