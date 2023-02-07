@@ -1,9 +1,6 @@
 version: 2.1
 description: "Update OOT deployments with gitops."
 
-orbs:
-  shipit: ovotech/shipit@1
-
 commands:
   update-gitops:
     description: "Updates the appropriate manifest in the given gitops repo with a new image tag."
@@ -93,12 +90,4 @@ commands:
               git commit -m "Bumped << parameters.service >> in << parameters.environment >> to << parameters.image-tag >>"
               git push origin master
             fi
-
-jobs:
-  shipit:
-    description: "Alerts ShipIt to the fact that the service has been deployed."
-    executor: shipit/default
-    steps:
-      - shipit/shipit
-
 
