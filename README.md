@@ -39,7 +39,6 @@ Orbs follow the conventions:
 - [ovotech/with-git-deploy-key@1](with-git-deploy-key) - Execute Git operations on another repo selecting specific public key.
 - [ovotech/clojure](clojure) - test, scan and package Clojure projects built using Leiningen.
 - [ovotech/oot-eks](oot-eks) - deploy services to EKS, OOT-style.
-- [ovotech/oot-eks-oidc](oot-eks-oidc) - deploy services to EKS, OOT-style. OIDC testing.
 - [ovotech/oot-deploy](oot-deploy) - deploy services via Argo, OOT-style.
 - [ovotech/sbt-deploy](sbt-deploy) - Deploy services via Argo, using Kustomize.
 - [ovotech/jaws-journey-deploy](jaws-journey-deploy) - Provides a standard deployment process for all jaws journey repositories.
