@@ -1125,6 +1125,7 @@ jobs:
                 sync_request: << parameters.sync_request >>
   
   run-automation-test:
+    circleci_ip_ranges: true
     parameters:
       <<: *environment
       <<: *resourceClass
