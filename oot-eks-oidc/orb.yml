@@ -1,0 +1,78 @@
+version: 2.1
+description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR. This orb uses the circle ci oidc provider instead of an aws iam user."
+
+orbs:
+  aws-cli: circleci/aws-cli@3.1.4
+  aws-ecr: circleci/aws-ecr@8.2.1
+  snyk: snyk/snyk@1.1.2
+
+commands:
+  push-image:
+    description: "Builds, scans and pushes a new service to ECR."
+    parameters:
+      service:
+        description: "The name of the service that will be deployed. This will be used to build up the image name."
+        type: string
+      aws-deploy-role-arn:
+        description: "Terraformed role arn for AWS access. Can be found from oot-infra terraform state."
+        type: string
+        default: ${AWS_DEPLOY_ROLE_ARN}
+      account:
+        description: "The numeric identifier for the AWS account on which the operation will be run."
+        type: string
+        default: ${AWS_ACCOUNT}
+      region:
+        description: "The AWS region on which the operation will be run."
+        type: string
+        default: ${AWS_REGION}
+      extra-build-args:
+        description: "Extra arguments to pass when running docker build"
+        type: string
+        default: ""
+      image-tag:
+        description: "Tag to push the image with"
+        type: string
+        default: ${CIRCLE_SHA1}
+      extra-image-tags:
+        description: "Extra tags to push the image with, these will not be snyk scanned"
+        type: string
+        default: latest
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          command: |
+            echo "export AWS_DEFAULT_REGION=<< parameters.region >>" >> $BASH_ENV
+            echo "export AWS_ECR_ACCOUNT_URL=<< parameters.account >>.dkr.ecr.<< parameters.region >>.amazonaws.com" >> $BASH_ENV
+
+      - aws-cli/install
+      - aws-cli/setup:
+          role-arn: << parameters.aws-deploy-role-arn >>
+      - aws-ecr/ecr-login:
+          role-arn: << parameters.aws-deploy-role-arn >>
+          registry-id: AWS_ACCOUNT_ID
+
+      - aws-ecr/build-image:
+          repo: << parameters.service >>
+          tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
+          extra-build-args: << parameters.extra-build-args >>
+          registry-id: AWS_ACCOUNT_ID
+
+      - snyk/scan:
+          monitor-on-build: true
+          severity-threshold: high
+          fail-on-issues: false
+          target-file: Dockerfile
+          docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:<< parameters.image-tag >>
+
+      - aws-ecr/push-image:
+          repo: << parameters.service >>
+          tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
+          registry-id: AWS_ACCOUNT_ID
+
+executors:
+  aws:
+    machine:
+      image: ubuntu-2004:202201-02
