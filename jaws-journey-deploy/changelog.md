@@ -1,3 +1,6 @@
+# 2.6.0
+# Update automation test step to use circleci ip ranges
+
 # 2.5.0
 * FIX to command: publish-image-kmi, it was missed out on when aws-ecr orb version was changed
 
