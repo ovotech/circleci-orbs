@@ -1,1 +1,1 @@
-ovotech/rac-gcp-deploy@1.2.1
+ovotech/rac-gcp-deploy@2.0.0
