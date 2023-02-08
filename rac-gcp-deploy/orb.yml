@@ -121,35 +121,6 @@ commands:
             gcloud config set project $<<parameters.project-id>>
             gcloud config set compute/zone <<parameters.google-compute-zone>>
 
-  shipit_notification:
-    description: "Send a notification to ShipIt"
-    parameters:
-      api-key:
-        description: "Name of the environment variable storing the api key to access ShipIt"
-        type: env_var_name
-      team-name:
-        description: "Name of the environment variable storing the team name"
-        type: env_var_name
-      git-username:
-        description: "Name of the environment variable storing the git username"
-        type: env_var_name
-      shipit-url:
-        description: "Name of the environment variable storing the url for shipit"
-        type: env_var_name
-    steps:
-      - run:
-          name: "Send a notification to ShipIt"
-          command: |
-            COMMIT_MESSAGE=$(git log --author=$<<parameters.git-username>> --invert-grep -1)
-            curl https://${<<parameters.shipit-url>>}/deployments?apikey=${<<parameters.api-key>>} \
-              -d "team=${<<parameters.team-name>>}" \
-              -d "service=${CIRCLE_PROJECT_REPONAME}" \
-              -d "buildId=${CIRCLE_BUILD_NUM}" \
-              -d "links[0].title=CircleCI build" \
-              -d "links[0].url=${CIRCLE_BUILD_URL}" \
-              -d "links[1].title=Github" \
-              -d "links[1].url=https://github.com/ovotech/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}" \
-              -d "note=${COMMIT_MESSAGE}"
 
   snyk_monitor:
     steps:
@@ -421,42 +392,6 @@ jobs:
           cache-key: <<parameters.cache-key>>
           cache-suffix: <<parameters.cache-suffix>>
       - run: sbt -v scalafmtCheckAll  <<parameters.sbt-extra-options>>
-
-  notify_shipit:
-    parameters:
-      executor:
-        description: "Name of executor to use for this job. Defaults to docker executor"
-        type: executor
-        default: docker
-      workspace-dir:
-        description: "Path to restore the workspace"
-        type: string
-        default: ~/project
-      shipit-api-key:
-        description: "Name of the environment variable storing the api key to access ShipIt"
-        type: env_var_name
-        default: SHIPIT_API_KEY
-      team-name:
-        description: "Name of the environment variable storing the team name"
-        type: env_var_name
-        default: TEAM_NAME
-      git-username:
-        description: "Name of the environment variable storing the git username"
-        type: env_var_name
-        default: GIT_USERNAME
-      shipit-url:
-        description: "Name of the environment variable storing the url for shipit"
-        type: env_var_name
-        default: SHIPIT_URL
-    executor: <<parameters.executor>>
-    steps:
-      - restore_workspace:
-          to: <<parameters.workspace-dir>>
-      - shipit_notification:
-          api-key: <<parameters.shipit-api-key>>
-          team-name: <<parameters.team-name>>
-          git-username: <<parameters.git-username>>
-          shipit-url: <<parameters.shipit-url>>
 
   release:
     parameters:
