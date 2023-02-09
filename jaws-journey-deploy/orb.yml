@@ -322,7 +322,7 @@ commands:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
-                additional-args: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
+                additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -808,7 +808,7 @@ jobs:
           project: << parameters.serviceName >>
           severity-threshold: high
           target-file: ./<< parameters.serviceName >>/Dockerfile
-          additional-args: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
+          additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
