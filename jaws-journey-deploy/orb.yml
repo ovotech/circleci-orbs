@@ -256,7 +256,7 @@ commands:
         type: boolean
         default: false
       snykPolicyPath:
-        type: string:
+        type: string
         default: ./.snyk         
       <<: *resourceClass
       <<: *parallelism
@@ -772,7 +772,7 @@ jobs:
         type: boolean
         default: false 
       snykPolicyPath:
-        type: string:
+        type: string
         default: ./.snyk               
       <<: *resourceClass
       <<: *parallelism
@@ -846,7 +846,7 @@ jobs:
         type: boolean
         default: false   
       snykPolicyPath:
-        type: string:
+        type: string
         default: ./.snyk            
       <<: *resourceClass
       <<: *parallelism
