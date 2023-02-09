@@ -1,4 +1,4 @@
-# 3.0.0
+# 2.7.0
 * Add snykPolicyPath parameter to build_and_test, publish-image & build-and-test
 
 # 2.6.0
