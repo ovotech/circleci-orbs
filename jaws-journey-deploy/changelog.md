@@ -1,3 +1,6 @@
+# 2.7.0
+* Add snykPolicyPath parameter to build_and_test, publish-image & build-and-test
+
 # 2.6.0
 * Update automation test step to use circleci ip ranges
 
