@@ -254,7 +254,10 @@ commands:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false         
+        default: false
+      snykPolicyPath:
+        type: string:
+        default: ./.snyk         
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -319,6 +322,7 @@ commands:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
+                additional-args: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -766,7 +770,10 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false             
+        default: false 
+      snykPolicyPath:
+        type: string:
+        default: ./.snyk               
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -801,6 +808,7 @@ jobs:
           project: << parameters.serviceName >>
           severity-threshold: high
           target-file: ./<< parameters.serviceName >>/Dockerfile
+          additional-args: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -836,7 +844,10 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false              
+        default: false   
+      snykPolicyPath:
+        type: string:
+        default: ./.snyk            
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -899,7 +910,7 @@ jobs:
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
-                additional-arguments: --exclude-app-vulns
+                additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
                 monitor-on-build: true
