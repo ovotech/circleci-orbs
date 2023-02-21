@@ -149,6 +149,10 @@ jobs:
         type: boolean
         description: "Whether a new image should be built and pushed. If false, it is assumed that the image has already been pushed."
         default: false
+      kmi-region:
+        type: string
+        description: "The KMI region to update gitops for. Defaults to updating all regions."
+        default: "*"
 
     steps:
       - when:
@@ -168,6 +172,7 @@ jobs:
           gitops-email: << parameters.gitops-email >>
           tag: << parameters.tag >>
           tag-line-match: << parameters.tag-line-match >>
+          kmi-region: << parameters.kmi-region >>
 
 executors:
   aws:
