@@ -41,7 +41,7 @@ commands:
                         echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
                         exit 1
                       else
-                        export API_TOKEN=$PARAM_API_TOKEN
+                        export API_TOKEN="${!PARAM_API_TOKEN}"
                       fi
 
                       if [ -z "$PARAM_PROJECT_KEY" ]; then
