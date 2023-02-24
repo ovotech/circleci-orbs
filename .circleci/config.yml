@@ -46,3 +46,4 @@ workflows:
             with-git-deploy-key/.* run-with-git-deploy-key true
             kap-kmi-deploy/.* run-kap-kmi-deploy true
             build-utilities/.* run-build-utilities true
+            jira/.* run-jira true

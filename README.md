@@ -47,6 +47,7 @@ Orbs follow the conventions:
 - [ovotech/helm-ci](helm-ci) - CI checks for Helm charts
 - [ovotech/sast](sast) - Consumer Products Production Engineering team orb to run static security analysis.
 - [ovotech/setup-scheduled-pipeline](setup-scheduled-pipeline) - Consumer Products Production Engineering team orb responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started).
+- [ovotech/jira](jira) - Consumer Products Production Engineering team orb to run static security analysis.
 
 Other orbs in the ovotech namespace:
 

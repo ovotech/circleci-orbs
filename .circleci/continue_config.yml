@@ -105,6 +105,9 @@ parameters:
   run-build-utilities:
     type: boolean
     default: false
+  run-jira:
+    type: boolean
+    default: false
 
 jobs:
   test_python:
@@ -567,5 +570,14 @@ workflows:
           path: build-utilities
       - publish_orb:
           path: build-utilities
+          requires:
+            - validate_orb
+  jira:
+    when: << pipeline.parameters.run-jira >>
+    jobs:
+      - validate_orb:
+          path: jira
+      - publish_orb:
+          path: jira
           requires:
             - validate_orb
