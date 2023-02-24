@@ -1,0 +1,197 @@
+version: 2.1
+description: |
+    An orb that will create a new issue on JIRA board with the selected priority and type
+display:
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/jira/README.md
+    source_url: https://www.github.com/ovotech/team-cppe
+commands:
+    create_issue:
+        description: |
+            Create a JIRA issue on the selected project board
+        parameters:
+            api_token:
+                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                type: env_var_name
+            issue_content:
+                description: String variable containing the content of the issue to be created.
+                type: string
+            issue_summary:
+                description: String variable containing the summary of the issue to be created.
+                type: string
+            issue_type:
+                description: String variable containing the type of the issue to be created.
+                type: string
+            label:
+                description: String variable containing the label of the issue to be created.
+                type: string
+            priority:
+                description: String variable containing the priority of the issue to be created.
+                type: string
+            project_key:
+                description: String variable containing the project key of the board where the issue is being created.
+                type: string
+        steps:
+            - run:
+                command: |
+                    #!/bin/bash
+                    create_issue() {
+                      if [ -z "$PARAM_API_TOKEN" ]; then
+                        echo "Mandatory parameters have not been set! You must specify a JIRA API token in order to allow JIRA to create an issue with appropriate details on this board."
+                        echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+                        exit 1
+                      else
+                        export API_TOKEN=$PARAM_API_TOKEN
+                      fi
+
+                      if [ -z "$PARAM_PROJECT_KEY" ]; then
+                        echo "Mandatory parameter PROJECT_KEY has not been set! e.g.PARAM_PROJECT_KEY=\"CPPE\"."
+                        exit 1
+                      else
+                        export PROJECT_KEY=$PARAM_PROJECT_KEY
+                      fi
+
+                      if [ -z "$PARAM_ISSUE_LABEL" ]; then
+                        echo "Mandatory parameter ISSUE_LABEL has not been set! e.g.PARAM_ISSUE_LABEL=\"snyk-vulnerability-high-smartbookings\"."
+                        exit 1
+                      else
+                        export ISSUE_LABEL=$PARAM_ISSUE_LABEL
+                      fi
+
+                      if [ -z "$PARAM_ISSUE_SUMMARY" ]; then
+                        echo "Mandatory parameter ISSUE_SUMMARY has not been set! e.g.PARAM_ISSUE_SUMMARY=\"Snyk vulnerability - HIGH\"."
+                        exit 1
+                      else
+                        export ISSUE_SUMMARY=$PARAM_ISSUE_SUMMARY
+                      fi
+
+                      if [ -z "$PARAM_ISSUE_CONTENT" ]; then
+                        echo "Mandatory parameter ISSUE_CONTENT has not been set! e.g.PARAM_ISSUE_CONTENT=\"Snyk vulnerability - HIGH\""
+                        exit 1
+                      else
+                        export ISSUE_CONTENT=$PARAM_ISSUE_CONTENT
+                      fi
+
+                      if [ -z "$PARAM_PRIORITY" ]; then
+                        echo "Mandatory parameter PRIORITY has not been set! e.g.PARAM_PRIORITY=\"Blocker\""
+                        exit 1
+                      else
+                        export PRIORITY=$PARAM_PRIORITY
+                      fi
+
+                      if [ -z "$PARAM_ISSUE_TYPE" ]; then
+                        echo "Mandatory parameter ISSUE_TYPE has not been set! e.g.PARAM_ISSUE_TYPE=\"Engagement\""
+                        exit 1
+                      else
+                        export ISSUE_TYPE=$PARAM_ISSUE_TYPE
+                      fi
+
+                      JSON_BODY=$(jq -rcn --arg project_key "$PROJECT_KEY" --arg issuelabels "$ISSUE_LABEL" '
+                        {
+                          "fields": [
+                            "summary"
+                          ],
+                          "fieldsByKeys": false,
+                          "jql": "project = \($project_key) AND labels = \($issuelabels)"
+                        }
+                    ')
+
+                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/search" --user "cppe.slackbot@ovo.com:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY" --output /dev/null)
+
+                      # Checking if returned status code is not 200
+                      if [ "${JIRA_AUTH_HTTP_STATUS}" != "200" ]; then
+                        echo "${JIRA_AUTH_HTTP_STATUS}: Unable to authenticate because provided JIRA Token is invalid! Exiting..."
+                        echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+                        exit 1
+                      fi
+
+                      EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "cppe.slackbot@ovo.com:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
+                      EXISTING_ISSUE_COUNT=$(echo "${EXISTING_ISSUE}" | jq '.issues | length')
+
+                      if [ "${EXISTING_ISSUE_COUNT}" != 0 ]; then
+                        echo "An issue with the same label already exist on this board !"
+                      else
+                        echo "Creating a new issue on the board!"
+                        create_issue_main
+                      fi
+                    }
+
+                    create_issue_main() {
+                      JSON_BODY=$(jq -rcn '
+                        {
+                          "fields": {
+                        "summary": env.ISSUE_SUMMARY,
+                        "issuetype": {
+                          "name": env.ISSUE_TYPE
+                        },
+                        "labels": [
+                          env.ISSUE_LABEL
+                        ],
+                        "priority": {
+                          "name": env.PRIORITY
+                        },
+                        "project": {
+                          "key": env.PROJECT_KEY
+                        },
+                        "description": {
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": env.ISSUE_CONTENT,
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "doc",
+                          "version": 1
+                        }
+                      }
+                      }
+                    ')
+
+                      export JSON_BODY
+
+                      curl --request POST \
+                        --url 'https://ovotech.atlassian.net/rest/api/3/issue' \
+                        --user "cppe.slackbot@ovo.com:$API_TOKEN" \
+                        --header 'Accept: application/json' \
+                        --header 'Content-Type: application/json' \
+                        --data "$JSON_BODY"
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                      create_issue
+                    fi
+                environment:
+                    PARAM_API_TOKEN: <<parameters.api_token>>
+                    PARAM_ISSUE_CONTENT: <<parameters.issue_content>>
+                    PARAM_ISSUE_LABEL: <<parameters.label>>
+                    PARAM_ISSUE_SUMMARY: <<parameters.issue_summary>>
+                    PARAM_ISSUE_TYPE: <<parameters.issue_type>>
+                    PARAM_PRIORITY: <<parameters.priority>>
+                    PARAM_PROJECT_KEY: <<parameters.project_key>>
+                name: Create new issue on Jira board
+examples:
+    create_issue:
+        description: |
+            Create a JIRA issue on the selected project board
+        usage:
+            version: "2.1"
+            orbs:
+                jira: ovotech/jira@1.0.0
+            workflows:
+                jira-workflow:
+                    jobs:
+                        - jira/create_issue:
+                            api_token: JIRA_API_TOKEN
+                            issue_content: Snyk vulnerability - Critical
+                            issue_summary: Snyk vulnerability - Critical
+                            issue_type: Engagement
+                            label: snyk-vulnerability-high-smartbookings
+                            priority: Blocker
+                            project_key: CPPE
+
