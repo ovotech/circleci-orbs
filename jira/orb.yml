@@ -31,6 +31,7 @@ commands:
                 description: String variable containing the project key of the board where the issue is being created.
                 type: string
         steps:
+            - checkout
             - run:
                 command: |
                     #!/bin/bash
