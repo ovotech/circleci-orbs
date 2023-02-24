@@ -175,6 +175,43 @@ commands:
                     PARAM_PRIORITY: <<parameters.priority>>
                     PARAM_PROJECT_KEY: <<parameters.project_key>>
                 name: Create new issue on Jira board
+jobs:
+    create_issue:
+        description: |
+            Create a JIRA issue on the selected project board
+        machine:
+            image: ubuntu-2004:202104-01
+        parameters:
+            api_token:
+                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                type: env_var_name
+            issue_content:
+                description: String variable containing the content of the issue to be created.
+                type: string
+            issue_summary:
+                description: String variable containing the summary of the issue to be created.
+                type: string
+            issue_type:
+                description: String variable containing the type of the issue to be created.
+                type: string
+            label:
+                description: String variable containing the label of the issue to be created.
+                type: string
+            priority:
+                description: String variable containing the priority of the issue to be created.
+                type: string
+            project_key:
+                description: String variable containing the project key of the board where the issue is being created.
+                type: string
+        steps:
+            - create_issue:
+                api_token: <<parameters.api_token>>
+                issue_content: <<parameters.issue_content>>
+                issue_summary: <<parameters.issue_summary>>
+                issue_type: <<parameters.issue_type>>
+                label: <<parameters.label>>
+                priority: <<parameters.priority>>
+                project_key: <<parameters.project_key>>
 examples:
     create_issue:
         description: |
