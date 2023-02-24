@@ -30,6 +30,9 @@ commands:
             project_key:
                 description: String variable containing the project key of the board where the issue is being created.
                 type: string
+            user_email_id:
+                description: Environment variable containing the user email id of the account using which the api_token is configured.
+                type: env_var_name
         steps:
             - checkout
             - run:
@@ -49,6 +52,13 @@ commands:
                         exit 1
                       else
                         export PROJECT_KEY=$PARAM_PROJECT_KEY
+                      fi
+
+                      if [ -z "$PARAM_USER_EMAIL_ID" ]; then
+                        echo "Mandatory parameters have not been set! You must specify a JIRA user email id in order to allow JIRA to create an issue with appropriate details on this board. e.g.cppe.slackbot@ovo.com"
+                        exit 1
+                      else
+                        export USER_EMAIL_ID="${!PARAM_USER_EMAIL_ID}"
                       fi
 
                       if [ -z "$PARAM_ISSUE_LABEL" ]; then
@@ -96,7 +106,7 @@ commands:
                         }
                     ')
 
-                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/search" --user "cppe.slackbot@ovo.com:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY" --output /dev/null)
+                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/search" --user "$USER_EMAIL_ID:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY" --output /dev/null)
 
                       # Checking if returned status code is not 200
                       if [ "${JIRA_AUTH_HTTP_STATUS}" != "200" ]; then
@@ -105,7 +115,7 @@ commands:
                         exit 1
                       fi
 
-                      EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "cppe.slackbot@ovo.com:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
+                      EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "$USER_EMAIL_ID:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
                       EXISTING_ISSUE_COUNT=$(echo "${EXISTING_ISSUE}" | jq '.issues | length')
 
                       if [ "${EXISTING_ISSUE_COUNT}" != 0 ]; then
@@ -156,7 +166,7 @@ commands:
 
                       curl --request POST \
                         --url 'https://ovotech.atlassian.net/rest/api/3/issue' \
-                        --user "cppe.slackbot@ovo.com:$API_TOKEN" \
+                        --user "$USER_EMAIL_ID:$API_TOKEN" \
                         --header 'Accept: application/json' \
                         --header 'Content-Type: application/json' \
                         --data "$JSON_BODY"
@@ -175,6 +185,7 @@ commands:
                     PARAM_ISSUE_TYPE: <<parameters.issue_type>>
                     PARAM_PRIORITY: <<parameters.priority>>
                     PARAM_PROJECT_KEY: <<parameters.project_key>>
+                    PARAM_USER_EMAIL_ID: <<parameters.user_email_id>>
                 name: Create new issue on Jira board
 jobs:
     create_issue:
@@ -204,6 +215,9 @@ jobs:
             project_key:
                 description: String variable containing the project key of the board where the issue is being created.
                 type: string
+            user_email_id:
+                description: Environment variable containing the user email id of the account using which the api_token is configured.
+                type: env_var_name
         steps:
             - create_issue:
                 api_token: <<parameters.api_token>>
@@ -213,6 +227,7 @@ jobs:
                 label: <<parameters.label>>
                 priority: <<parameters.priority>>
                 project_key: <<parameters.project_key>>
+                user_email_id: <<parameters.user_email_id>>
 examples:
     create_issue:
         description: |
@@ -232,4 +247,5 @@ examples:
                             label: snyk-vulnerability-high-smartbookings
                             priority: Blocker
                             project_key: CPPE
+                            user_email_id: JIRA_USER_EMAIL_ID
 

@@ -14,6 +14,7 @@ In order to create the issue on the JIRA board, you need to add an environment v
 This is the only command that exists within this orb at the moment and makes use of a wrapper shell script to communicate with the JIRA API to create an issue based on what you've passed into the command parameters.
 
 **Parameters**
+- `user_email_id` - Environment variable containing the user email id of the account using which the api_token is configured.
 - `api_token` - Environment variable containing JIRA API token. If not set, the orb will not be able to communicate with JIRA.
 - `project_key` - This is the key for the board on which you want to create the issue e.g. "CPPE"
 - `label` - This is the label for the issue being created. Make sure that this label for each ticket. If the label with the same name already exists the orb will not create a new issue. e.g. "snyk-vulnerability-high-XSS-smartbookings"
