@@ -21,15 +21,16 @@ commands:
             issue_type:
                 description: The type of the issue to be created.
                 type: string
-            label:
-                description: The label of the issue to be created.
-                type: string
             priority:
                 default: ""
                 description: The priority of the issue to be created.
                 type: string
             project_key:
                 description: The project key of the board where the issue is being created.
+                type: string
+            unique_id:
+                default: ""
+                description: The label of the issue to be created. This needs to be unique for each issue to avoid duplication.
                 type: string
             user_email_id:
                 description: Environment variable containing the user email id of the account using which the api_token is configured.
@@ -42,7 +43,7 @@ commands:
                       echo "export PARAM_USER_EMAIL_ID=$(echo << parameters.user_email_id >>)"
                       echo "export PARAM_API_TOKEN=$(echo << parameters.api_token >>)"
                       echo "export PARAM_PROJECT_KEY=$(echo << parameters.project_key >>)"
-                      echo "export PARAM_ISSUE_LABEL=$(echo << parameters.label >>)"
+                      echo "export PARAM_ISSUE_LABEL=$(echo << parameters.unique_id >>)"
                       echo "export PARAM_ISSUE_SUMMARY=$(echo << parameters.issue_summary >>)"
                       echo "export PARAM_ISSUE_CONTENT=$(echo << parameters.issue_content >>)"
                       echo "export PARAM_ISSUE_TYPE=$(echo << parameters.issue_type >>)"
@@ -76,8 +77,7 @@ commands:
                       fi
 
                       if [ -z "$PARAM_ISSUE_LABEL" ]; then
-                        echo "Mandatory parameter ISSUE_LABEL has not been set! e.g.PARAM_ISSUE_LABEL=\"snyk-vulnerability-high-smartbookings\"."
-                        exit 1
+                        export ISSUE_LABEL=""
                       else
                         export ISSUE_LABEL=$PARAM_ISSUE_LABEL
                       fi
@@ -243,15 +243,16 @@ jobs:
             issue_type:
                 description: The type of the issue to be created.
                 type: string
-            label:
-                description: The label of the issue to be created.
-                type: string
             priority:
                 default: ""
                 description: The priority of the issue to be created. If not set it will take the default as Medium.
                 type: string
             project_key:
                 description: The project key of the board where the issue is being created.
+                type: string
+            unique_id:
+                default: ""
+                description: The label of the issue to be created. This needs to be unique for each issue to avoid duplication.
                 type: string
             user_email_id:
                 description: Environment variable containing the user email id of the account using which the api_token is configured.
@@ -262,8 +263,8 @@ jobs:
                 issue_content: <<parameters.issue_content>>
                 issue_summary: <<parameters.issue_summary>>
                 issue_type: <<parameters.issue_type>>
-                label: <<parameters.label>>
                 project_key: <<parameters.project_key>>
+                unique_id: <<parameters.unique_id>>
                 user_email_id: <<parameters.user_email_id>>
 examples:
     create_issue:
@@ -281,7 +282,6 @@ examples:
                             issue_content: Snyk vulnerability - Critical
                             issue_summary: Snyk vulnerability - Critical
                             issue_type: Engagement
-                            label: snyk-vulnerability-high-smartbookings
                             project_key: CPPE
                             user_email_id: JIRA_USER_EMAIL_ID
 
