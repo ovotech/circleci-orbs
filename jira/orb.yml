@@ -10,8 +10,9 @@ commands:
             Create new issue on Jira board
         parameters:
             api_token:
-                description: Environment variable containing JIRA API token.
-                type: env_var_name
+                default: $JIRA_API_TOKEN
+                description: The JIRA API token.
+                type: string
             issue_content:
                 description: The content of the issue to be created.
                 type: string
@@ -33,8 +34,9 @@ commands:
                 description: The label of the issue to be created. This needs to be unique for each issue to avoid duplication.
                 type: string
             user_email_id:
-                description: Environment variable containing the user email id of the account using which the api_token is configured.
-                type: env_var_name
+                default: $JIRA_USER_EMAIL_ID
+                description: The user email id of the account using which the api_token is configured.
+                type: string
         steps:
             - checkout
             - run:
@@ -232,8 +234,9 @@ jobs:
             image: ubuntu-2004:202104-01
         parameters:
             api_token:
-                description: Environment variable containing JIRA API token.
-                type: env_var_name
+                default: $JIRA_API_TOKEN
+                description: The JIRA API token.
+                type: string
             issue_content:
                 description: The content of the issue to be created.
                 type: string
@@ -255,8 +258,9 @@ jobs:
                 description: The label of the issue to be created. This needs to be unique for each issue to avoid duplication.
                 type: string
             user_email_id:
-                description: Environment variable containing the user email id of the account using which the api_token is configured.
-                type: env_var_name
+                default: $JIRA_USER_EMAIL_ID
+                description: The user email id of the account using which the api_token is configured.
+                type: string
         steps:
             - create_issue:
                 api_token: <<parameters.api_token>>
@@ -278,10 +282,10 @@ examples:
                 jira-workflow:
                     jobs:
                         - jira/create_issue:
-                            api_token: JIRA_API_TOKEN
+                            api_token: $JIRA_API_TOKEN
                             issue_content: Snyk vulnerability - Critical
                             issue_summary: Snyk vulnerability - Critical
                             issue_type: Engagement
                             project_key: CPPE
-                            user_email_id: JIRA_USER_EMAIL_ID
+                            user_email_id: $JIRA_USER_EMAIL_ID
 
