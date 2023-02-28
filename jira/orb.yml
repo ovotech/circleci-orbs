@@ -61,7 +61,7 @@ commands:
                         echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
                         exit 1
                       else
-                        export API_TOKEN="$PARAM_API_TOKEN"
+                        export API_TOKEN=$PARAM_API_TOKEN
                       fi
 
                       if [ -z "$PARAM_PROJECT_KEY" ]; then
@@ -75,7 +75,7 @@ commands:
                         echo "Mandatory parameters have not been set! You must specify a JIRA user email id in order to allow JIRA to create an issue with appropriate details on this board. e.g.cppe.slackbot@ovo.com"
                         exit 1
                       else
-                        export USER_EMAIL_ID="$PARAM_USER_EMAIL_ID"
+                        export USER_EMAIL_ID=$PARAM_USER_EMAIL_ID
                       fi
 
                       if [ -z "$PARAM_ISSUE_LABEL" ]; then
