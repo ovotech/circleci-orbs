@@ -73,7 +73,7 @@ commands:
                       fi
 
                       if [ -z "$PARAM_ISSUE_LABEL" ]; then
-                        export ISSUE_LABEL=""
+                        export PARAM_ISSUE_LABEL=""
                       fi
 
                       if [ -z "$PARAM_ISSUE_SUMMARY" ]; then
@@ -87,7 +87,7 @@ commands:
                       fi
 
                       if [ -z "$PARAM_PRIORITY" ]; then
-                        export PRIORITY=""
+                        export PARAM_PRIORITY=""
                       fi
 
                       if [ -z "$PARAM_ISSUE_TYPE" ]; then
@@ -95,22 +95,7 @@ commands:
                         exit 1
                       fi
 
-                      printf "Project Key:   %s\n" "${PARAM_USER_EMAIL_ID}"
-                      printf "Project Key2:   %s\n" "$PARAM_USER_EMAIL_ID"
-                      printf "Project Key3:   %s\n" "${PARAM_API_TOKEN}"
-                      printf "Project Key4:   %s\n" "$PARAM_API_TOKEN"
-
-                      JSON_BODY=$(jq -rcn --arg project_key "$PARAM_PROJECT_KEY" --arg issuelabels "$PARAM_ISSUE_LABEL" '
-                        {
-                          "fields": [
-                            "summary"
-                          ],
-                          "fieldsByKeys": false,
-                          "jql": "project = \($project_key) AND labels = \($issuelabels)"
-                        }
-                    ')
-
-                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/search" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY" --output /dev/null)
+                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s 'https://ovotech.atlassian.net/rest/api/3/project/CPPE' --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --output /dev/null)
 
                       # Checking if returned status code is not 200
                       if [ "${JIRA_AUTH_HTTP_STATUS}" != "200" ]; then
@@ -119,14 +104,29 @@ commands:
                         exit 1
                       fi
 
-                      EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
-                      EXISTING_ISSUE_COUNT=$(echo "${EXISTING_ISSUE}" | jq '.issues | length')
-
-                      if [ "${EXISTING_ISSUE_COUNT}" != 0 ]; then
-                        echo "An issue with the same label already exist on this board !"
-                      else
+                      if [ "$PARAM_ISSUE_LABEL" = "" ]; then
                         echo "Creating a new issue on the board!"
                         create_issue_main
+                      else
+                        EXISTING_ISSUE_JSON_BODY=$(jq -rcn --arg project_key "$PARAM_PROJECT_KEY" --arg issuelabels "$PARAM_ISSUE_LABEL" '
+                        {
+                          "fields": [
+                            "summary"
+                          ],
+                          "fieldsByKeys": false,
+                          "jql": "project = \($project_key) AND labels = \($issuelabels)"
+                        }
+                    ')
+                        # Checking if there is an existing ticket
+                        EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$EXISTING_ISSUE_JSON_BODY")
+                        EXISTING_ISSUE_COUNT=$(echo "${EXISTING_ISSUE}" | jq '.issues | length')
+
+                        if [ "${EXISTING_ISSUE_COUNT}" != 0 ]; then
+                          echo "An issue with the same details already exist on this board !"
+                        else
+                          echo "Creating a new issue on the board!"
+                          create_issue_main
+                        fi
                       fi
                     }
 
