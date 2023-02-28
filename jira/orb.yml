@@ -1,6 +1,6 @@
 version: 2.1
 description: |
-    An orb that will create a new issue on JIRA board with the selected priority and type
+    An orb that can be used to interact with JIRA in a CI pipeline.
 display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/jira/README.md
     source_url: https://www.github.com/ovotech/team-cppe
@@ -10,25 +10,26 @@ commands:
             Create a JIRA issue on the selected project board
         parameters:
             api_token:
-                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                description: Environment variable containing JIRA API token.
                 type: env_var_name
             issue_content:
-                description: String variable containing the content of the issue to be created.
+                description: The content of the issue to be created.
                 type: string
             issue_summary:
-                description: String variable containing the summary of the issue to be created.
+                description: The summary of the issue to be created.
                 type: string
             issue_type:
-                description: String variable containing the type of the issue to be created.
+                description: The type of the issue to be created.
                 type: string
             label:
-                description: String variable containing the label of the issue to be created.
+                description: The label of the issue to be created.
                 type: string
             priority:
-                description: String variable containing the priority of the issue to be created.
+                default: Medium
+                description: The priority of the issue to be created. If not set it will take the default as Medium.
                 type: string
             project_key:
-                description: String variable containing the project key of the board where the issue is being created.
+                description: The project key of the board where the issue is being created.
                 type: string
             user_email_id:
                 description: Environment variable containing the user email id of the account using which the api_token is configured.
@@ -83,8 +84,7 @@ commands:
                       fi
 
                       if [ -z "$PARAM_PRIORITY" ]; then
-                        echo "Mandatory parameter PRIORITY has not been set! e.g.PARAM_PRIORITY=\"Blocker\""
-                        exit 1
+                        export PRIORITY="Medium"
                       else
                         export PRIORITY=$PARAM_PRIORITY
                       fi
@@ -183,7 +183,6 @@ commands:
                     PARAM_ISSUE_LABEL: <<parameters.label>>
                     PARAM_ISSUE_SUMMARY: <<parameters.issue_summary>>
                     PARAM_ISSUE_TYPE: <<parameters.issue_type>>
-                    PARAM_PRIORITY: <<parameters.priority>>
                     PARAM_PROJECT_KEY: <<parameters.project_key>>
                     PARAM_USER_EMAIL_ID: <<parameters.user_email_id>>
                 name: Create new issue on Jira board
@@ -195,25 +194,26 @@ jobs:
             image: ubuntu-2004:202104-01
         parameters:
             api_token:
-                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                description: Environment variable containing JIRA API token.
                 type: env_var_name
             issue_content:
-                description: String variable containing the content of the issue to be created.
+                description: The content of the issue to be created.
                 type: string
             issue_summary:
-                description: String variable containing the summary of the issue to be created.
+                description: The summary of the issue to be created.
                 type: string
             issue_type:
-                description: String variable containing the type of the issue to be created.
+                description: The type of the issue to be created.
                 type: string
             label:
-                description: String variable containing the label of the issue to be created.
+                description: The label of the issue to be created.
                 type: string
             priority:
-                description: String variable containing the priority of the issue to be created.
+                default: Medium
+                description: The priority of the issue to be created. If not set it will take the default as Medium.
                 type: string
             project_key:
-                description: String variable containing the project key of the board where the issue is being created.
+                description: The project key of the board where the issue is being created.
                 type: string
             user_email_id:
                 description: Environment variable containing the user email id of the account using which the api_token is configured.
@@ -225,7 +225,6 @@ jobs:
                 issue_summary: <<parameters.issue_summary>>
                 issue_type: <<parameters.issue_type>>
                 label: <<parameters.label>>
-                priority: <<parameters.priority>>
                 project_key: <<parameters.project_key>>
                 user_email_id: <<parameters.user_email_id>>
 examples:
@@ -245,7 +244,6 @@ examples:
                             issue_summary: Snyk vulnerability - Critical
                             issue_type: Engagement
                             label: snyk-vulnerability-high-smartbookings
-                            priority: Blocker
                             project_key: CPPE
                             user_email_id: JIRA_USER_EMAIL_ID
 
