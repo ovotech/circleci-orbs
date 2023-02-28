@@ -58,7 +58,7 @@ commands:
                     create_issue() {
                       if [ -z "$PARAM_API_TOKEN" ]; then
                         echo "Mandatory parameters have not been set! You must specify a JIRA API token in order to allow JIRA to create an issue with appropriate details on this board."
-                        echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+                        echo "You must create a JIRA API token (ideally for a service user) in JIRA using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
                         exit 1
                       fi
 
@@ -272,9 +272,10 @@ examples:
                     jobs:
                         - jira/create_issue:
                             api_token: $JIRA_API_TOKEN
-                            issue_content: Snyk vulnerability - Critical
-                            issue_summary: Snyk vulnerability - Critical
+                            issue_content: CPPE-JIRA-orb-integration-test
+                            issue_summary: CPPE_JIRA_orb_integration_test
                             issue_type: Engagement
                             project_key: CPPE
+                            unique_id: cppe-integration-tests
                             user_email_id: $JIRA_USER_EMAIL_ID
 
