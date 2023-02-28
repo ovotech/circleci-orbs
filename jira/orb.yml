@@ -95,6 +95,11 @@ commands:
                         exit 1
                       fi
 
+                      printf "Project Key:   %s\n" "${PARAM_PROJECT_KEY}"
+                      printf "Project Key2:   %s\n" "$PARAM_PROJECT_KEY"
+                      echo "$PARAM_PROJECT_KEY"
+                      echo "${PARAM_PROJECT_KEY}"
+
                       JSON_BODY=$(jq -rcn --arg project_key "$PARAM_PROJECT_KEY" --arg issuelabels "$PARAM_ISSUE_LABEL" '
                         {
                           "fields": [
