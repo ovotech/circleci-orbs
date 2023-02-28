@@ -25,8 +25,8 @@ commands:
                 description: The label of the issue to be created.
                 type: string
             priority:
-                default: Medium
-                description: The priority of the issue to be created. If not set it will take the default as Medium.
+                default: ""
+                description: The priority of the issue to be created.
                 type: string
             project_key:
                 description: The project key of the board where the issue is being created.
@@ -84,7 +84,7 @@ commands:
                       fi
 
                       if [ -z "$PARAM_PRIORITY" ]; then
-                        export PRIORITY="Medium"
+                        export PRIORITY=""
                       else
                         export PRIORITY=$PARAM_PRIORITY
                       fi
@@ -127,7 +127,41 @@ commands:
                     }
 
                     create_issue_main() {
-                      JSON_BODY=$(jq -rcn '
+                      if [ "$PRIORITY" = "" ]; then
+                        JSON_BODY=$(jq -rcn '
+                        {
+                          "fields": {
+                        "summary": env.ISSUE_SUMMARY,
+                        "issuetype": {
+                          "name": env.ISSUE_TYPE
+                        },
+                        "labels": [
+                          env.ISSUE_LABEL
+                        ],
+                        "project": {
+                          "key": env.PROJECT_KEY
+                        },
+                        "description": {
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": env.ISSUE_CONTENT,
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "doc",
+                          "version": 1
+                        }
+                      }
+                      }
+                    ')
+                        export JSON_BODY
+                      else
+                        JSON_BODY=$(jq -rcn '
                         {
                           "fields": {
                         "summary": env.ISSUE_SUMMARY,
@@ -161,9 +195,8 @@ commands:
                       }
                       }
                     ')
-
-                      export JSON_BODY
-
+                        export JSON_BODY
+                      fi
                       curl --request POST \
                         --url 'https://ovotech.atlassian.net/rest/api/3/issue' \
                         --user "$USER_EMAIL_ID:$API_TOKEN" \
@@ -209,7 +242,7 @@ jobs:
                 description: The label of the issue to be created.
                 type: string
             priority:
-                default: Medium
+                default: ""
                 description: The priority of the issue to be created. If not set it will take the default as Medium.
                 type: string
             project_key:

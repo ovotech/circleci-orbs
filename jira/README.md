@@ -16,7 +16,7 @@ This is the only command that exists within this orb at the moment and makes use
 **Parameters**
 - `user_email_id` - Environment variable containing the user email id of the account using which the api_token is configured.
 - `api_token` - Environment variable containing JIRA API token. If not set, the orb will not be able to communicate with JIRA.
-- `project_key` - This is the key for the board on which you want to create the issue e.g. "CPPE"
+- `project_key` - The project key of the board where the issue is being created. e.g. "CPPE"
 - `label` - This is the label for the issue being created. Make sure that this label for each ticket. If the label with the same name already exists the orb will not create a new issue. e.g. "snyk-vulnerability-high-XSS-smartbookings"
 - `issue_summary` - The summary of the issue being created.
 - `issue_content` - The content of the issue being created.
