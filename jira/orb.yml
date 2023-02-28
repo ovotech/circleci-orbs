@@ -56,26 +56,11 @@ commands:
                 command: |
                     #!/bin/bash
                     create_issue() {
-                      if [ -z "$PARAM_API_TOKEN" ]; then
-                        echo "Mandatory parameters have not been set! You must specify a JIRA API token in order to allow JIRA to create an issue with appropriate details on this board."
-                        echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
-                        exit 1
-                      else
-                        export API_TOKEN="${!PARAM_API_TOKEN}"
-                      fi
-
                       if [ -z "$PARAM_PROJECT_KEY" ]; then
                         echo "Mandatory parameter PROJECT_KEY has not been set! e.g.PARAM_PROJECT_KEY=\"CPPE\"."
                         exit 1
                       else
                         export PROJECT_KEY=$PARAM_PROJECT_KEY
-                      fi
-
-                      if [ -z "$PARAM_USER_EMAIL_ID" ]; then
-                        echo "Mandatory parameters have not been set! You must specify a JIRA user email id in order to allow JIRA to create an issue with appropriate details on this board. e.g.cppe.slackbot@ovo.com"
-                        exit 1
-                      else
-                        export USER_EMAIL_ID="${!PARAM_USER_EMAIL_ID}"
                       fi
 
                       if [ -z "$PARAM_ISSUE_LABEL" ]; then
@@ -121,7 +106,7 @@ commands:
                         }
                     ')
 
-                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/search" --user "$USER_EMAIL_ID:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY" --output /dev/null)
+                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/search" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY" --output /dev/null)
 
                       # Checking if returned status code is not 200
                       if [ "${JIRA_AUTH_HTTP_STATUS}" != "200" ]; then
@@ -130,7 +115,7 @@ commands:
                         exit 1
                       fi
 
-                      EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "$USER_EMAIL_ID:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
+                      EXISTING_ISSUE=$(curl "https://ovotech.atlassian.net/rest/api/3/search" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
                       EXISTING_ISSUE_COUNT=$(echo "${EXISTING_ISSUE}" | jq '.issues | length')
 
                       if [ "${EXISTING_ISSUE_COUNT}" != 0 ]; then
@@ -214,7 +199,7 @@ commands:
                       fi
                       curl --request POST \
                         --url 'https://ovotech.atlassian.net/rest/api/3/issue' \
-                        --user "$USER_EMAIL_ID:$API_TOKEN" \
+                        --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" \
                         --header 'Accept: application/json' \
                         --header 'Content-Type: application/json' \
                         --data "$JSON_BODY"
