@@ -215,6 +215,88 @@ commands:
                       create_issue
                     fi
                 name: Create new issue on Jira board
+    query_issue:
+        description: |
+            Query JIRA board to check if there are any issues with a particular priority.
+        parameters:
+            api_token:
+                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                type: env_var_name
+            priority:
+                description: String variable containing the priority of the issue to be created.
+                type: string
+            project_key:
+                description: String variable containing the project key of the board where the issue is being created.
+                type: string
+            user_email_id:
+                description: Environment variable containing the user email id of the account using which the api_token is configured.
+                type: env_var_name
+        steps:
+            - checkout
+            - run:
+                command: |
+                    #!/bin/bash
+                    query_issue() {
+                        if [ -z "$PARAM_API_TOKEN" ]; then
+                            echo "Mandatory parameters have not been set! You must specify a JIRA API token in order to allow JIRA to create an issue with appropriate details on this board."
+                            echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+                            exit 1
+                        else
+                            export API_TOKEN="${!PARAM_API_TOKEN}"
+                        fi
+
+                        if [ -z "$PARAM_PROJECT_KEY" ]; then
+                            echo "Mandatory parameter PROJECT_KEY has not been set! e.g.PARAM_PROJECT_KEY=\"CPPE\"."
+                            exit 1
+                        else
+                            export PROJECT_KEY=$PARAM_PROJECT_KEY
+                        fi
+
+                        if [ -z "$PARAM_USER_EMAIL_ID" ]; then
+                            echo "Mandatory parameters have not been set! You must specify a JIRA user email id in order to allow JIRA to create an issue with appropriate details on this board. e.g.cppe.slackbot@ovo.com"
+                            exit 1
+                        else
+                            export USER_EMAIL_ID="${!PARAM_USER_EMAIL_ID}"
+                        fi
+
+                        if [ -z "$PARAM_PRIORITY" ]; then
+                            echo "Mandatory parameter PRIORITY has not been set! e.g.PARAM_PRIORITY=\"Blocker\""
+                            exit 1
+                        else
+                            export PRIORITY=$PARAM_PRIORITY
+                        fi
+
+                        JSON_BODY=$(jq -rcn --arg project_key "$PROJECT_KEY" --arg issuePriority "$PRIORITY" '
+                        {
+                          "fields": [
+                            "summary"
+                          ],
+                          "fieldsByKeys": false,
+                          "jql": "project = \($project_key) AND priority = \($issuePriority)"
+                        }
+                    ')
+
+                        EXISTING__ISSUES=$(curl --request POST --url 'https://ovotech.atlassian.net/rest/api/3/search' --user "$USER_EMAIL_ID:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
+                        EXISTING_ISSUES_COUNT=$(echo "${EXISTING__ISSUES}" | jq '.issues | length')
+                        if [ "${EXISTING_ISSUES_COUNT}" != 0 ]; then
+                            echo "An issue with priority $PRIORITY exist on this board!"
+                            exit 1
+                        else
+                            echo "No issue with priority $PRIORITY on the board at the moment."
+                        fi
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        query_issue
+                    fi
+                environment:
+                    PARAM_API_TOKEN: <<parameters.api_token>>
+                    PARAM_PRIORITY: <<parameters.priority>>
+                    PARAM_PROJECT_KEY: <<parameters.project_key>>
+                    PARAM_USER_EMAIL_ID: <<parameters.user_email_id>>
+                name: Query JIRA board to check if there are any issues with a particular priority.
 jobs:
     create_issue:
         description: |
@@ -259,6 +341,30 @@ jobs:
                 project_key: <<parameters.project_key>>
                 unique_id: <<parameters.unique_id>>
                 user_email_id: <<parameters.user_email_id>>
+    query_issue:
+        description: |
+            Query JIRA board to check if there are any issues with a particular priority.
+        machine:
+            image: ubuntu-2004:202104-01
+        parameters:
+            api_token:
+                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
+                type: env_var_name
+            priority:
+                description: String variable containing the priority of the issue to be created.
+                type: string
+            project_key:
+                description: String variable containing the project key of the board where the issue is being created.
+                type: string
+            user_email_id:
+                description: Environment variable containing the user email id of the account using which the api_token is configured.
+                type: env_var_name
+        steps:
+            - query_issue:
+                api_token: <<parameters.api_token>>
+                priority: <<parameters.priority>>
+                project_key: <<parameters.project_key>>
+                user_email_id: <<parameters.user_email_id>>
 examples:
     create_issue:
         description: |
@@ -278,4 +384,19 @@ examples:
                             project_key: CPPE
                             unique_id: cppe-integration-tests
                             user_email_id: $JIRA_USER_EMAIL_ID
+    query_issue:
+        description: |
+            Query JIRA board to check if there are any issues with a particular priority.
+        usage:
+            version: "2.1"
+            orbs:
+                jira: ovotech/jira@1
+            workflows:
+                jira-workflow:
+                    jobs:
+                        - jira/query_issue:
+                            api_token: JIRA_API_TOKEN
+                            priority: Blocker
+                            project_key: CPPE
+                            user_email_id: JIRA_USER_EMAIL_ID
 

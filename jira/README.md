@@ -49,3 +49,17 @@ usage:
             issue_summary: 'Snyk vulnerability - Critical'
             issue_content: 'Snyk vulnerability - Critical'
 ```
+
+usage:
+  version: 2.1
+  orbs:
+    jira: ovotech/jira@1
+  workflows:
+    jira-workflow:
+      jobs:
+        - jira/query_issue:
+            user_email_id: JIRA_USER_EMAIL_ID
+            api_token: JIRA_API_TOKEN
+            project_key: "CPPE"
+            priority: "Blocker"
+```
