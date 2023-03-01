@@ -25,3 +25,4 @@
 /terraform-registry/             @ovotech/consumer-products-production-engineering
 /kap-kmi-deploy/                 @ovotech/agent-platform-enablement
 /build-utilities                 @ovotech/ohs-domainleads
+/jira/                           @ovotech/consumer-products-production-engineering
