@@ -220,19 +220,30 @@ commands:
             Query JIRA board to check if there are any issues with a particular priority.
         parameters:
             api_token:
-                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
-                type: env_var_name
+                default: $JIRA_API_TOKEN
+                description: The JIRA API token.
+                type: string
             priority:
-                description: String variable containing the priority of the issue to be created.
+                description: The priority of the issue to be created.
                 type: string
             project_key:
-                description: String variable containing the project key of the board where the issue is being created.
+                description: The project key of the board where the issue is being created.
                 type: string
             user_email_id:
-                description: Environment variable containing the user email id of the account using which the api_token is configured.
-                type: env_var_name
+                default: $JIRA_USER_EMAIL_ID
+                description: The user email id of the account using which the api_token is configured.
+                type: string
         steps:
             - checkout
+            - run:
+                command: |
+                    {
+                      echo "export PARAM_USER_EMAIL_ID=$(echo << parameters.user_email_id >>)"
+                      echo "export PARAM_API_TOKEN=$(echo << parameters.api_token >>)"
+                      echo "export PARAM_PROJECT_KEY=$(echo << parameters.project_key >>)"
+                      echo "export PARAM_PRIORITY=$(echo << parameters.priority >>)"
+                    } >> $BASH_ENV
+                name: Setting variables
             - run:
                 command: |
                     #!/bin/bash
@@ -291,12 +302,7 @@ commands:
                     if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
                         query_issue
                     fi
-                environment:
-                    PARAM_API_TOKEN: <<parameters.api_token>>
-                    PARAM_PRIORITY: <<parameters.priority>>
-                    PARAM_PROJECT_KEY: <<parameters.project_key>>
-                    PARAM_USER_EMAIL_ID: <<parameters.user_email_id>>
-                name: Query JIRA board to check if there are any issues with a particular priority.
+                name: Query JIRA board
 jobs:
     create_issue:
         description: |
@@ -348,8 +354,9 @@ jobs:
             image: ubuntu-2004:202104-01
         parameters:
             api_token:
-                description: Environment variable containing CircleCI personal API token. If not set, will try and look for value of CIRCLECI_TOKEN environment variable
-                type: env_var_name
+                default: $JIRA_API_TOKEN
+                description: The JIRA API token.
+                type: string
             priority:
                 description: String variable containing the priority of the issue to be created.
                 type: string
@@ -357,8 +364,9 @@ jobs:
                 description: String variable containing the project key of the board where the issue is being created.
                 type: string
             user_email_id:
-                description: Environment variable containing the user email id of the account using which the api_token is configured.
-                type: env_var_name
+                default: $JIRA_USER_EMAIL_ID
+                description: The user email id of the account using which the api_token is configured.
+                type: string
         steps:
             - query_issue:
                 api_token: <<parameters.api_token>>
@@ -395,8 +403,8 @@ examples:
                 jira-workflow:
                     jobs:
                         - jira/query_issue:
-                            api_token: JIRA_API_TOKEN
+                            api_token: $JIRA_API_TOKEN
                             priority: Blocker
                             project_key: CPPE
-                            user_email_id: JIRA_USER_EMAIL_ID
+                            user_email_id: $JIRA_USER_EMAIL_ID
 
