@@ -95,7 +95,7 @@ commands:
                         exit 1
                       fi
 
-                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s 'https://ovotech.atlassian.net/rest/api/3/project/CPPE' --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --output /dev/null)
+                      JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/project/${PARAM_PROJECT_KEY}" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --output /dev/null)
 
                       # Checking if returned status code is not 200
                       if [ "${JIRA_AUTH_HTTP_STATUS}" != "200" ]; then
@@ -217,13 +217,14 @@ commands:
                 name: Create new issue on Jira board
     query_issue:
         description: |
-            Query JIRA board to check if there are any issues with a particular priority.
+            Query JIRA board to check if any issues based on the type of 'priority'.
         parameters:
             api_token:
                 default: $JIRA_API_TOKEN
                 description: The JIRA API token.
                 type: string
             priority:
+                default: ""
                 description: The priority of the issue to be created.
                 type: string
             project_key:
@@ -250,34 +251,35 @@ commands:
                     query_issue() {
                         if [ -z "$PARAM_API_TOKEN" ]; then
                             echo "Mandatory parameters have not been set! You must specify a JIRA API token in order to allow JIRA to create an issue with appropriate details on this board."
-                            echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+                            echo "You must create a JIRA API token (ideally for a service user) in JIRA using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
                             exit 1
-                        else
-                            export API_TOKEN="${!PARAM_API_TOKEN}"
                         fi
 
                         if [ -z "$PARAM_PROJECT_KEY" ]; then
                             echo "Mandatory parameter PROJECT_KEY has not been set! e.g.PARAM_PROJECT_KEY=\"CPPE\"."
                             exit 1
-                        else
-                            export PROJECT_KEY=$PARAM_PROJECT_KEY
                         fi
 
                         if [ -z "$PARAM_USER_EMAIL_ID" ]; then
                             echo "Mandatory parameters have not been set! You must specify a JIRA user email id in order to allow JIRA to create an issue with appropriate details on this board. e.g.cppe.slackbot@ovo.com"
                             exit 1
-                        else
-                            export USER_EMAIL_ID="${!PARAM_USER_EMAIL_ID}"
                         fi
 
                         if [ -z "$PARAM_PRIORITY" ]; then
-                            echo "Mandatory parameter PRIORITY has not been set! e.g.PARAM_PRIORITY=\"Blocker\""
+                            echo "Mandatory parameter PARAM_PRIORITY has not been set! e.g.PARAM_PRIORITY=\"Blocker\"."
                             exit 1
-                        else
-                            export PRIORITY=$PARAM_PRIORITY
                         fi
 
-                        JSON_BODY=$(jq -rcn --arg project_key "$PROJECT_KEY" --arg issuePriority "$PRIORITY" '
+                        JIRA_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://ovotech.atlassian.net/rest/api/3/project/${PARAM_PROJECT_KEY}" --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --output /dev/null)
+
+                        # Checking if returned status code is not 200
+                        if [ "${JIRA_AUTH_HTTP_STATUS}" != "200" ]; then
+                            echo "${JIRA_AUTH_HTTP_STATUS}: Unable to authenticate because provided JIRA Token is invalid! Exiting..."
+                            echo "You must create a JIRA API token (ideally for a service user) in CircleCI using the following instructions: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+                            exit 1
+                        fi
+
+                        JSON_BODY=$(jq -rcn --arg project_key "$PARAM_PROJECT_KEY" --arg issuePriority "$PARAM_PRIORITY" '
                         {
                           "fields": [
                             "summary"
@@ -287,13 +289,13 @@ commands:
                         }
                     ')
 
-                        EXISTING__ISSUES=$(curl --request POST --url 'https://ovotech.atlassian.net/rest/api/3/search' --user "$USER_EMAIL_ID:$API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
-                        EXISTING_ISSUES_COUNT=$(echo "${EXISTING__ISSUES}" | jq '.issues | length')
+                        EXISTING_ISSUES=$(curl --request POST --url 'https://ovotech.atlassian.net/rest/api/3/search' --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
+                        EXISTING_ISSUES_COUNT=$(echo "${EXISTING_ISSUES}" | jq '.issues | length')
                         if [ "${EXISTING_ISSUES_COUNT}" != 0 ]; then
-                            echo "An issue with priority $PRIORITY exist on this board!"
+                            echo "An issue with priority '$PARAM_PRIORITY' already exists on this board!"
                             exit 1
                         else
-                            echo "No issue with priority $PRIORITY on the board at the moment."
+                            echo "No issue with priority '$PARAM_PRIORITY' on the board at the moment."
                         fi
                     }
 
@@ -349,7 +351,7 @@ jobs:
                 user_email_id: <<parameters.user_email_id>>
     query_issue:
         description: |
-            Query JIRA board to check if there are any issues with a particular priority.
+            Query JIRA board to check if any issues based on the type of 'priority'.
         machine:
             image: ubuntu-2004:202104-01
         parameters:
@@ -358,10 +360,10 @@ jobs:
                 description: The JIRA API token.
                 type: string
             priority:
-                description: String variable containing the priority of the issue to be created.
+                description: The priority of the issue to be created. If not set it will take the default as Medium.
                 type: string
             project_key:
-                description: String variable containing the project key of the board where the issue is being created.
+                description: The project key of the board where the issue is being created.
                 type: string
             user_email_id:
                 default: $JIRA_USER_EMAIL_ID
@@ -380,7 +382,7 @@ examples:
         usage:
             version: "2.1"
             orbs:
-                jira: ovotech/jira@1.0.0
+                jira: ovotech/jira@1
             workflows:
                 jira-workflow:
                     jobs:
@@ -394,7 +396,7 @@ examples:
                             user_email_id: $JIRA_USER_EMAIL_ID
     query_issue:
         description: |
-            Query JIRA board to check if there are any issues with a particular priority.
+            Query JIRA board to check if any issues based on the type of 'priority'.
         usage:
             version: "2.1"
             orbs:

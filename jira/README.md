@@ -1,7 +1,11 @@
 # JIRA orb
 
-This orb can be used to create an issue on the JIRA board based on a desired event triggered in the CircleCI pipeline job. For example previously when a CircleCI pipeline fails due to any critical or high vulnerability highlighted during the Snyk scan, the team had to manually create a ticket on the JIRA board to track the vulnerability.
-This orb aims to automate the issue creation based on the the different inputs provided to the orb.
+This orb can an be used to interact with JIRA in a CI pipeline. This orb aims to automate the issue creation and issue query based on the the different inputs provided to the orb. At the moment this orb supports two commands. 
+
+The 'create_issue' command can be used to create an issue on the JIRA board when a particular event is triggered in the CircleCI pipeline job. For example previously when a CircleCI pipeline fails due to any critical or high vulnerability highlighted during the Snyk scan, the team had to manually create a ticket on the JIRA board to track the vulnerability.
+
+The 'query_issue' command can communicate with the JIRA API to query an issue based on the type of 'priority' provided as input to the orb. If a team wants to cancel a deployment in CircleCI by querying if a particular type of priority of an issue exists on the baord e.g. "Blocer".
+
 
 ## Pre-requisites
 
@@ -11,8 +15,7 @@ In order to create the issue on the JIRA board, you need to add 2 environment va
 
 ## Commands
 ### create_issue
-
-This command makes use of a wrapper shell script to communicate with the JIRA API to create an issue based on the the different inputs provided to the orb.
+This command makes use of a wrapper shell script to communicate with the JIRA API to create an issue based on the different inputs provided to the orb.
 
 **Parameters**
 
@@ -50,6 +53,24 @@ usage:
             issue_content: 'Snyk vulnerability - Critical'
 ```
 
+### query_issue
+This command makes use of a wrapper shell script to communicate with the JIRA API to query an issue based on the type of 'priority' provided as input to the orb.
+
+**Parameters**
+
+- `user_email_id` - The user email id of the account using which the api_token is configured.
+- `api_token` - The JIRA API token.
+- `project_key` - The project key of the board where the issue is being created. e.g. "CPPE".
+- `priority` - The priority of the issue being created. e.g. "Blocker".
+
+## Examples
+
+### Create a new issue on the board
+
+```yaml
+description: >
+  Query JIRA board to check if any issues based on the type of 'priority'.
+
 usage:
   version: 2.1
   orbs:
@@ -58,8 +79,8 @@ usage:
     jira-workflow:
       jobs:
         - jira/query_issue:
-            user_email_id: JIRA_USER_EMAIL_ID
-            api_token: JIRA_API_TOKEN
-            project_key: "CPPE"
-            priority: "Blocker"
+            user_email_id: $JIRA_USER_EMAIL_ID
+            api_token: $JIRA_API_TOKEN
+            project_key: CPPE
+            priority: Blocker
 ```

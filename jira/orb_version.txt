@@ -1,1 +1,1 @@
-ovotech/jira@1.0.0
+ovotech/jira@2.0.0
