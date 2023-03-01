@@ -224,7 +224,6 @@ commands:
                 description: The JIRA API token.
                 type: string
             priority:
-                default: ""
                 description: The priority of the issue to be created.
                 type: string
             project_key:
