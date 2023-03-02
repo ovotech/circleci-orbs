@@ -6,6 +6,7 @@ orbs:
   slack: circleci/slack@4.9.3
   node: circleci/node@4.7.0
   snyk: snyk/snyk@1.1.2
+  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1
 
 executors:
   node-runner:
@@ -166,6 +167,8 @@ commands:
           keys:
             - v1-dependencies-"<<parameters.executor>>"-{{ "package.json" }}
             - v1-dependencies-
+      - aws-configure-credentials-oidc/aws-configure-credentials:
+          role-arn: $CIRCLE_IAM_ROLE_ARN
       - run:
           name: "Set NPM token"
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
@@ -249,6 +252,8 @@ jobs:
       - run:
           name: "Set NPM token"
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - aws-configure-credentials-oidc/aws-configure-credentials:
+          role-arn: $CIRCLE_IAM_ROLE_ARN
       - run:
           name: "Install Serverless CLI"
           command: sudo npm install -g serverless@3.11.0
@@ -288,6 +293,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-configure-credentials-oidc/aws-configure-credentials:
+          role-arn: $CIRCLE_IAM_ROLE_ARN
       - npm_ci:
           executor: node-runner
       - run:
@@ -308,6 +315,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - aws-configure-credentials-oidc/aws-configure-credentials:
+          role-arn: $CIRCLE_IAM_ROLE_ARN
       - npm_ci:
           executor: node-runner
       - run:
