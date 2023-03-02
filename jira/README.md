@@ -61,7 +61,7 @@ This command makes use of a wrapper shell script to communicate with the JIRA AP
 - `user_email_id` - The user email id of the account using which the api_token is configured.
 - `api_token` - The JIRA API token.
 - `project_key` - The project key of the board where the issue is being created. e.g. "CPPE".
-- `priority` - The priority of the issue being created. e.g. "Blocker".
+- `jql_query` - The jql query to run. e.g. "project = \"CPPE\" AND priority = \"Blocker\"".
 
 ## Examples
 
@@ -82,5 +82,5 @@ usage:
             user_email_id: $JIRA_USER_EMAIL_ID
             api_token: $JIRA_API_TOKEN
             project_key: CPPE
-            priority: Blocker
+            jql_query: 'project = \"CPPE\" AND priority = \"Blocker\"'
 ```
