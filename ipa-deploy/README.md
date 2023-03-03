@@ -2,6 +2,12 @@
 
 This orb has a collection of commands and jobs that IPA use to deploy their services.
 
+## AWS Authentication
+
+Since 3.0.0 the deploy orb uses OIDC to exchange a JWT signed by CircleCI for temporary credentials. This requires that the AWS accounts have Identity Provider set up that trusts CircleCI (see [this page](https://github.com/ovotech/circleci-orbs/tree/master/aws-configure-credentials-oidc) or [this page](https://ovotech.atlassian.net/wiki/spaces/OIA/pages/4195942927/CircleCI+-+Adding+OIDC) for details on how to do this.). This orb also requires you that store the arn of the role it will assume as `CIRCLE_IAM_ROLE_ARN` in your context.
+
+**Note:** If your context still has AWS credentials, then these will over-ride the temporary credentials. You should remove these when they are no longer required.
+
 ## Commands
 
 ### load_templates
@@ -74,6 +80,6 @@ Parameters:
 
 
 ## Changelog
-
+- **3.0.0** - Switched to use OIDC
 - **2.0.1** - Add npm ci step
 - **2.0.0** - Removed serverless-plugin-aws-alerts
