@@ -217,17 +217,17 @@ commands:
                 name: Create new issue on Jira board
     query_issue:
         description: |
-            Query JIRA board to check if any issues based on the type of 'priority'.
+            Query JIRA board for any existing issues matching a specified JQL query.
         parameters:
             api_token:
                 default: $JIRA_API_TOKEN
                 description: The JIRA API token.
                 type: string
-            priority:
-                description: The priority of the issue to be created.
+            jql_query:
+                description: The jql query to run.
                 type: string
             project_key:
-                description: The project key of the board where the issue is being created.
+                description: The project key of the board where the query is run.
                 type: string
             user_email_id:
                 default: $JIRA_USER_EMAIL_ID
@@ -241,7 +241,7 @@ commands:
                       echo "export PARAM_USER_EMAIL_ID=$(echo << parameters.user_email_id >>)"
                       echo "export PARAM_API_TOKEN=$(echo << parameters.api_token >>)"
                       echo "export PARAM_PROJECT_KEY=$(echo << parameters.project_key >>)"
-                      echo "export PARAM_PRIORITY=$(echo << parameters.priority >>)"
+                      echo "export PARAM_JQL_QUERY=$(echo << parameters.jql_query >>)"
                     } >> $BASH_ENV
                 name: Setting variables
             - run:
@@ -264,8 +264,8 @@ commands:
                             exit 1
                         fi
 
-                        if [ -z "$PARAM_PRIORITY" ]; then
-                            echo "Mandatory parameter PARAM_PRIORITY has not been set! e.g.PARAM_PRIORITY=\"Blocker\"."
+                        if [ -z "$PARAM_JQL_QUERY" ]; then
+                            echo "Mandatory parameter PARAM_JQL_QUERY has not been set! e.g.PARAM_JQL_QUERY=\"Blocker\"."
                             exit 1
                         fi
 
@@ -278,23 +278,23 @@ commands:
                             exit 1
                         fi
 
-                        JSON_BODY=$(jq -rcn --arg project_key "$PARAM_PROJECT_KEY" --arg issuePriority "$PARAM_PRIORITY" '
+                        JSON_BODY=$(jq -rcn --arg jql_query "$PARAM_JQL_QUERY" '
                         {
                           "fields": [
                             "summary"
                           ],
                           "fieldsByKeys": false,
-                          "jql": "project = \($project_key) AND priority = \($issuePriority)"
+                          "jql": "\($jql_query)"
                         }
                     ')
 
                         EXISTING_ISSUES=$(curl --request POST --url 'https://ovotech.atlassian.net/rest/api/3/search' --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
                         EXISTING_ISSUES_COUNT=$(echo "${EXISTING_ISSUES}" | jq '.issues | length')
                         if [ "${EXISTING_ISSUES_COUNT}" != 0 ]; then
-                            echo "An issue with priority '$PARAM_PRIORITY' already exists on this board!"
+                            echo "An existing issue was found for the query '$PARAM_JQL_QUERY'!"
                             exit 1
                         else
-                            echo "No issue with priority '$PARAM_PRIORITY' on the board at the moment."
+                            echo "No issue was found for the query '$PARAM_JQL_QUERY'."
                         fi
                     }
 
@@ -350,7 +350,7 @@ jobs:
                 user_email_id: <<parameters.user_email_id>>
     query_issue:
         description: |
-            Query JIRA board to check if any issues based on the type of 'priority'.
+            Query JIRA board for any existing issues matching a specified JQL query.
         machine:
             image: ubuntu-2004:202104-01
         parameters:
@@ -358,11 +358,11 @@ jobs:
                 default: $JIRA_API_TOKEN
                 description: The JIRA API token.
                 type: string
-            priority:
-                description: The priority of the issue to be created. If not set it will take the default as Medium.
+            jql_query:
+                description: The jql query to run.
                 type: string
             project_key:
-                description: The project key of the board where the issue is being created.
+                description: The project key of the board where the query is run.
                 type: string
             user_email_id:
                 default: $JIRA_USER_EMAIL_ID
@@ -371,7 +371,7 @@ jobs:
         steps:
             - query_issue:
                 api_token: <<parameters.api_token>>
-                priority: <<parameters.priority>>
+                jql_query: <<parameters.jql_query>>
                 project_key: <<parameters.project_key>>
                 user_email_id: <<parameters.user_email_id>>
 examples:
@@ -395,7 +395,7 @@ examples:
                             user_email_id: $JIRA_USER_EMAIL_ID
     query_issue:
         description: |
-            Query JIRA board to check if any issues based on the type of 'priority'.
+            Query JIRA board for any existing issues matching a specified JQL query.
         usage:
             version: "2.1"
             orbs:
@@ -405,7 +405,7 @@ examples:
                     jobs:
                         - jira/query_issue:
                             api_token: $JIRA_API_TOKEN
-                            priority: Blocker
+                            jql_query: project=\"CPPE\"\\ AND\\ priority=\"Blocker\"
                             project_key: CPPE
                             user_email_id: $JIRA_USER_EMAIL_ID
 
