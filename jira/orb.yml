@@ -217,7 +217,7 @@ commands:
                 name: Create new issue on Jira board
     query_issue:
         description: |
-            Query JIRA board to check if any issues based on the type of 'priority'.
+            Query JIRA board for any existing issues matching a specified JQL query.
         parameters:
             api_token:
                 default: $JIRA_API_TOKEN
@@ -350,7 +350,7 @@ jobs:
                 user_email_id: <<parameters.user_email_id>>
     query_issue:
         description: |
-            Query JIRA board to check if any issues based on the type of 'priority'.
+            Query JIRA board for any existing issues matching a specified JQL query.
         machine:
             image: ubuntu-2004:202104-01
         parameters:
@@ -395,7 +395,7 @@ examples:
                             user_email_id: $JIRA_USER_EMAIL_ID
     query_issue:
         description: |
-            Query JIRA board to check if any issues based on the type of 'priority'.
+            Query JIRA board for any existing issues matching a specified JQL query.
         usage:
             version: "2.1"
             orbs:
@@ -405,7 +405,7 @@ examples:
                     jobs:
                         - jira/query_issue:
                             api_token: $JIRA_API_TOKEN
-                            jql_query: project = \"CPPE\" AND priority = \"Blocker\"
+                            jql_query: project=\"CPPE\"\\ AND\\ priority=\"Blocker\"
                             project_key: CPPE
                             user_email_id: $JIRA_USER_EMAIL_ID
 
