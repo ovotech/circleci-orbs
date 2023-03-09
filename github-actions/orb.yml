@@ -1,0 +1,101 @@
+version: 2.1
+description: |
+    Trigger GitHub Actions workflows
+display:
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/jira/README.md
+    source_url: https://www.github.com/ovotech/team-cppe
+commands:
+    execute_workflow:
+        description: |
+            Execute GitHub Actions workflow
+        parameters:
+            git_branch:
+                description: The branch name to be used when executing the workflow.
+                type: string
+            github_action_token:
+                default: $GHA_API_TOKEN
+                description: The GitHub actions API token to be used for the API calls.
+                type: string
+            repo_name:
+                description: The name of the repository where the GitHub Action Workflow resides.
+                type: string
+            timeout:
+                default: 10
+                description: The time in minutes to wait for a workflow to complete.
+                type: integer
+            workflow_id:
+                description: The GitHub Actions workflow filename
+                type: string
+            workflow_parameters:
+                default: ""
+                description: Key value pairs of any extra parameters to be passed to the workflow.
+                type: string
+        steps:
+            - checkout
+            - run:
+                command: |
+                    {
+                      echo "export PARAM_GITHUB_ACTION_TOKEN=$(echo << parameters.github_action_token >>)"
+                      echo "export PARAM_REPO_NAME=$(echo << parameters.repo_name >>)"
+                      echo "export PARAM_WORKFLOW_ID=$(echo << parameters.workflow_id >>)"
+                      echo "export PARAM_GIT_BRANCH=$(echo << parameters.git_branch >>)"
+                      echo "export PARAM_WAIT_TIMEOUT=$(echo << parameters.timeout >>)"
+                      echo "export PARAM_GHA_INPUTS=$(echo << parameters.workflow_parameters >>)"
+                    } >> $BASH_ENV
+                name: Setting variables
+            - run:
+                command: "#!/bin/bash\nexecute_workflow() {\n\n  required_paramater_check\n\n  initial_run_ids=$(get_run_ids)\n\n  echo \"Run_Ids before we start workflow: ${initial_run_ids}\" | tr '\\n' ' ' \n  echo \"\"\n\n  trigger_workflow_http_status=$(trigger_workflow)\n  check_http_status \"${trigger_workflow_http_status}\"\n\n  new_run_ids=$(get_run_ids)\n\n  # Wait for GHA API to return latest run\n  max_retries=10\n  while [[ $initial_run_ids == \"$new_run_ids\" ]] && [[ max_retries -gt 0 ]]\n  do\n    sleep 2\n    max_retries=$((max_retries-1))\n    new_run_ids=$(get_run_ids)\n  done\n\n  if [[ $initial_run_ids == \"$new_run_ids\" ]] && [[ max_retries -le 0 ]]; then\n    echo \"Unable to obtain the run_id.\"\n    echo \"Exiting.\"\n    exit 1\n  fi\n\n  echo \"Run_Ids after we started the workflow: ${new_run_ids}\" | tr '\\n' ' ' \n  echo \"\"\n\n  for run_id in $new_run_ids\n  do\n    # Check if $run_id is not in $initial_run_ids\n    if [[ ! \" ${initial_run_ids[*]} \" =~  ${run_id} ]]; then\n        echo \"Run_id we triggered is: $run_id\"\n        wait_for_workflow_to_complete \"$run_id\"\n    fi\n  done\n\n}\n\nwait_for_workflow_to_complete() {\n  run_id=$1\n\n  timeout_time=$(date -v+\"$PARAM_WAIT_TIMEOUT\"M +%s)\n  workflow=$(get_workflow_status \"$run_id\")\n  \n  workflow_name=$(echo \"${workflow}\" | jq -r '.name')\n  workflow_status=$(echo \"${workflow}\" | jq -r '.conclusion')\n  workflow_conclusion=$(echo \"${workflow}\" | jq -r '.status')\n\n  echo \"Pipeline name: $workflow_name\"\n  echo \"Current status: ${workflow_status}\"\n  echo \"Current conclusion: ${workflow_conclusion}\"\n\n  while [[ \"${workflow_conclusion}\" == \"null\" || \"${workflow_conclusion}\" == \"queued\" ]] && [[ \"${workflow_status}\" != \"completed\" ]] && [[ $(date +%s) -lt timeout_time ]]\n  do\n    sleep 2\n    workflow=$(get_workflow_status \"$run_id\")\n    workflow_conclusion=$(echo \"${workflow}\" | jq -r '.conclusion')\n    workflow_status=$(echo \"${workflow}\" | jq -r '.status')\n\n    echo \"Current status: ${workflow_status}\"\n    echo \"Current conclusion: ${workflow_conclusion}\"\n  done\n\n if [[ $(date +%s) -gt timeout_time ]] && [[ \"${workflow_status}\" != \"completed\" ]]; then\n    echo \"Timed out waiting for workflow to complete.\"\n    echo \"Current status: ${workflow_status}\"\n    echo \"Current conclusion: ${workflow_conclusion}\"\n  fi\n\n}\n\nrequired_paramater_check() {\n  if [ -z \"$PARAM_GITHUB_ACTION_TOKEN\" ]; then\n    echo \"Missing GITHUB_ACTION_TOKEN.  You must specify a GITHUB Action Token in order to trigger a pipeline.\"\n    echo \"To create a token follow these instructions: https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token\"\n   exit 1\n  fi\n\n  if [ -z \"$PARAM_REPO_NAME\" ]; then\n    echo \"Missing REPO_NAME.  The name of the repository where the GitHub Action workflow is, for example team-cppe.\"\n    exit 1\n  fi\n\n  if [ -z \"$PARAM_WORKFLOW_ID\" ]; then\n    echo \"Missing WORKFLOW_ID.  The Workflow ID paramater must be specified.\"\n    echo \"This can be found in the URL of the github action workflow.  It will end in .yml.  For example trigger-circle.yml.\"\n    exit 1\n  fi\n\n  if [ -z \"$PARAM_GIT_REF\" ]; then\n    echo \"Missing PARAM_GIT_REF.  The Git Reference is missing, this should be the branch or tag name that is used when executing the workflow.\"\n    exit 1\n  fi\n\n  if [ -z \"$PARAM_WAIT_TIMEOUT\" ]; then\n    PARAM_WAIT_TIMEOUT=10\n  fi\n}\n\nget_run_ids() {\n  #To allow for a clock difference\n  two_mins_ago=$(date -u -Iseconds -v-2M)\n\n  gha_url=\"https://api.github.com/repos/ovotech/$PARAM_REPO_NAME/actions/workflows/$PARAM_WORKFLOW_ID/runs?event=workflow_dispatch&created=>=\"$two_mins_ago\n\n  gha_run_ids=$(curl -s -X GET -H 'Accept: application/vnd.github.v3+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Authorization: Bearer '\"$PARAM_GITHUB_ACTION_TOKEN\" \"$gha_url\" | jq -r '.workflow_runs[].id' | sort )\n\n  echo \"$gha_run_ids\"\n}\n\ntrigger_workflow() {\n\n  gha_url=\"https://api.github.com/repos/ovotech/$PARAM_REPO_NAME/actions/workflows/$PARAM_WORKFLOW_ID/dispatches\"\n\n  if [ -z \"$PARAM_GHA_INPUTS\" ]; then\n    gha_http_status=$(curl --write-out \"%{http_code}\" -s -X POST -H 'Accept: application/vnd.github.v3+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Authorization: Bearer '\"$PARAM_GITHUB_ACTION_TOKEN\" \"$gha_url\" -d '{\"ref\":\"'\"$PARAM_GIT_REF\"'\"}')\n  else\n    gha_http_status=$(curl --write-out \"%{http_code}\" -s -X POST -H 'Accept: application/vnd.github.v3+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Authorization: Bearer '\"$PARAM_GITHUB_ACTION_TOKEN\" \"$gha_url\" -d '{\"ref\":\"'\"$PARAM_GIT_REF\"'\",\"inputs\":{'\"$PARAM_GHA_INPUTS\"'}}')\n  fi\n\n  echo \"$gha_http_status\"\n}\n\nget_workflow_status() {\n  run_id=$1\n  gha_url=\"https://api.github.com/repos/ovotech/$PARAM_REPO_NAME/actions/runs/$run_id\"\n\n  gha_workflow=$(curl -X GET -s -H 'Accept: application/vnd.github.v3+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Authorization: Bearer '\"$PARAM_GITHUB_ACTION_TOKEN\" \"$gha_url\")\n\n  echo \"$gha_workflow\"\n}\n\ncheck_http_status() {\n  http_status=$1\n\n  if [[ \"${http_status}\" == *\"401\"* ]]; then\n    echo \"Error calling GitHub API\"\n    echo \"${http_status}\"\n    echo \"This could be because the Token is invalid.\"\n    echo \"To create a token (ideally for a service user) follow these instructions: https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token\"\n    exit 1\n  fi\n  if [[ \"${http_status}\" == *\"404\"* ]]; then\n    echo \"Error calling GitHub API\"\n    echo \"${http_status}\"\n    echo \"This could be because the WorkflowID that was passed is incorect.\"\n    exit 1\n  fi\n  if [[ \"${http_status}\" == *\"422\"* ]] && [[ \"${http_status}\" == *\"Unexpected inputs provided\"* ]]; then\n    echo \"Error calling GitHub API\"\n    echo \"The workflow was passed paramaters that it wasn't expecting.\"\n    echo \"${http_status}\"\n    exit 1\n  fi\n  # Checking if returned status code is not 204 as it should return a 204 (no data)\n  if [ \"${http_status}\" != \"204\" ]; then\n    echo \"${http_status}: Unable to authenticate, this could be because the Token is invalid! Exiting...\"\n    echo \"To create a token (ideally for a service user) follow these instructions: https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token\"\n    exit 1\n  fi\n}\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n  call_gha\nfi\n"
+                name: Execute GitHub Actions workflow
+jobs:
+    execute_workflow:
+        description: |
+            Call a GitHub Actions pipeline and wait until it completes
+        machine:
+            image: ubuntu-2004:202104-01
+        parameters:
+            git_branch:
+                description: The branch name to be used when executing the workflow.
+                type: string
+            github_action_token:
+                default: $GHA_API_TOKEN
+                description: The GitHub actions API token to be used for the API calls.
+                type: string
+            repo_name:
+                description: The name of the repository where the GitHub Action Workflow resides.
+                type: string
+            timeout:
+                default: 10
+                description: The time in minutes to wait for a workflow to complete.
+                type: integer
+            workflow_id:
+                description: The GitHub Actions workflow filename
+                type: string
+            workflow_parameters:
+                default: ""
+                description: Key value pairs of any extra parameters to be passed to the workflow.
+                type: string
+        steps:
+            - execute_workflow:
+                git_branch: <<parameters.git_branch>>
+                github_action_token: <<parameters.github_action_token>>
+                repo_name: <<parameters.repo_name>>
+                timeout: <<parameters.timeout>>
+                workflow_id: <<parameters.workflow_id>>
+                workflow_parameters: <<parameters.workflow_parameters>>
+examples:
+    execute_workflow:
+        description: |
+            Call a GitHub Actions pipeline and wait until it completes
+        usage:
+            version: "2.1"
+            orbs:
+                github-actions: ovotech/github-actions@1.0.0
+            workflows:
+                gha-workflow:
+                    jobs:
+                        - github-actions/trigger_and_wait:
+                            git_branch: main
+                            github_action_token: $GHA_API_TOKEN
+                            repo_name: team-cppe
+                            workflow_id: trigger-circle.yml
+
