@@ -2,7 +2,7 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1  
+  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1
   aws-ecr: circleci/aws-ecr@8.1.3
   terraform: ovotech/terraform-v2@2.4.17
   openjdk-install: cloudesire/openjdk-install@1.2.3
@@ -71,7 +71,7 @@ aliases:
         default: false
       oidc:
         type: boolean
-        default: false  
+        default: true
       vars_dir:
         type: string
         description: "Path to directory containing Terraform variables file.  Do not supply the ending slash /"
@@ -187,7 +187,7 @@ commands:
     parameters:
       oidc:
         type: boolean
-        default: false
+        default: true
       path:
         type: string
       repo:
@@ -215,7 +215,7 @@ commands:
           skip-when-tags-exist: << parameters.skipWhenTagExists >>
           assume-web-identity: << parameters.oidc >>
           role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>> 
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
           registry-id: AWS_ACCOUNT_ID
           region: $AWS_DEFAULT_REGION
       - snyk/scan:
@@ -254,10 +254,10 @@ commands:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false
+        default: true
       snykPolicyPath:
         type: string
-        default: ./.snyk         
+        default: ./.snyk
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -305,9 +305,9 @@ commands:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                assume-web-identity: << parameters.oidc >>                   
+                assume-web-identity: << parameters.oidc >>
                 role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>> 
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
@@ -585,7 +585,7 @@ commands:
       username:
         type: string
       token:
-        type: string       
+        type: string
     steps:
       - run:
           shell: /bin/bash -eo pipefail
@@ -598,7 +598,7 @@ commands:
       <<: *tf-common-parameters
       command:
         type: "enum"
-        enum: [ "plan", "apply" ]         
+        enum: [ "plan", "apply" ]
     description: tf << parameters.command >> << parameters.environment >>
     steps:
       - when:
@@ -612,9 +612,9 @@ commands:
             - checkout
       - when:
           condition: << parameters.oidc >>
-          steps:            
+          steps:
             - aws-configure-credentials-oidc/aws-configure-credentials:
-                role-arn: $CIRCLE_IAM_ROLE_ARN              
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -770,10 +770,10 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false 
+        default: true
       snykPolicyPath:
         type: string
-        default: ./.snyk               
+        default: ./.snyk
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -787,13 +787,13 @@ jobs:
           key: gradle-{{ checksum "build.gradle" }}-{{ checksum "<< parameters.serviceName >>/build.gradle" }}
       - github-repo-login:
           username: << parameters.username >>
-          token: << parameters.token >>        
+          token: << parameters.token >>
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          assume-web-identity: << parameters.oidc >>                   
+          assume-web-identity: << parameters.oidc >>
           role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
           registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
@@ -844,10 +844,10 @@ jobs:
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
       oidc:
         type: boolean
-        default: false   
+        default: true
       snykPolicyPath:
         type: string
-        default: ./.snyk            
+        default: ./.snyk
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -895,13 +895,13 @@ jobs:
           steps:
             - github-repo-login:
                 username: << parameters.username >>
-                token: << parameters.token >>              
+                token: << parameters.token >>
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                assume-web-identity: << parameters.oidc >>                   
+                assume-web-identity: << parameters.oidc >>
                 role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>  
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
                 registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
@@ -1014,7 +1014,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask     
+      <<: *tf-mask
     steps:
       - tf:
           <<: *tf-command-parameters
@@ -1026,7 +1026,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask       
+      <<: *tf-mask
     steps:
       - tf:
           <<: *tf-command-parameters
@@ -1038,12 +1038,12 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask      
+      <<: *tf-mask
     steps:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
-          oidc: << parameters.oidc >>          
+          oidc: << parameters.oidc >>
           command: plan
 
   tf-apply-java:
@@ -1051,7 +1051,7 @@ jobs:
     working_directory: ~/working
     <<: *tf-common
     environment:
-      <<: *tf-mask      
+      <<: *tf-mask
     steps:
       - tf-install-adoptopenjdk
       - tf:
@@ -1080,10 +1080,10 @@ jobs:
       argocd_url:
         type: string
         default: ""
-      argocd_token: 
+      argocd_token:
         type: string
         default: ""
-      yq_version: 
+      yq_version:
         type: string
         default: "v4.6.2"
       commit_tag_name:
@@ -1113,19 +1113,19 @@ jobs:
           name: "Install yq"
           command: |
             include ./scripts/install_yq.sh
-      - run:  
+      - run:
           name: "Update helm values"
-          command: |   
+          command: |
             include ./scripts/update_helm.sh
       - when:
-          condition: 
+          condition:
             and:
               - << parameters.argocd_url >>
               - << parameters.argocd_token >>
           steps:
-            - run:  
+            - run:
                 name: "Set environment variables"
-                command: |   
+                command: |
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - install-python-dependencies
@@ -1134,7 +1134,7 @@ jobs:
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
                 sync_request: << parameters.sync_request >>
-  
+
   run-automation-test:
     circleci_ip_ranges: true
     parameters:
@@ -1151,7 +1151,7 @@ jobs:
         default: ""
       oidc:
         type: boolean
-        default: false
+        default: true
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
