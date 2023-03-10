@@ -9,6 +9,7 @@ codebase. It currently has support for scanning:
 - Scala
 - TypeScript
 - JavaScript
+- Go
 
 All tooling within this Orb has been selected in
 cooperation with OVO SecEng.
@@ -60,6 +61,14 @@ This command will scan TypeScript code for security vulnerabilities. It runs the
 
 ### scan_javascript
 This command will scan JavaScript code for security vulnerabilities. It runs the tool
+[Semgrep](https://semgrep.dev) to perform the scans.
+
+**Parameters**
+- `directory` - the directory containing the source code to scan. Defaults to the
+  root of the repository.
+
+### scan_golang
+This command will scan Go code for security vulnerabilities. It runs the tool
 [Semgrep](https://semgrep.dev) to perform the scans.
 
 **Parameters**
@@ -153,6 +162,19 @@ workflows:
   lint:
     jobs:
       - sast/scan_javascript:
+          directory: ./src
+```
+
+### Simple Scan for scan_golang command
+```yaml
+
+version: '2.1'
+orbs:
+  sast: ovotech/sast@1
+workflows:
+  lint:
+    jobs:
+      - sast/scan_golang:
           directory: ./src
 ```
 

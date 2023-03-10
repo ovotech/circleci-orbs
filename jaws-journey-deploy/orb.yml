@@ -2,13 +2,14 @@ version: 2.1
 description: "Defines the core steps required for a smart journey deployment pipeline"
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.2.0
-  terraform: ovotech/terraform@1.11.13
+  aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1
+  aws-ecr: circleci/aws-ecr@8.1.3
+  terraform: ovotech/terraform-v2@2.4.17
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@1.1.2
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
-  argocd: ovotech/argocd@1.0.2
+  argocd: ovotech/argocd@1.1.0
 
 executors:
   kotlin:
@@ -16,10 +17,10 @@ executors:
       - image: cimg/openjdk:11.0.12
   python:
     docker:
-      - image: cimg/python:3.8.0
+      - image: cimg/python:3.9.0
   node:
     docker:
-      - image: cimg/node:14.17.3
+      - image: cimg/node:19.3.0
   terraform:
     docker:
       - image: ovotech/terraform:0.13
@@ -29,7 +30,7 @@ aliases:
     environment: &environment
       environment:
         type: "enum"
-        enum: ["sandbox", "test", "uat", "nonprod", "prod", "undefined"]
+        enum: ["sandbox", "test", "uat", "nonprod", "prod", "undefined", "dev"]
         default: "sandbox"
     serviceName: &serviceName
       serviceName:
@@ -68,6 +69,9 @@ aliases:
       destroy_first:
         type: boolean
         default: false
+      oidc:
+        type: boolean
+        default: true
       vars_dir:
         type: string
         description: "Path to directory containing Terraform variables file.  Do not supply the ending slash /"
@@ -85,6 +89,7 @@ aliases:
     destroy_first: << parameters.destroy_first >>
     environment: << parameters.environment >>
     vars_dir: << parameters.vars_dir >>
+    var: << parameters.var >>
 
   tf-parameters: &tf-parameters
     path: terraform/<< parameters.path >>
@@ -180,6 +185,9 @@ commands:
 
   publish-image-kmi:
     parameters:
+      oidc:
+        type: boolean
+        default: false
       path:
         type: string
       repo:
@@ -191,6 +199,9 @@ commands:
       tag:
         type: string
         default: ${CIRCLE_SHA1}
+      skipWhenTagExists:
+        type: boolean
+        default: false
       <<: *resourceClass
     steps:
       - attach_workspace:
@@ -201,6 +212,12 @@ commands:
           path: << parameters.path >>
           repo: << parameters.repo >>
           tag: '<< parameters.tag >>'
+          skip-when-tags-exist: << parameters.skipWhenTagExists >>
+          assume-web-identity: << parameters.oidc >>
+          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
+          registry-id: AWS_ACCOUNT_ID
+          region: $AWS_DEFAULT_REGION
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
           fail-on-issues: true
@@ -235,6 +252,12 @@ commands:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      oidc:
+        type: boolean
+        default: true
+      snykPolicyPath:
+        type: string
+        default: ./.snyk
       <<: *resourceClass
       <<: *parallelism
     steps:
@@ -282,13 +305,14 @@ commands:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                account-url: AWS_ACCOUNT_URL
-                aws-access-key-id: AWS_ACCESS_KEY_ID
-                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                assume-web-identity: << parameters.oidc >>
+                role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
+                registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
@@ -298,6 +322,7 @@ commands:
                 project: << parameters.serviceName >>
                 severity-threshold: high
                 target-file: ./<< parameters.serviceName >>/Dockerfile
+                additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -585,6 +610,11 @@ commands:
           condition: << parameters.attach_workspace >>
           steps:
             - checkout
+      - when:
+          condition: << parameters.oidc >>
+          steps:
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - calculate-build-version
       - terraform/fmt-check:
           path: terraform/<< parameters.path >>
@@ -630,8 +660,12 @@ jobs:
 
   avro:
     executor: kotlin
+    circleci_ip_ranges: true
     working_directory: ~/working
     parameters:
+      oidc:
+        type: boolean
+        default: true
       uploadschema:
         type: boolean
         default: false
@@ -645,9 +679,19 @@ jobs:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}
+      - when:
+          condition: << parameters.oidc >>
+          steps:
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
+      - save_cache:
+          paths:
+            - .gradle
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}
       - when:
           condition:
             equal: ["true", $SLACK_INTEGRATION_ENABLED]
@@ -733,6 +777,12 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      oidc:
+        type: boolean
+        default: true
+      snykPolicyPath:
+        type: string
+        default: ./.snyk
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -750,13 +800,14 @@ jobs:
       - aws-ecr/build-and-push-image:
           setup-remote-docker: true
           checkout: false
-          account-url: AWS_ACCOUNT_URL
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          assume-web-identity: << parameters.oidc >>
+          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
+          registry-id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create-repo: false
-          region: AWS_DEFAULT_REGION
+          region: $AWS_DEFAULT_REGION
           repo: << parameters.serviceName >>
           tag: "latest,$CIRCLE_SHA1"
       - snyk/scan:
@@ -766,6 +817,7 @@ jobs:
           project: << parameters.serviceName >>
           severity-threshold: high
           target-file: ./<< parameters.serviceName >>/Dockerfile
+          additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -799,6 +851,12 @@ jobs:
       token:
         type: string
         default: $GITHUB_BOT_PACKAGE_MANAGER_TOKEN
+      oidc:
+        type: boolean
+        default: true
+      snykPolicyPath:
+        type: string
+        default: ./.snyk
       <<: *resourceClass
       <<: *parallelism
     parallelism: << parameters.parallelism >>
@@ -850,16 +908,18 @@ jobs:
             - aws-ecr/build-and-push-image:
                 setup-remote-docker: true
                 checkout: false
-                account-url: AWS_ACCOUNT_URL
-                aws-access-key-id: AWS_ACCESS_KEY_ID
-                aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+                assume-web-identity: << parameters.oidc >>
+                role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
+                registry-id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create-repo: false
-                region: AWS_DEFAULT_REGION
+                region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
             - snyk/scan:
+                additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
                 fail-on-issues: true
                 monitor-on-build: true
@@ -967,6 +1027,7 @@ jobs:
     steps:
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: plan
 
   tf-apply:
@@ -978,6 +1039,7 @@ jobs:
     steps:
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: apply
 
   tf-plan-java:
@@ -990,6 +1052,7 @@ jobs:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: plan
 
   tf-apply-java:
@@ -1002,6 +1065,7 @@ jobs:
       - tf-install-adoptopenjdk
       - tf:
           <<: *tf-command-parameters
+          oidc: << parameters.oidc >>
           command: apply
 
   gitops-deploy:
@@ -1025,10 +1089,10 @@ jobs:
       argocd_url:
         type: string
         default: ""
-      argocd_token: 
+      argocd_token:
         type: string
         default: ""
-      yq_version: 
+      yq_version:
         type: string
         default: "v4.6.2"
       commit_tag_name:
@@ -1040,6 +1104,10 @@ jobs:
       update_build_tag:
         type: boolean
         default: true
+      sync_request:
+        type: boolean
+        default: false
+        description: "whether to send a sync request before polling"
       <<: *environment
       <<: *resourceClass
     resource_class: << parameters.resourceClass >>
@@ -1054,19 +1122,19 @@ jobs:
           name: "Install yq"
           command: |
             include ./scripts/install_yq.sh
-      - run:  
+      - run:
           name: "Update helm values"
-          command: |   
+          command: |
             include ./scripts/update_helm.sh
       - when:
-          condition: 
+          condition:
             and:
               - << parameters.argocd_url >>
               - << parameters.argocd_token >>
           steps:
-            - run:  
+            - run:
                 name: "Set environment variables"
-                command: |   
+                command: |
                   echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
                   cat /tmp/argocd/env >> $BASH_ENV
             - install-python-dependencies
@@ -1074,8 +1142,10 @@ jobs:
                 application: $CIRCLE_PROJECT_REPONAME
                 argocd_url: << parameters.argocd_url >>
                 target: $ARGOCD_TARGET_REVISION
-  
+                sync_request: << parameters.sync_request >>
+
   run-automation-test:
+    circleci_ip_ranges: true
     parameters:
       <<: *environment
       <<: *resourceClass
@@ -1088,12 +1158,20 @@ jobs:
       isPrimaryDeployment:
         type: string
         default: ""
+      oidc:
+        type: boolean
+        default: true
     resource_class: << parameters.resourceClass >>
     executor: kotlin
     working_directory: ~/working
     steps:
       - attach_workspace:
           at: ~/working
+      - when:
+          condition: << parameters.oidc >>
+          steps:
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - make-gradle-executable
       - run-automated-tests:
           environment: << parameters.environment >>

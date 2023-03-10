@@ -57,6 +57,9 @@ RUN set -ex \
   && which docker \
   && (docker version || true)
 
+# Install docker compose
+RUN apk --update add --no-cache docker-compose
+
 RUN id -u circleci 2> /dev/null || useradd --system --create-home --uid 1001 --gid 0 circleci
 
 WORKDIR /home/circleci

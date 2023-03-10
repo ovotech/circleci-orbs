@@ -53,12 +53,12 @@ This is to ensure that the orb only applies changes that have been reviewed by a
 You can disable this behaviour by setting `auto_approve: true` in the `apply` step,
 which will always apply any terraform changes.
 
-See (the orb doc)[https://circleci.com/developer/orbs/orb/ovotech/terraform#commands]
+See [the orb doc](https://circleci.com/developer/orbs/orb/ovotech/terraform#commands)
 for a list of available commands.
 
 ## Jobs
 
-See (the orb doc)[https://circleci.com/developer/orbs/orb/ovotech/terraform#jobs]
+See [the orb docs](https://circleci.com/developer/orbs/orb/ovotech/terraform#jobs)
 for a list of available jobs.
 
 These jobs run their respective command in the default executor.
@@ -285,8 +285,7 @@ the repo. The token requires the `repo, write:discussion` scopes.
 It's recommended to enable **"Only build pull requests"**  in your CircleCI 
 config when using this setting. If not enabled this could lead to a creation
 of a PR after the CircleCI job has run, which means the Plan comment cannot be
-added. Settings can be found under "Advanced Settings" e.g.
-https://circleci.com/gh/ovotech/$YOUR_REPO/edit#advanced-settings
+added. Settings can be found under "Advanced Settings" e.g. `https://circleci.com/gh/ovotech/$YOUR_REPO/edit#advanced-settings`
 
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by

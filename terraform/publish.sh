@@ -60,7 +60,7 @@ if [[ "$REGISTRY_URL" == "" ]]; then
 fi
 
 
-EXISTING_VERSION=$(curl "${REGISTRY_URL}${MODULE_NAME}/versions" | jq -c '.modules[0].versions[] | select(.version == '\"$VERSION\"')')
+EXISTING_VERSION=$(curl -H "Authorization: Bearer $TF_REGISTRY_TOKEN" "${REGISTRY_URL}${MODULE_NAME}/versions" | jq -c '.modules[0].versions[] | select(.version == '\"$VERSION\"')')
 
 if [[ ! -z "$EXISTING_VERSION" ]]; then
     echo "Version $VERSION already exists"

@@ -8,25 +8,23 @@ This repo contains public circleci orbs in the ovotech namespace.
 
 Orbs follow the conventions:
 
-* **Directory** named the **same** as the orb
+- **Directory** named the **same** as the orb
 
-* A single Dockerfile in the executor directory (unless you specify publish-docker-image:false)
+- A single Dockerfile in the executor directory (unless you specify publish-docker-image:false)
 
-* The orb yaml is in a file name `orb.yml`
+- The orb yaml is in a file name `orb.yml`
 
-* Published in the ovotech namespace
+- Published in the ovotech namespace
 
-* An `orb_version.txt` file may exist in an orb directory containing the version of the orb. (A new version is only published when the version changes)
+- An `orb_version.txt` file may exist in an orb directory containing the version of the orb. (A new version is only published when the version changes)
 
-* An entry in [CODEOWNERS](./.github/CODEOWNERS) indicating which team maintains the orb - they will be responsible for reviewing
-any changes to the orb.
+- An entry in [CODEOWNERS](./.github/CODEOWNERS) indicating which team maintains the orb - they will be responsible for reviewing
+  any changes to the orb.
 
-* This project uses CircleCI path filtering. The publish job only runs for orbs with file changes.
-  
-* Any new orb needs to be added to the [path filter mapping](.circleci/config.yml) and to the top and bottom of the [Circle config](.circleci/continue_config.yml)
+- This project uses CircleCI path filtering. The publish job only runs for orbs with file changes.
+- Any new orb needs to be added to the [path filter mapping](.circleci/config.yml) and to the top and bottom of the [Circle config](.circleci/continue_config.yml)
 
 ## Published Orbs
-
  - [ovotech/argocd](argocd) - Interact with an ArgoCD API.
  - [ovotech/aws-configure-credentials-oidc](aws-configure-credentials-oidc) - Authenticate with AWS via CircleCI OIDC.
  - [ovotech/aws-get-parameters@1](aws-get-parameters) - Get parameters from AWS Parameter Store.
@@ -48,6 +46,7 @@ any changes to the orb.
  - [ovotech/helm-ci](helm-ci) - CI checks for Helm charts
  - [ovotech/sast](sast) - Consumer Products Production Engineering team orb to run static security analysis.
  - [ovotech/setup-scheduled-pipeline](setup-scheduled-pipeline) - Consumer Products Production Engineering team orb responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started).
+ - [ovotech/jira](jira) - Interact with JIRA from a CI pipeline.
  - [ovotech/telemetry](telemetry) - Consumer Products Production Engineering team orb which enables sending Orb usage telemetry.
 
  Other orbs in the ovotech namespace:

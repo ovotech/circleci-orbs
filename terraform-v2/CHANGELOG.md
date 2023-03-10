@@ -3,6 +3,18 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.4.20
+- Added Terraform provider Aiven Kafka Users v1.1.0 to all executors
+
+## ovotech/terraform-v2@2.4.19
+- Added Terraform provider Aiven Kafka Users v1.0.10 to all executors
+
+## ovotech/terraform-v2@2.4.18
+- Changed fmt-check command name to include path and optionally label
+
+## ovotech/terraform-v2@2.4.17
+- Added authentication to the API call for `/versions`
+
 ## ovotech/terraform-v2@2.4.16
 - Added target parameter for plan step
 

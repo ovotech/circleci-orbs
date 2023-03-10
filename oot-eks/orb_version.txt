@@ -1,1 +1,1 @@
-ovotech/oot-eks@2.3.0
+ovotech/oot-eks@3.0.0

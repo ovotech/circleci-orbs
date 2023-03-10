@@ -1,0 +1,122 @@
+version: 2.1
+description: "Provides jobs/commands for updating Helm chart values and commiting them to Git"
+
+orbs:
+  argocd: ovotech/argocd@1.0.2
+
+executors:
+  python:
+    docker:
+      - image: cimg/python:3.8.0
+
+aliases:
+  update-helm-params: &update-helm-params
+    parameters:
+      argo_application:
+        type: string
+        default: $CIRCLE_PROJECT_REPONAME
+      values_file:
+        type: string
+        default: ""
+      manifest_branch:
+        type: string
+        default: 'master'
+      image_tag_yaml_path:
+        type: string
+        default: ""
+      image_tag:
+        type: string
+        default: ""
+      commit_tag_name:
+        type: string
+        default: ""
+      environment:
+        type: string
+      region:
+        type: string
+      ssh_key_fingerprint:
+        type: string
+      git_email:
+        type: string
+        default: ""
+      git_name:
+        type: string
+        default: "CircleCI Gitops Orb"
+      argocd_url:
+        type: string
+        default: ""
+      argocd_token: 
+        type: string
+        default: ""
+      yq_version: 
+        type: string
+        default: "v4.6.2"
+      wait_for: 
+        type: integer
+        default: 600
+
+commands:
+  install-python-dependencies:
+    description: "Install python dependencies"
+    steps:
+      - run:
+          name: "Install python dependencies"
+          command: |
+            pip3 install --upgrade pip
+            pip3 install requests
+
+  update_helm:
+    <<: *update-helm-params
+    description: Deploy to << parameters.environment >> / << parameters.region >>
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - << parameters.ssh_key_fingerprint >>
+      - run:
+          name: "Install yq"
+          command: |
+            include ./scripts/install_yq.sh
+      - run:  
+          name: "Update helm values"
+          command: |   
+            include ./scripts/update_helm.sh
+      - when:
+          condition: 
+            and:
+              - << parameters.argocd_url >>
+              - << parameters.argocd_token >>
+          steps:
+            - run:  
+                name: "Set environment variables"
+                command: |   
+                  echo 'export ARGOCD_TOKEN="<< parameters.argocd_token >>"' >> $BASH_ENV
+                  cat /tmp/argocd/<< parameters.argo_application >>/env >> $BASH_ENV
+            - install-python-dependencies
+            - argocd/wait_for_sync:
+                application: << parameters.argo_application >>
+                argocd_url: << parameters.argocd_url >>
+                target: $ARGOCD_TARGET_REVISION
+                wait_for: << parameters.wait_for >>
+
+jobs:
+  update-helm:
+    working_directory: ~/working
+    executor: python
+    <<: *update-helm-params
+    steps:
+      - update_helm:
+          argo_application: << parameters.argo_application >>
+          values_file: << parameters.values_file >>
+          manifest_branch: << parameters.manifest_branch >>
+          image_tag_yaml_path: << parameters.image_tag_yaml_path >>
+          image_tag: << parameters.image_tag >>
+          commit_tag_name: << parameters.commit_tag_name >>
+          environment: << parameters.environment >>
+          region: << parameters.region >>
+          ssh_key_fingerprint: << parameters.ssh_key_fingerprint >>
+          git_email: << parameters.git_email >>
+          git_name: << parameters.git_name >>
+          argocd_url: << parameters.argocd_url >>
+          argocd_token: << parameters.argocd_token >>
+          yq_version: << parameters.yq_version >>
+          wait_for: << parameters.wait_for >>

@@ -21,14 +21,17 @@ workflows:
             clojure/.* run-clojure true
             comms-commands/.* run-comms-commands true
             gcp-rotate-keys/.* run-gcp-rotate-keys true
+            gitops/.* run-gitops true
             helm-ci/.* run-helm-ci true
             ipa-deploy/.* run-ipa-deploy true
             jaws-journey-deploy/.* run-jaws-journey-deploy true
             oot-deploy/.* run-oot-deploy true
             oot-eks/.* run-oot-eks true
+            oot-eks-oidc/.* run-oot-eks-oidc true
             pipeline-utils/.* run-pipeline-utils true
             rac-gcp-deploy/.* run-rac-gcp-deploy true
             rac-kmi-deploy/.* run-rac-kmi-deploy true
+            realm/.* run-realm true
             sast/.* run-sast true
             sbt-deploy/.* run-sbt-deploy true
             set-current-environment/.* run-set-current-environment true
@@ -36,9 +39,12 @@ workflows:
             ssh-proxy/.* run-ssh-proxy true
             telemetry/.* run-telemetry true
             terraform/.* run-terraform true
+            terraform-registry/.* run-terraform-registry true
             terraform-v2/.* run-terraform-v2 true
             tools/.* run-tools true
             tools-install/.* run-tools-install true
             versioned-lambda/.* run-versioned-lambda true
             with-git-deploy-key/.* run-with-git-deploy-key true
             kap-kmi-deploy/.* run-kap-kmi-deploy true
+            build-utilities/.* run-build-utilities true
+            jira/.* run-jira true

@@ -120,6 +120,54 @@ commands:
                 name: Lint <<parameters.dockerfile>> with hadolint
             - store_artifacts:
                 path: ./reports/sast/docker/
+    scan_golang:
+        description: |
+            Scans a Go project using Semgrep
+        parameters:
+            directory:
+                default: .
+                description: |
+                    Path to the directory containing the source code to be scanned. Defaults to the current working directory
+                type: string
+        steps:
+            - checkout
+            - install_semgrep
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    scan_semgrep() {
+                      set --
+                      set -- "$@" "--config" "r/${PARAM_LANGUAGE}"
+                      set -- "$@" "--metrics" "off"
+                      set -- "$@" "--disable-version-check"
+                      set -- "$@" "--strict"
+
+                      if [[ ! -d "./reports/sast/${PARAM_LANGUAGE}" ]]; then
+                        mkdir -p "./reports/sast/${PARAM_LANGUAGE}"
+                      fi
+
+                      semgrep scan "$@" --error "${PARAM_DIRECTORY}" || _EC=$?
+                      semgrep scan "$@" --disable-nosem --json --output "./reports/sast/${PARAM_LANGUAGE}/$(date "+%F-%H-%M-%S").json" "${PARAM_DIRECTORY}"
+
+                      if [[ "${_EC:-0}" -gt 0 ]]; then
+                        echo "Semgrep scan returned failures. See logs."
+                        return ${_EC}
+                      fi
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        scan_semgrep
+                    fi
+                environment:
+                    PARAM_DIRECTORY: <<parameters.directory>>
+                    PARAM_LANGUAGE: go
+                name: Lint Go code in <<parameters.directory>> with Semgrep
+            - store_artifacts:
+                path: ./reports/sast/go/
     scan_javascript:
         description: |
             Scans a JavaScript project using Semgrep
@@ -445,6 +493,42 @@ jobs:
                 dockerfile: <<parameters.dockerfile>>
                 ignore-rules: <<parameters.ignore-rules>>
                 trusted-registries: <<parameters.trusted-registries>>
+    scan_golang:
+        description: |
+            Scans a Go project using Semgrep
+        executor: default
+        parameters:
+            attach-workspace:
+                default: false
+                description: |
+                    Boolean for whether or not to attach to an existing workspace, default is false
+                type: boolean
+            checkout:
+                default: true
+                description: Checkout as a first step? Default is true
+                type: boolean
+            directory:
+                default: .
+                description: |
+                    Path to the directory containing the Go code to be scanned. Defaults to the current working directory
+                type: string
+            workspace-root:
+                default: workspace
+                description: |
+                    Workspace root path that is either an absolute path or a path relative to the working directory
+                type: string
+        steps:
+            - when:
+                condition: <<parameters.checkout>>
+                steps:
+                    - checkout
+            - when:
+                condition: <<parameters.attach-workspace>>
+                steps:
+                    - attach_workspace:
+                        at: <<parameters.workspace-root>>
+            - scan_golang:
+                directory: <<parameters.directory>>
     scan_javascript:
         description: |
             Scans a JavaScript project using Semgrep
@@ -649,6 +733,18 @@ examples:
                             dockerfile: circleci-orbs/sast/examples/Dockerfile
                             ignore-rules: DL4005,DL3008
                             trusted-registries: docker.io
+    scan_golang:
+        description: |
+            Sample usage of scanning Go source code using Semgrep
+        usage:
+            version: "2.1"
+            orbs:
+                sast: ovotech/sast@1
+            workflows:
+                lint:
+                    jobs:
+                        - sast/scan_golang:
+                            directory: ./src
     scan_javascript:
         description: |
             Sample usage of scanning JavaScript source code using Semgrep
