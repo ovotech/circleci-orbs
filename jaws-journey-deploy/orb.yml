@@ -660,6 +660,7 @@ jobs:
 
   avro:
     executor: kotlin
+    circleci_ip_ranges: true
     working_directory: ~/working
     parameters:
       uploadschema:

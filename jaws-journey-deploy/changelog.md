@@ -1,6 +1,7 @@
 # 3.0.0
 ### Breaking change
 * The OIDC parameter now defaults to true for all jobs that previously used access keys EXCEPT publish-image-kmi. This will break pipelines that use contexts without CIRCLE_IAM_ROLE_ARN declared, unless they set the parameter to `false` on calls to the orb.
+* using circleci ip's for avro job to enable connectivity to our aiven clusters
 
 # 2.7.0
 * Add snykPolicyPath parameter to build_and_test, publish-image & build-and-test
