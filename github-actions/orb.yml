@@ -4,6 +4,8 @@ description: |
 display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/jira/README.md
     source_url: https://www.github.com/ovotech/team-cppe
+orbs:
+    telemetry: ovotech/telemetry@1
 commands:
     execute_workflow:
         description: |
@@ -84,14 +86,29 @@ jobs:
                 description: Key value pairs of any extra parameters to be passed to the workflow.
                 type: string
         steps:
-            - execute_workflow:
-                git_branch: <<parameters.git_branch>>
-                github_action_token: <<parameters.github_action_token>>
-                repo_name: <<parameters.repo_name>>
-                timeout: <<parameters.timeout>>
-                wait_for_completion: <<parameters.wait_for_completion>>
-                workflow_id: <<parameters.workflow_id>>
-                workflow_parameters: <<parameters.workflow_parameters>>
+            - telemetry/collect_and_submit:
+                steps:
+                    - execute_workflow:
+                        git_branch: <<parameters.git_branch>>
+                        github_action_token: <<parameters.github_action_token>>
+                        repo_name: <<parameters.repo_name>>
+                        timeout: <<parameters.timeout>>
+                        wait_for_completion: <<parameters.wait_for_completion>>
+                        workflow_id: <<parameters.workflow_id>>
+                        workflow_parameters: <<parameters.workflow_parameters>>
+                telemetry_job_name: job/execute_workflow
+                telemetry_job_parameters: |
+                    [
+                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
+                      {"name": "workflow_id", "value": "<< parameters.workflow_id >>"},
+                      {"name": "git_branch", "value": "<< parameters.git_branch >>"},
+                      {"name": "timeout", "value": "<< parameters.timeout >>"},
+                      {"name": "wait_for_completion", "value": "<< parameters.wait_for_completion >>"},
+                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
+                      {"name": "workflow_parameters", "value": "<< parameters.workflow_parameters >>"}
+                    ]
+                telemetry_orb_name: ovotech/github-actions
+                telemetry_orb_version: 1.0.0
 examples:
     execute_workflow:
         description: |
