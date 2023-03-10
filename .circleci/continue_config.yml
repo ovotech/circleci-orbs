@@ -78,6 +78,9 @@ parameters:
   run-ssh-proxy:
     type: boolean
     default: false
+  run-telemetry:
+    type: boolean
+    default: false
   run-terraform:
     type: boolean
     default: false
@@ -483,6 +486,15 @@ workflows:
           path: ssh-proxy
       - publish_orb:
           path: ssh-proxy
+          requires:
+            - validate_orb
+  telemetry:
+    when: << pipeline.parameters.run-telemetry >>
+    jobs:
+      - validate_orb:
+          path: telemetry
+      - publish_orb:
+          path: telemetry
           requires:
             - validate_orb
   terraform:
