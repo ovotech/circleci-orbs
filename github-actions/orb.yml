@@ -96,7 +96,7 @@ jobs:
                         wait_for_completion: <<parameters.wait_for_completion>>
                         workflow_id: <<parameters.workflow_id>>
                         workflow_parameters: <<parameters.workflow_parameters>>
-                telemetry_endpoint: https://circleci-telemetry.cppe.ovotech.org.uk/default/create
+                telemetry_endpoint: https://circleci-telemetry.cppe.ovotech.org.uk/create
                 telemetry_job_name: job/execute_workflow
                 telemetry_job_parameters: |
                     [
