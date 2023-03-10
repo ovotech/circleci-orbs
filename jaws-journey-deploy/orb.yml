@@ -187,7 +187,7 @@ commands:
     parameters:
       oidc:
         type: boolean
-        default: true
+        default: false
       path:
         type: string
       repo:
