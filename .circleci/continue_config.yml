@@ -108,6 +108,9 @@ parameters:
   run-jira:
     type: boolean
     default: false
+  run-github-actions:
+    type: boolean
+    default: false
 
 jobs:
   test_python:
