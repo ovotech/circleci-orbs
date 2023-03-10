@@ -38,7 +38,7 @@ commands:
                       echo "export PARAM_GITHUB_ACTION_TOKEN=$(echo << parameters.github_action_token >>)"
                       echo "export PARAM_REPO_NAME=$(echo << parameters.repo_name >>)"
                       echo "export PARAM_WORKFLOW_ID=$(echo << parameters.workflow_id >>)"
-                      echo "export PARAM_GIT_BRANCH=$(echo << parameters.git_branch >>)"
+                      echo "export PARAM_GIT_REF=$(echo << parameters.git_branch >>)"
                       echo "export PARAM_WAIT_TIMEOUT=$(echo << parameters.timeout >>)"
                       echo "export PARAM_GHA_INPUTS=$(echo << parameters.workflow_parameters >>)"
                     } >> $BASH_ENV
