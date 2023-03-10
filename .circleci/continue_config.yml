@@ -581,3 +581,12 @@ workflows:
           path: jira
           requires:
             - validate_orb
+  github-actions:
+    when: << pipeline.parameters.run-github-actions >>
+    jobs:
+      - validate_orb:
+          path: github-actions
+      - publish_orb:
+          path: github-actions
+          requires:
+            - validate_orb
