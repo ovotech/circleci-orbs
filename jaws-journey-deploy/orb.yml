@@ -663,6 +663,9 @@ jobs:
     circleci_ip_ranges: true
     working_directory: ~/working
     parameters:
+      oidc:
+        type: boolean
+        default: true
       uploadschema:
         type: boolean
         default: false
@@ -676,6 +679,11 @@ jobs:
           at: ~/working
       - restore_cache:
           key: gradle-{{ checksum "build.gradle" }}
+      - when:
+          condition: << parameters.oidc >>
+          steps:
+            - aws-configure-credentials-oidc/aws-configure-credentials:
+                role-arn: $CIRCLE_IAM_ROLE_ARN
       - avro:
           uploadschema: << parameters.uploadschema >>
           environment: << parameters.environment >>
