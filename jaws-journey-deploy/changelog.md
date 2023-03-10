@@ -1,3 +1,9 @@
+# 3.0.0
+* Using circleci ip's for avro job to enable connectivity to our aiven clusters
+* OIDC used in avro job
+### Breaking change
+* The OIDC parameter now defaults to true for all jobs that previously used access keys EXCEPT publish-image-kmi. This will break pipelines that use contexts without CIRCLE_IAM_ROLE_ARN declared, unless they set the parameter to `false` on calls to the orb.
+
 # 2.7.0
 * Add snykPolicyPath parameter to build_and_test, publish-image & build-and-test
 
@@ -14,7 +20,7 @@
 * Node upgrade from 14.17.3 to 19.3.0 as semantic-release requires node version >=18
 
 # 2.0.1
-* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target. 
+* using version 1.1.0 of the argocd orb, which allows making a sync request instead of waiting for sync to a target.
 * new sync_request parameter for gitops-deploy, false by default
 
 # 2.0.0
@@ -23,15 +29,15 @@
 * ovotech/aws-configure-credentials-oidc@1.0.1 added
 * for build-pushes and terraform jobs, oidc is used instead of aws keys/secrets if the oidc parameter is set to true when using this orb
 
-### Breaking change 
+### Breaking change
 * `docker.pkg.github.com` must be changed to `ghcr.io` in dockerfiles that use images from our github container repository
 
-### New environment variables used 
+### New environment variables used
 * CIRCLE_IAM_ROLE_ARN (optional)
 * AWS_ACCOUNT_ID
 
-### Deprecated environment variables 
+### Deprecated environment variables
 * ACCOUNT_URL
 
-### New parameters 
+### New parameters
 * oidc - boolean (optional, false by default)
