@@ -48,8 +48,8 @@ commands:
                               echo "export PARAM_WORKFLOW_ID=$(echo << parameters.workflow_id >>)"
                               echo "export PARAM_GIT_REF=$(echo << parameters.git_branch >>)"
                               echo "export PARAM_WAIT_TIMEOUT=$(echo << parameters.timeout >>)"
-                              echo "export PARAM_GHA_INPUTS=$(echo << parameters.workflow_parameters >>)"
                               echo "export PARAM_WAIT_FOR_COMPLETION=$(echo << parameters.wait_for_completion >>)"
+                              echo "export PARAM_GHA_INPUTS=$(echo << parameters.workflow_parameters >>)"
                             } >> $BASH_ENV
                         name: Setting variables
                     - run:
@@ -59,13 +59,7 @@ commands:
                 telemetry_job_name: job/execute_workflow
                 telemetry_job_parameters: |
                     [
-                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
-                      {"name": "workflow_id", "value": "<< parameters.workflow_id >>"},
-                      {"name": "git_branch", "value": "<< parameters.git_branch >>"},
-                      {"name": "timeout", "value": "<< parameters.timeout >>"},
-                      {"name": "wait_for_completion", "value": "<< parameters.wait_for_completion >>"},
-                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
-                      {"name": "workflow_parameters", "value": "<< parameters.workflow_parameters >>"}
+                      {"name": "repo_name", "value": "<< parameters.repo_name >>"}
                     ]
                 telemetry_orb_name: ovotech/github-actions
                 telemetry_orb_version: 1.0.0
