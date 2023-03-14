@@ -109,8 +109,8 @@ jobs:
     execute_workflow:
         description: |
             Call a GitHub Actions pipeline and wait until it completes
-        machine:
-            image: ubuntu-2004:202104-01
+        docker:
+            - image: cimg/base:current-22.04
         parameters:
             git_branch:
                 description: The branch name to be used when executing the workflow.
@@ -196,6 +196,22 @@ jobs:
                 telemetry_orb_version: 1.0.0
 examples:
     execute_workflow:
+        description: |
+            Call a GitHub Actions pipeline and wait until it completes
+        usage:
+            version: "2.1"
+            orbs:
+                github-actions: ovotech/github-actions@1.0.0
+            workflows:
+                gha-workflow:
+                    jobs:
+                        - github-actions/trigger_and_wait:
+                            git_branch: main
+                            github_action_token: $GHA_API_TOKEN
+                            repo_name: team-cppe
+                            wait_for_completion: true
+                            workflow_id: trigger-circle.yml
+    extract_artifact:
         description: |
             Call a GitHub Actions pipeline and wait until it completes
         usage:
