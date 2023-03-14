@@ -59,7 +59,11 @@ commands:
                 telemetry_job_name: job/execute_workflow
                 telemetry_job_parameters: |
                     [
-                      {"name": "repo_name", "value": "<< parameters.repo_name >>"}
+                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
+                      {"name": "workflow_id", "value": "<< parameters.workflow_id >>"},
+                      {"name": "git_branch", "value": "<< parameters.git_branch >>"},
+                      {"name": "timeout", "value": "<< parameters.timeout >>"},
+                      {"name": "wait_for_completion", "value": "<< parameters.wait_for_completion >>"}
                     ]
                 telemetry_orb_name: ovotech/github-actions
                 telemetry_orb_version: 1.0.0
@@ -161,8 +165,8 @@ jobs:
     extract_artifact:
         description: |
             Downloads an artifact from a GitHub Actions pipeline and unzips it.
-        machine:
-            image: ubuntu-2004:202104-01
+        docker:
+            - image: cimg/base:current-22.04
         parameters:
             artifact_name:
                 description: The name of the artifact from the GitHub workflow
