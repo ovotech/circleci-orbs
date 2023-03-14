@@ -63,6 +63,44 @@ commands:
                     ]
                 telemetry_orb_name: ovotech/github-actions
                 telemetry_orb_version: 1.0.0
+    extract_artifact:
+        description: |
+            Execute GitHub Actions workflow
+        parameters:
+            artifact_name:
+                description: The name of the artifact from the GitHub workflow
+                type: string
+            github_action_token:
+                default: $GHA_API_TOKEN
+                description: The GitHub actions API token to be used for the API calls.
+                type: string
+            repo_name:
+                description: The name of the repository where the GitHub Action Workflow resides.
+                type: string
+        steps:
+            - checkout
+            - telemetry/collect_and_submit:
+                steps:
+                    - run:
+                        command: |
+                            {
+                              echo "export PARAM_GITHUB_ACTION_TOKEN=$(echo << parameters.github_action_token >>)"
+                              echo "export PARAM_REPO_NAME=$(echo << parameters.repo_name >>)"
+                              echo "export PARAM_ARTIFACT_NAME=$(echo << parameters.artifact_name >>)"
+                            } >> $BASH_ENV
+                        name: Setting variables
+                    - run:
+                        command: "#!/bin/bash\nextract_artifact() {\n\n  required_paramater_check\n\n  echo \"Attempting to obtain the Artifact ID.\"\n  ARTIFACT_ID=$(get_artifact_id)\n  if [[ ${#ARTIFACT_ID} -le 0 ]] || [[ -z $ARTIFACT_ID ]]; then\n    echo \"Error when obtaining the Artifact ID:\"\n    echo \"$ARTIFACT_ID\"\n    exit 1\n  fi\n  echo \"ARTIFACT_ID: $ARTIFACT_ID\"\n\n  echo \"Attempting to obtain the download URL for the artifact.\"\n  ARTIFACT_URL=$(get_artifact_url \"$ARTIFACT_ID\")\n  if [[ \"$ARTIFACT_URL\" != \"https://\"* ]]; then\n    echo \"Error when obtaining the Artifact URL, are you sure the Artifact Name ($PARAM_ARTIFACT_NAME) is correct?:\"\n    echo \"$ARTIFACT_URL\"\n    exit 1\n  fi\n\n  echo \"Attempting to download the artifact.\"\n  ARTIFACT=$(download_artifact \"$ARTIFACT_URL\" \"$PARAM_ARTIFACT_NAME\")\n  if [[ \"$ARTIFACT\" -ne 200 ]]; then\n    echo \"Error when downloading the artifact:\"\n    echo \"$ARTIFACT\"\n    exit 1\n  fi\n\n  echo \"Attempting to extract artifact.\"\n  ZIP=$(unzip_artifact \"$PARAM_ARTIFACT_NAME.zip\")\n  echo \"$ZIP\"\n  echo \"Extracted.\"\n\n}\n\nrequired_paramater_check() {\n  if [ -z \"$PARAM_GITHUB_ACTION_TOKEN\" ]; then\n    echo \"Missing GITHUB_ACTION_TOKEN.  You must specify a GITHUB Action Token in order to trigger a pipeline.\"\n    echo \"To create a token follow these instructions: https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token\"\n   exit 1\n  fi\n\n  if [ -z \"$PARAM_REPO_NAME\" ]; then\n    echo \"Missing REPO_NAME.  The name of the repository where the GitHub Action workflow is, for example team-cppe.\"\n    exit 1\n  fi\n\n  if [ -z \"$PARAM_ARTIFACT_NAME\" ]; then\n    echo \"Missing ARTIFACT_NAME.  To download an artifact please populate the Artifact Name paramater.\"\n    exit 1\n  fi\n\n}\n\nget_artifact_id() {\n\n  GHA_URL=\"https://api.github.com/repos/ovotech/$PARAM_REPO_NAME/actions/artifacts?name=$PARAM_ARTIFACT_NAME\"\n \n  GHA_ARTIFACT_ID=$(curl -s -X GET -H 'Accept: application/vnd.github.v3+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Authorization: Bearer '\"$PARAM_GITHUB_ACTION_TOKEN\" \"$GHA_URL\" | jq -r '.artifacts[0].id')\n\n  echo \"$GHA_ARTIFACT_ID\"\n}\n\nget_artifact_url() {\n  ARTIFACT_ID=$1\n\n  GHA_URL=\"https://api.github.com/repos/ovotech/$PARAM_REPO_NAME/actions/artifacts/$ARTIFACT_ID/zip\"\n \n  GHA_ARTIFACT_URL=$(curl --head -s -X GET -H 'Accept: application/vnd.github.v3+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Authorization: Bearer '\"$PARAM_GITHUB_ACTION_TOKEN\" \"$GHA_URL\" | grep \"location\" | head -1 | cut -d\" \" -f2 | tr -d \"\\r\")\n\n  echo \"$GHA_ARTIFACT_URL\"\n}\n\ndownload_artifact() {\n\n  URL=$1\n  FILENAME=\"$2.zip\"\n\n  ARTIFACT=$(curl --write-out \"%{http_code}\" -s \"$URL\" -o \"$FILENAME\")\n\n  echo \"$ARTIFACT\"\n}\n\nunzip_artifact() {\n  ARCHIVE_NAME=$1\n\n  UNZIP=$(unzip -o \"$ARCHIVE_NAME\")\n\n  echo \"$UNZIP\"\n}\n\n\n# Will not run if sourced for bats-core tests.\nORB_TEST_ENV=\"bats-core\"\nif [ \"${0#*\"$ORB_TEST_ENV\"}\" == \"$0\" ]; then\n  extract_artifact\nfi\n"
+                        name: Execute GitHub Actions workflow
+                telemetry_endpoint: https://circleci-telemetry.cppe.ovotech.org.uk/create
+                telemetry_job_name: job/extract_artifact
+                telemetry_job_parameters: |
+                    [
+                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
+                      {"name": "artifact_name", "value": "<< parameters.artifact_name >>"}
+                    ]
+                telemetry_orb_name: ovotech/github-actions
+                telemetry_orb_version: 1.0.0
 jobs:
     execute_workflow:
         description: |
@@ -117,6 +155,38 @@ jobs:
                       {"name": "wait_for_completion", "value": "<< parameters.wait_for_completion >>"},
                       {"name": "repo_name", "value": "<< parameters.repo_name >>"},
                       {"name": "workflow_parameters", "value": "<< parameters.workflow_parameters >>"}
+                    ]
+                telemetry_orb_name: ovotech/github-actions
+                telemetry_orb_version: 1.0.0
+    extract_artifact:
+        description: |
+            Downloads an artifact from a GitHub Actions pipeline and unzips it.
+        machine:
+            image: ubuntu-2004:202104-01
+        parameters:
+            artifact_name:
+                description: The name of the artifact from the GitHub workflow
+                type: string
+            github_action_token:
+                default: $GHA_API_TOKEN
+                description: The GitHub actions API token to be used for the API calls.
+                type: string
+            repo_name:
+                description: The name of the repository where the GitHub Action Workflow resides.
+                type: string
+        steps:
+            - telemetry/collect_and_submit:
+                steps:
+                    - extract_artifact:
+                        artifact_name: <<parameters.artifact_name>>
+                        github_action_token: <<parameters.github_action_token>>
+                        repo_name: <<parameters.repo_name>>
+                telemetry_endpoint: https://circleci-telemetry.cppe.ovotech.org.uk/create
+                telemetry_job_name: job/extract_artifact
+                telemetry_job_parameters: |
+                    [
+                      {"name": "repo_name", "value": "<< parameters.repo_name >>"},
+                      {"name": "artifact_name", "value": "<< parameters.artifact_name >>"}
                     ]
                 telemetry_orb_name: ovotech/github-actions
                 telemetry_orb_version: 1.0.0
