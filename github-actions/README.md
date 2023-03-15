@@ -12,7 +12,7 @@ In order to trigger a GitHub Action workflow it will require a token so that it 
 ## Commands
 ### execute_workflow
 
-This command will trigger the GitHub Actions workflow.  It will not wait until it completes.
+This command will trigger the GitHub Actions workflow.  It can then either wait until that workflow completes or just trigger it.
 
 **Parameters**
 
@@ -21,6 +21,8 @@ This command will trigger the GitHub Actions workflow.  It will not wait until i
 - `workflow_id` - The GitHub workflow filename.
 - `git_branch` - The Git branch that the triggered workflow will use. 
 - `workflow_parameters` - Double quoted key value pair of any extra parameters that the workflow requires.
+- `wait_for_completion` - Defaults to false but if set to `true` it will wait for the workflow to complete.
+- `timeout` - (in minutes).  This defaults to 10 minutes but can be increased if the workflow being triggered takes longer to complete.  This is only used when `what_for_completion` is set to `true`.
 
 ## Examples
 
@@ -28,7 +30,7 @@ This command will trigger the GitHub Actions workflow.  It will not wait until i
 
 ```yaml
 description: >
-  Call a GitHub Actions pipeline and wait until it completes
+  Trigger a GitHub Actions pipeline (but do not wait for it to complete).
 
 usage:
   version: 2.1
@@ -37,10 +39,51 @@ usage:
   workflows:
     gha-workflow:
       jobs:
-        - github-actions/trigger_and_wait:
+        - github-actions/execute_workflow:
             github_action_token: $GHA_API_TOKEN
             repo_name: team-cppe
             workflow_id: trigger-circle.yml
             git_branch: main
 
+```
+
+### Trigger GitHub Action workflow and wait for completion.
+
+```yaml
+description: >
+  Trigger a GitHub Actions pipeline and wait for it to complete.
+
+usage:
+  version: 2.1
+  orbs:
+    github-actions: ovotech/github-actions@1.0.0
+  workflows:
+    gha-workflow:
+      jobs:
+        - github-actions/execute_workflow:
+            github_action_token: $GHA_API_TOKEN
+            repo_name: team-cppe
+            workflow_id: trigger-circle.yml
+            git_branch: main
+            wait_for_completion: true
+```
+
+
+### Download an artifact from a GitHub Actions Workflow
+
+```yaml
+description: >
+  Downloads an artifact from a GitHub Actions Workflow
+
+usage:
+  version: 2.1
+  orbs:
+    github-actions: ovotech/github-actions@1.0.0
+  workflows:
+    gha-workflow:
+      jobs:
+        - github-actions/extract_artifact:
+            github_action_token: $GHA_API_TOKEN
+            repo_name: team-cppe
+            artifact_name: test-artifact
 ```

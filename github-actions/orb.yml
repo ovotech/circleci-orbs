@@ -197,7 +197,7 @@ jobs:
 examples:
     execute_workflow:
         description: |
-            Call a GitHub Actions pipeline and wait until it completes
+            Trigger a GitHub Actions pipeline and wait for it to complete
         usage:
             version: "2.1"
             orbs:
@@ -205,7 +205,7 @@ examples:
             workflows:
                 gha-workflow:
                     jobs:
-                        - github-actions/trigger_and_wait:
+                        - github-actions/execute_workflow:
                             git_branch: main
                             github_action_token: $GHA_API_TOKEN
                             repo_name: team-cppe
@@ -213,7 +213,7 @@ examples:
                             workflow_id: trigger-circle.yml
     extract_artifact:
         description: |
-            Call a GitHub Actions pipeline and wait until it completes
+            Downloads an artifact from a GitHub Actions Workflow
         usage:
             version: "2.1"
             orbs:
@@ -221,10 +221,8 @@ examples:
             workflows:
                 gha-workflow:
                     jobs:
-                        - github-actions/trigger_and_wait:
-                            git_branch: main
+                        - github-actions/extract_artifact:
+                            artifact_name: test-artifact
                             github_action_token: $GHA_API_TOKEN
                             repo_name: team-cppe
-                            wait_for_completion: true
-                            workflow_id: trigger-circle.yml
 
