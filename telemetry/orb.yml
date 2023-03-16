@@ -1,0 +1,509 @@
+version: 2.1
+description: |
+    An orb that enables sending telemetry about the usage of Team CPPE's modules
+display:
+    home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/telemetry/README.md
+    source_url: https://www.github.com/ovotech/team-cppe
+commands:
+    collect_and_submit:
+        description: |
+            Collects the telemetry from the wrapped steps and then submits it to the telemetry server
+        parameters:
+            steps:
+                description: List of steps to collect telemetry from
+                type: steps
+            telemetry_endpoint:
+                default: https://telemetry.cppe.ovotech.org.uk/v1/submit
+                description: The endpoint to submit telemetry details to
+                type: string
+            telemetry_job_name:
+                description: |
+                    The name of the job or command that we are submitting telemetry for
+                type: string
+            telemetry_job_parameters:
+                default: ""
+                description: |
+                    JSON string containing an array of parameters to submit to the telemetry
+                    server. Must contain a list of objects with the following keys:
+                    - name: The name of the parameter
+                    - value: The value of the parameter. Use << parameters.name >>
+                    - sensitive: Whether to mask the value or not. Optional.
+                type: string
+            telemetry_orb_name:
+                description: The name of the orb that we are submitting telemetry for
+                type: string
+            telemetry_orb_version:
+                description: The version of the orb that we are submitting telemetry for
+                type: string
+        steps:
+            - run:
+                command: |
+                    TELEMETRY_START="$(date +%s)"
+                    echo "export TELEMETRY_START=$TELEMETRY_START" >> $BASH_ENV
+                name: Prepare telemetry gathering
+            - steps: << parameters.steps >>
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    ##
+                    # submit_telemetry will send a curl request to the telemetry endpoint with
+                    # the given body and authentication header.
+                    # Expected params:
+                    #  $1 - The endpoint to submit the request to
+                    #  $2 - The payload to submit (in JSON format)
+                    #  $3 - The authentication header to use
+                    submit_telemetry() {
+                      local _ENDPOINT=$1
+                      local _PAYLOAD=$2
+                      local _AUTHHEADER=$3
+
+                      curl -s \
+                        -X POST \
+                        -H "Content-Type: application/json" \
+                        -H "$_AUTHHEADER" \
+                        --data "$_PAYLOAD" \
+                        --max-time 5 \
+                        --retry 6 \
+                        "$_ENDPOINT"
+                    }
+
+                    ##
+                    # build_payload will return a JSON string containing the payload of the
+                    # telemetry request. Output will be echoed to stdout.
+                    build_payload() {
+                      jq -cn \
+                        --arg duration "${TELEMETRY_DURATION}" \
+                        --arg job_name "${TELEMETRY_JOB_NAME}" \
+                        --arg job_parameters "${TELEMETRY_JOB_PARAMETERS:-}" \
+                        --arg orb_name "${TELEMETRY_ORB_NAME}" \
+                        --arg orb_version "${TELEMETRY_ORB_VERSION}" \
+                        --arg success "${TELEMETRY_SUCCESS}" \
+                        --arg source "${TELEMETRY_SOURCE}" \
+                        --arg timestamp "${TELEMETRY_TIMESTAMP}" \
+                        '
+                        {
+                          source: $source,
+                          orb: {
+                            name: $orb_name,
+                            version: $orb_version
+                          },
+                          job: {
+                            name: $job_name,
+                            parameters: $job_parameters,
+                            duration: $duration,
+                            success: $success
+                          },
+                          timestamp: $timestamp
+                        }
+                        '
+                    }
+
+                    ##
+                    # build_auth will build the authentication header based on the current
+                    # environment. Output will be echoed to stdout.
+                    build_auth() {
+                      if ! is_empty CIRCLE_OIDC_TOKEN; then
+                        echo "X-Telemetry-Auth: CircleBearer $CIRCLE_OIDC_TOKEN"
+                        return 0
+                      fi
+
+                      if ! is_empty CIRCLE_PROJECT_USERNAME; then
+                        echo "X-Telemetry-Auth: CircleOrg $CIRCLE_PROJECT_USERNAME"
+                        return 0
+                      fi
+
+                      echo "X-Telemetry-Auth: Anonymous"
+                    }
+
+                    ##
+                    # process_parameters will parse the input as a list of parameters and prepare
+                    # them for submission to the telemetry API. Parameters marked as sensitive will
+                    # be redacted. Output will be echoed to stdout. Expected input is a JSON string
+                    # with the following schema:
+                    # {
+                    #   "$schema": "http://json-schema.org/draft-04/schema#",
+                    #   "type": "array",
+                    #   "items": {
+                    #     "type": "object",
+                    #     "properties": {
+                    #       "name": {
+                    #         "type": "string"
+                    #       },
+                    #       "value": {
+                    #         "type": "string"
+                    #       },
+                    #       "sensitive": {
+                    #         "type": "boolean"
+                    #       }
+                    #     },
+                    #     "required": [
+                    #       "name",
+                    #       "value"
+                    #     ]
+                    #   }
+                    # }
+                    process_parameters() {
+                      local _INPUT=$1
+                      local JQOUT=""
+                      local JQERR=""
+                      local JQPROG='map(if .sensitive == true then {name: .name, value: .value | gsub(".";"*")} else . end)'
+
+                      JQERR="$(mktemp)"
+                      JQOUT=$(jq -ce "$JQPROG" \<<<"$_INPUT" 2>"$JQERR") || JQEC=$?
+                      if [[ "${JQEC:-0}" -eq 4 ]]; then
+                        echo "Invalid input. Please check the parameters that were passed in are valid." 1>&2
+                        return 1
+                      elif [[ "${JQEC:-0}" -ne 0 ]]; then
+                        echo "Error when running jq. Error received was: $(<"$JQERR")" 1>&2
+                        return 2
+                      fi
+
+                      echo "$JQOUT"
+                      return 0
+                    }
+
+                    ##
+                    # is_empty will return 0 if the environment variable passed has
+                    # an empty value or is missing, or 1 otherwise
+                    is_empty() {
+                      local _TESTENV=$1
+
+                      test -z "$(printenv "$_TESTENV")"
+                      return $?
+                    }
+
+                    ##
+                    # assert_dependency will return 0 if the command is found on the path
+                    # or 1 if otherwise
+                    assert_dependency() {
+                      local _DEPENDENCY=$1
+
+                      if ! command -v "$_DEPENDENCY" >/dev/null; then
+                        echo "Required dependency $_DEPENDENCY is missing."
+                        return 1
+                      fi
+
+                      return 0
+                    }
+
+                    ##
+                    # assert_non_empty will return 0 if the environment variable passed has
+                    # a non-empty value or 1 if otherwise
+                    assert_non_empty() {
+                      local _TESTENV=$1
+
+                      if is_empty "$_TESTENV"; then
+                        echo "Required environment variable $(printenv "$_TESTENV") is missing."
+                        return 1
+                      fi
+
+                      return 0
+                    }
+
+                    ##
+                    # Ensure this script will always fail quietly to prevent issues with telemetry
+                    # from causing the CI pipeline to fail
+                    catch_failures() {
+                      echo "The telemetry script failed with exit code $?. This is being" \
+                           "suppressed to prevent the CI pipeline from failing." 1>&2
+                      exit 0
+                    }
+
+                    main() {
+                      assert_non_empty TELEMETRY_ENDPOINT || exit 2
+                      assert_non_empty TELEMETRY_JOB_NAME || exit 2
+                      assert_non_empty TELEMETRY_ORB_NAME || exit 2
+                      assert_non_empty TELEMETRY_ORB_VERSION || exit 2
+                      assert_non_empty TELEMETRY_START || exit 2
+                      assert_non_empty TELEMETRY_SUCCESS || exit 2
+
+                      TELEMETRY_DURATION="$(($(date +%s) - TELEMETRY_START))"
+                      TELEMETRY_SOURCE="$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+                      TELEMETRY_TIMESTAMP="$(date +%s)"
+
+                      assert_dependency curl || exit 2
+                      assert_dependency jq || exit 2
+
+                      if ! is_empty TELEMETRY_JOB_PARAMETERS; then
+                        TELEMETRY_JOB_PARAMETERS="$(process_parameters "$TELEMETRY_JOB_PARAMETERS")"
+                      fi
+
+                      trap "catch_failures" EXIT
+
+                      REQUEST_PAYLOAD="$(build_payload)"
+                      REQUEST_AUTH="$(build_auth)"
+
+                      submit_telemetry "$TELEMETRY_ENDPOINT" "$REQUEST_PAYLOAD" "$REQUEST_AUTH"
+
+                      trap - EXIT
+                      return 0
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        main
+                    fi
+                environment:
+                    TELEMETRY_ENDPOINT: << parameters.telemetry_endpoint >>
+                    TELEMETRY_JOB_NAME: << parameters.telemetry_job_name >>
+                    TELEMETRY_JOB_PARAMETERS: << parameters.telemetry_job_parameters >>
+                    TELEMETRY_ORB_NAME: << parameters.telemetry_orb_name >>
+                    TELEMETRY_ORB_VERSION: << parameters.telemetry_orb_version >>
+                    TELEMETRY_SUCCESS: "true"
+                name: Submit telemetry
+                when: on_success
+            - run:
+                command: |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    ##
+                    # submit_telemetry will send a curl request to the telemetry endpoint with
+                    # the given body and authentication header.
+                    # Expected params:
+                    #  $1 - The endpoint to submit the request to
+                    #  $2 - The payload to submit (in JSON format)
+                    #  $3 - The authentication header to use
+                    submit_telemetry() {
+                      local _ENDPOINT=$1
+                      local _PAYLOAD=$2
+                      local _AUTHHEADER=$3
+
+                      curl -s \
+                        -X POST \
+                        -H "Content-Type: application/json" \
+                        -H "$_AUTHHEADER" \
+                        --data "$_PAYLOAD" \
+                        --max-time 5 \
+                        --retry 6 \
+                        "$_ENDPOINT"
+                    }
+
+                    ##
+                    # build_payload will return a JSON string containing the payload of the
+                    # telemetry request. Output will be echoed to stdout.
+                    build_payload() {
+                      jq -cn \
+                        --arg duration "${TELEMETRY_DURATION}" \
+                        --arg job_name "${TELEMETRY_JOB_NAME}" \
+                        --arg job_parameters "${TELEMETRY_JOB_PARAMETERS:-}" \
+                        --arg orb_name "${TELEMETRY_ORB_NAME}" \
+                        --arg orb_version "${TELEMETRY_ORB_VERSION}" \
+                        --arg success "${TELEMETRY_SUCCESS}" \
+                        --arg source "${TELEMETRY_SOURCE}" \
+                        --arg timestamp "${TELEMETRY_TIMESTAMP}" \
+                        '
+                        {
+                          source: $source,
+                          orb: {
+                            name: $orb_name,
+                            version: $orb_version
+                          },
+                          job: {
+                            name: $job_name,
+                            parameters: $job_parameters,
+                            duration: $duration,
+                            success: $success
+                          },
+                          timestamp: $timestamp
+                        }
+                        '
+                    }
+
+                    ##
+                    # build_auth will build the authentication header based on the current
+                    # environment. Output will be echoed to stdout.
+                    build_auth() {
+                      if ! is_empty CIRCLE_OIDC_TOKEN; then
+                        echo "X-Telemetry-Auth: CircleBearer $CIRCLE_OIDC_TOKEN"
+                        return 0
+                      fi
+
+                      if ! is_empty CIRCLE_PROJECT_USERNAME; then
+                        echo "X-Telemetry-Auth: CircleOrg $CIRCLE_PROJECT_USERNAME"
+                        return 0
+                      fi
+
+                      echo "X-Telemetry-Auth: Anonymous"
+                    }
+
+                    ##
+                    # process_parameters will parse the input as a list of parameters and prepare
+                    # them for submission to the telemetry API. Parameters marked as sensitive will
+                    # be redacted. Output will be echoed to stdout. Expected input is a JSON string
+                    # with the following schema:
+                    # {
+                    #   "$schema": "http://json-schema.org/draft-04/schema#",
+                    #   "type": "array",
+                    #   "items": {
+                    #     "type": "object",
+                    #     "properties": {
+                    #       "name": {
+                    #         "type": "string"
+                    #       },
+                    #       "value": {
+                    #         "type": "string"
+                    #       },
+                    #       "sensitive": {
+                    #         "type": "boolean"
+                    #       }
+                    #     },
+                    #     "required": [
+                    #       "name",
+                    #       "value"
+                    #     ]
+                    #   }
+                    # }
+                    process_parameters() {
+                      local _INPUT=$1
+                      local JQOUT=""
+                      local JQERR=""
+                      local JQPROG='map(if .sensitive == true then {name: .name, value: .value | gsub(".";"*")} else . end)'
+
+                      JQERR="$(mktemp)"
+                      JQOUT=$(jq -ce "$JQPROG" \<<<"$_INPUT" 2>"$JQERR") || JQEC=$?
+                      if [[ "${JQEC:-0}" -eq 4 ]]; then
+                        echo "Invalid input. Please check the parameters that were passed in are valid." 1>&2
+                        return 1
+                      elif [[ "${JQEC:-0}" -ne 0 ]]; then
+                        echo "Error when running jq. Error received was: $(<"$JQERR")" 1>&2
+                        return 2
+                      fi
+
+                      echo "$JQOUT"
+                      return 0
+                    }
+
+                    ##
+                    # is_empty will return 0 if the environment variable passed has
+                    # an empty value or is missing, or 1 otherwise
+                    is_empty() {
+                      local _TESTENV=$1
+
+                      test -z "$(printenv "$_TESTENV")"
+                      return $?
+                    }
+
+                    ##
+                    # assert_dependency will return 0 if the command is found on the path
+                    # or 1 if otherwise
+                    assert_dependency() {
+                      local _DEPENDENCY=$1
+
+                      if ! command -v "$_DEPENDENCY" >/dev/null; then
+                        echo "Required dependency $_DEPENDENCY is missing."
+                        return 1
+                      fi
+
+                      return 0
+                    }
+
+                    ##
+                    # assert_non_empty will return 0 if the environment variable passed has
+                    # a non-empty value or 1 if otherwise
+                    assert_non_empty() {
+                      local _TESTENV=$1
+
+                      if is_empty "$_TESTENV"; then
+                        echo "Required environment variable $(printenv "$_TESTENV") is missing."
+                        return 1
+                      fi
+
+                      return 0
+                    }
+
+                    ##
+                    # Ensure this script will always fail quietly to prevent issues with telemetry
+                    # from causing the CI pipeline to fail
+                    catch_failures() {
+                      echo "The telemetry script failed with exit code $?. This is being" \
+                           "suppressed to prevent the CI pipeline from failing." 1>&2
+                      exit 0
+                    }
+
+                    main() {
+                      assert_non_empty TELEMETRY_ENDPOINT || exit 2
+                      assert_non_empty TELEMETRY_JOB_NAME || exit 2
+                      assert_non_empty TELEMETRY_ORB_NAME || exit 2
+                      assert_non_empty TELEMETRY_ORB_VERSION || exit 2
+                      assert_non_empty TELEMETRY_START || exit 2
+                      assert_non_empty TELEMETRY_SUCCESS || exit 2
+
+                      TELEMETRY_DURATION="$(($(date +%s) - TELEMETRY_START))"
+                      TELEMETRY_SOURCE="$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+                      TELEMETRY_TIMESTAMP="$(date +%s)"
+
+                      assert_dependency curl || exit 2
+                      assert_dependency jq || exit 2
+
+                      if ! is_empty TELEMETRY_JOB_PARAMETERS; then
+                        TELEMETRY_JOB_PARAMETERS="$(process_parameters "$TELEMETRY_JOB_PARAMETERS")"
+                      fi
+
+                      trap "catch_failures" EXIT
+
+                      REQUEST_PAYLOAD="$(build_payload)"
+                      REQUEST_AUTH="$(build_auth)"
+
+                      submit_telemetry "$TELEMETRY_ENDPOINT" "$REQUEST_PAYLOAD" "$REQUEST_AUTH"
+
+                      trap - EXIT
+                      return 0
+                    }
+
+                    # Will not run if sourced for bats-core tests.
+                    ORB_TEST_ENV="bats-core"
+                    if [ "${0#*"$ORB_TEST_ENV"}" == "$0" ]; then
+                        main
+                    fi
+                environment:
+                    TELEMETRY_ENDPOINT: << parameters.telemetry_endpoint >>
+                    TELEMETRY_JOB_NAME: << parameters.telemetry_job_name >>
+                    TELEMETRY_JOB_PARAMETERS: << parameters.telemetry_job_parameters >>
+                    TELEMETRY_ORB_NAME: << parameters.telemetry_orb_name >>
+                    TELEMETRY_ORB_VERSION: << parameters.telemetry_orb_version >>
+                    TELEMETRY_SUCCESS: "false"
+                name: Submit telemetry
+                when: on_fail
+examples:
+    usage:
+        description: |
+            Sample usage of sending.
+        usage:
+            version: "2.1"
+            orbs:
+                sast: ovotech/telemetry@1
+            jobs:
+                test:
+                    description: |
+                        Does tests against the project. Sends telemetry about the job to Team CPPE, including whether the job passed or failed, what the repository the job was triggered from, and a list of arguments.
+                    executor: cimg/base:latest
+                    parameters:
+                        api_key:
+                            type: string
+                        directory:
+                            default: .
+                            type: string
+                    steps:
+                        - checkout
+                        - telemetry/collect_and_submit:
+                            steps:
+                                - test_code:
+                                    directory: << parameters.directory >>
+                            telemetry_job_name: job/test
+                            telemetry_job_parameters: |
+                                [
+                                  {"name": "api_key", "value": "<< parameters.api_key >>", "sensitive": true},
+                                  {"name": "directory", "value": "<< parameters.directory >>"}
+                                ]
+                            telemetry_orb_name: ovotech/sast
+                            telemetry_orb_version: 1.3.0
+            workflows:
+                quality-checks:
+                    jobs:
+                        - test:
+                            api_key: $MY_API_KEY
+

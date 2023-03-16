@@ -40,7 +40,7 @@ description: >
 usage:
   version: 2.1
   orbs:
-    jira: ovotech/jira@1.0.0
+    jira: ovotech/jira@2
   workflows:
     jira-workflow:
       jobs:
@@ -75,7 +75,7 @@ description: >
 usage:
   version: 2.1
   orbs:
-    jira: ovotech/jira@1
+    jira: ovotech/jira@2
   workflows:
     jira-workflow:
       jobs:

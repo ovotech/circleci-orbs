@@ -49,6 +49,7 @@ Orbs follow the conventions:
 - [ovotech/setup-scheduled-pipeline](setup-scheduled-pipeline) - Consumer Products Production Engineering team orb responsible for setting up schedules for [scheduled pipelines](https://circleci.com/docs/2.0/scheduled-pipelines/#get-started).
 - [ovotech/jira](jira) - Interact with JIRA from a CI pipeline.
 - [ovotech/github-actions](github-actions) - Trigger (and optionally wait for completion) GitHub Actions pipeline from CircleCI
+- [ovotech/telemetry](telemetry) - Consumer Products Production Engineering team orb which enables sending Orb usage telemetry.
 
 Other orbs in the ovotech namespace:
 
