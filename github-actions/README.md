@@ -68,6 +68,27 @@ usage:
             wait_for_completion: true
 ```
 
+### Trigger GitHub Action workflow that requires extra parameters
+
+```yaml
+description: >
+  Trigger a GitHub Actions pipeline and wait for it to complete.
+
+usage:
+  version: 2.1
+  orbs:
+    github-actions: ovotech/github-actions@1.0.0
+  workflows:
+    gha-workflow:
+      jobs:
+        - github-actions/execute_workflow:
+            github_action_token: $GHA_API_TOKEN
+            repo_name: team-cppe
+            workflow_id: trigger-circle.yml
+            git_branch: main
+            workflow_parameters: '{"param_1":"value_1","param_2":"true"}'
+            wait_for_completion: true
+```
 
 ### Download an artifact from a GitHub Actions Workflow
 
