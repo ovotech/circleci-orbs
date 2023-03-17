@@ -310,7 +310,8 @@ commands:
 
                         _MODULE_EXISTS=$(module_exists "$PARAM_MODULE_NAME" "$PARAM_MODULE_PROVIDER") || exit 2
                         if [ "$_MODULE_EXISTS" = false ]; then
-                            printf "Fail: No module defintion found for %s in Terraform Cloud.\n\n" "$PARAM_MODULE_NAME"
+                            printf "Fail: No module defintion found for %s in Terraform Cloud.\n" "$PARAM_MODULE_NAME"
+                            printf "Please check you have published the module using the https://github.com/ovotech/terraform-cloud-as-code repository.\n\n"
                             exit 2
                         fi
 
