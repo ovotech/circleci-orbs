@@ -27,3 +27,4 @@
 /kap-kmi-deploy/                 @ovotech/agent-platform-enablement
 /build-utilities                 @ovotech/ohs-domainleads
 /jira/                           @ovotech/consumer-products-production-engineering
+/github-actions                  @ovotech/consumer-products-production-engineering

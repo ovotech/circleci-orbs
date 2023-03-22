@@ -111,6 +111,9 @@ parameters:
   run-jira:
     type: boolean
     default: false
+  run-github-actions:
+    type: boolean
+    default: false
 
 jobs:
   test_python:
@@ -591,5 +594,14 @@ workflows:
           path: jira
       - publish_orb:
           path: jira
+          requires:
+            - validate_orb
+  github-actions:
+    when: << pipeline.parameters.run-github-actions >>
+    jobs:
+      - validate_orb:
+          path: github-actions
+      - publish_orb:
+          path: github-actions
           requires:
             - validate_orb
