@@ -13,7 +13,7 @@ commands:
                 description: List of steps to collect telemetry from
                 type: steps
             telemetry_endpoint:
-                default: https://telemetry.cppe.ovotech.org.uk/v1/submit
+                default: https://circleci-telemetry.cppe.ovotech.org.uk/create
                 description: The endpoint to submit telemetry details to
                 type: string
             telemetry_job_name:
@@ -85,16 +85,12 @@ commands:
                         '
                         {
                           source: $source,
-                          orb: {
-                            name: $orb_name,
-                            version: $orb_version
-                          },
-                          job: {
-                            name: $job_name,
-                            parameters: $job_parameters,
-                            duration: $duration,
-                            success: $success
-                          },
+                          orb_name: $orb_name,
+                          orb_version: $orb_version,
+                          job_name: $job_name,
+                          job_parameters: $job_parameters,
+                          duration: $duration,
+                          success: $success,
                           timestamp: $timestamp
                         }
                         '
@@ -228,6 +224,8 @@ commands:
 
                       if ! is_empty TELEMETRY_JOB_PARAMETERS; then
                         TELEMETRY_JOB_PARAMETERS="$(process_parameters "$TELEMETRY_JOB_PARAMETERS")"
+                      else
+                        TELEMETRY_JOB_PARAMETERS="$(process_parameters "[]")"
                       fi
 
                       trap "catch_failures" EXIT
@@ -298,16 +296,12 @@ commands:
                         '
                         {
                           source: $source,
-                          orb: {
-                            name: $orb_name,
-                            version: $orb_version
-                          },
-                          job: {
-                            name: $job_name,
-                            parameters: $job_parameters,
-                            duration: $duration,
-                            success: $success
-                          },
+                          orb_name: $orb_name,
+                          orb_version: $orb_version,
+                          job_name: $job_name,
+                          job_parameters: $job_parameters,
+                          duration: $duration,
+                          success: $success,
                           timestamp: $timestamp
                         }
                         '
@@ -441,6 +435,8 @@ commands:
 
                       if ! is_empty TELEMETRY_JOB_PARAMETERS; then
                         TELEMETRY_JOB_PARAMETERS="$(process_parameters "$TELEMETRY_JOB_PARAMETERS")"
+                      else
+                        TELEMETRY_JOB_PARAMETERS="$(process_parameters "[]")"
                       fi
 
                       trap "catch_failures" EXIT
@@ -493,7 +489,7 @@ examples:
                             steps:
                                 - test_code:
                                     directory: << parameters.directory >>
-                            telemetry_job_name: job/test
+                            telemetry_job_name: test
                             telemetry_job_parameters: |
                                 [
                                   {"name": "api_key", "value": "<< parameters.api_key >>", "sensitive": true},
