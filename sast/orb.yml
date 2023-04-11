@@ -5,7 +5,7 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
     source_url: https://github.com/ovotech/team-cppe
 orbs:
-    telemetry: ovotech/telemetry@1
+    telemetry: ovotech/telemetry@1.0.1
 commands:
     install_checkov:
         description: |
