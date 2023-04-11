@@ -5,7 +5,7 @@ display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/jira/README.md
     source_url: https://www.github.com/ovotech/team-cppe
 orbs:
-    telemetry: ovotech/telemetry@1
+    telemetry: ovotech/telemetry@1.0.1
 commands:
     create_issue:
         description: |
