@@ -5,7 +5,7 @@ display:
     home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/setup-scheduled-pipeline/README.md
     source_url: https://www.github.com/ovotech/team-cppe
 orbs:
-    telemetry: ovotech/telemetry@1
+    telemetry: ovotech/telemetry@1.0.1
 commands:
     create_scheduled_pipeline:
         description: |
