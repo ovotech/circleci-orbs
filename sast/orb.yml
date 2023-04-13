@@ -4,6 +4,8 @@ description: |
 display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/sast/README.md
     source_url: https://github.com/ovotech/team-cppe
+orbs:
+    telemetry: ovotech/telemetry@1.0.1
 commands:
     install_checkov:
         description: |
@@ -480,19 +482,33 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_dockerfile:
-                dockerfile: <<parameters.dockerfile>>
-                ignore-rules: <<parameters.ignore-rules>>
-                trusted-registries: <<parameters.trusted-registries>>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_dockerfile:
+                        dockerfile: <<parameters.dockerfile>>
+                        ignore-rules: <<parameters.ignore-rules>>
+                        trusted-registries: <<parameters.trusted-registries>>
+                telemetry_job_name: job/scan_dockerfile
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"},
+                      {"name": "trusted-registries", "value": "<< parameters.trusted-registries >>"},
+                      {"name": "dockerfile", "value": "<< parameters.dockerfile >>"},
+                      {"name": "ignore-rules", "value": "<< parameters.ignore-rules >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
     scan_golang:
         description: |
             Scans a Go project using Semgrep
@@ -518,17 +534,29 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_golang:
-                directory: <<parameters.directory>>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_golang:
+                        directory: <<parameters.directory>>
+                telemetry_job_name: job/scan_golang
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "directory", "value": "<< parameters.directory >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
     scan_javascript:
         description: |
             Scans a JavaScript project using Semgrep
@@ -554,17 +582,29 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_typescript:
-                directory: <<parameters.directory>>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_typescript:
+                        directory: <<parameters.directory>>
+                telemetry_job_name: job/scan_typescript
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "directory", "value": "<< parameters.directory >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
     scan_python:
         description: |
             Scans a Python project using Semgrep
@@ -590,17 +630,29 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_python:
-                directory: <<parameters.directory>>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_python:
+                        directory: <<parameters.directory>>
+                telemetry_job_name: job/scan_python
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "directory", "value": "<< parameters.directory >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
     scan_scala:
         description: |
             Scans a Scala project using Semgrep
@@ -626,17 +678,29 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_scala:
-                directory: <<parameters.directory>>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_scala:
+                        directory: <<parameters.directory>>
+                telemetry_job_name: job/scan_scala
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "directory", "value": "<< parameters.directory >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
     scan_terraform:
         description: |
             Scans terraform files using Checkov Infrastructure as code static analysis against a directory
@@ -669,19 +733,33 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_terraform:
-                baseline: << parameters.baseline >>
-                config_file: << parameters.config_file >>
-                directory: << parameters.directory >>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_terraform:
+                        baseline: << parameters.baseline >>
+                        config_file: << parameters.config_file >>
+                        directory: << parameters.directory >>
+                telemetry_job_name: job/scan_terraform
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "directory", "value": "<< parameters.directory >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"},
+                      {"name": "config_file", "value": "<< parameters.config_file >>"},
+                      {"name": "baseline", "value": "<< parameters.baseline >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
     scan_typescript:
         description: |
             Scans a TypeScript project using Semgrep
@@ -707,17 +785,29 @@ jobs:
                     Workspace root path that is either an absolute path or a path relative to the working directory
                 type: string
         steps:
-            - when:
-                condition: <<parameters.checkout>>
+            - telemetry/collect_and_submit:
                 steps:
-                    - checkout
-            - when:
-                condition: <<parameters.attach-workspace>>
-                steps:
-                    - attach_workspace:
-                        at: <<parameters.workspace-root>>
-            - scan_typescript:
-                directory: <<parameters.directory>>
+                    - when:
+                        condition: <<parameters.checkout>>
+                        steps:
+                            - checkout
+                    - when:
+                        condition: <<parameters.attach-workspace>>
+                        steps:
+                            - attach_workspace:
+                                at: <<parameters.workspace-root>>
+                    - scan_typescript:
+                        directory: <<parameters.directory>>
+                telemetry_job_name: job/scan_typescript
+                telemetry_job_parameters: |
+                    [
+                      {"name": "attach-workspace", "value": "<< parameters.attach-workspace >>"},
+                      {"name": "checkout", "value": "<< parameters.checkout >>"},
+                      {"name": "directory", "value": "<< parameters.directory >>"},
+                      {"name": "workspace-root", "value": "<< parameters.workspace-root >>"}
+                    ]
+                telemetry_orb_name: ovotech/sast
+                telemetry_orb_version: 1.6.0
 examples:
     scan_dockerfile_example:
         description: |
