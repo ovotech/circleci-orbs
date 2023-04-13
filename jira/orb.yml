@@ -4,6 +4,8 @@ description: |
 display:
     home_url: https://github.com/ovotech/team-cppe/blob/main/circleci-orbs/jira/README.md
     source_url: https://www.github.com/ovotech/team-cppe
+orbs:
+    telemetry: ovotech/telemetry@1.0.1
 commands:
     create_issue:
         description: |
@@ -340,14 +342,30 @@ jobs:
                 description: The user email id of the account using which the api_token is configured.
                 type: string
         steps:
-            - create_issue:
-                api_token: <<parameters.api_token>>
-                issue_content: <<parameters.issue_content>>
-                issue_summary: <<parameters.issue_summary>>
-                issue_type: <<parameters.issue_type>>
-                project_key: <<parameters.project_key>>
-                unique_id: <<parameters.unique_id>>
-                user_email_id: <<parameters.user_email_id>>
+            - telemetry/collect_and_submit:
+                steps:
+                    - create_issue:
+                        api_token: <<parameters.api_token>>
+                        issue_content: <<parameters.issue_content>>
+                        issue_summary: <<parameters.issue_summary>>
+                        issue_type: <<parameters.issue_type>>
+                        project_key: <<parameters.project_key>>
+                        unique_id: <<parameters.unique_id>>
+                        user_email_id: <<parameters.user_email_id>>
+                telemetry_job_name: job/create_issue
+                telemetry_job_parameters: |
+                    [
+                      {"name": "user_email_id", "value": "<< parameters.user_email_id >>"},
+                      {"name": "api_token", "value": "<< parameters.api_token >>", "sensitive": true},
+                      {"name": "project_key", "value": "<< parameters.project_key >>"},
+                      {"name": "priority", "value": "<< parameters.priority >>"},
+                      {"name": "issue_type", "value": "<< parameters.issue_type >>"},
+                      {"name": "unique_id", "value": "<< parameters.unique_id >>"},
+                      {"name": "issue_summary", "value": "<< parameters.issue_summary >>"},
+                      {"name": "issue_content", "value": "<< parameters.issue_content >>"}
+                    ]
+                telemetry_orb_name: ovotech/jira
+                telemetry_orb_version: 2.1.0
     query_issue:
         description: |
             Query JIRA board for any existing issues matching a specified JQL query.
@@ -369,11 +387,23 @@ jobs:
                 description: The user email id of the account using which the api_token is configured.
                 type: string
         steps:
-            - query_issue:
-                api_token: <<parameters.api_token>>
-                jql_query: <<parameters.jql_query>>
-                project_key: <<parameters.project_key>>
-                user_email_id: <<parameters.user_email_id>>
+            - telemetry/collect_and_submit:
+                steps:
+                    - query_issue:
+                        api_token: <<parameters.api_token>>
+                        jql_query: <<parameters.jql_query>>
+                        project_key: <<parameters.project_key>>
+                        user_email_id: <<parameters.user_email_id>>
+                telemetry_job_name: job/query_issue
+                telemetry_job_parameters: |
+                    [
+                      {"name": "user_email_id", "value": "<< parameters.user_email_id >>"},
+                      {"name": "api_token", "value": "<< parameters.api_token >>", "sensitive": true},
+                      {"name": "project_key", "value": "<< parameters.project_key >>"},
+                      {"name": "jql_query", "value": "<< parameters.jql_query >>"}
+                    ]
+                telemetry_orb_name: ovotech/jira
+                telemetry_orb_version: 2.1.0
 examples:
     create_issue:
         description: |
