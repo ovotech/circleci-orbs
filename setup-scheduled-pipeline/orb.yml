@@ -4,6 +4,8 @@ description: |
 display:
     home_url: https://www.github.com/ovotech/team-cppe/circleci-orbs/setup-scheduled-pipeline/README.md
     source_url: https://www.github.com/ovotech/team-cppe
+orbs:
+    telemetry: ovotech/telemetry@1.0.1
 commands:
     create_scheduled_pipeline:
         description: |
@@ -215,15 +217,31 @@ jobs:
                 description: Branch on which the scheduled pipeline will trigger
                 type: string
         steps:
-            - create_scheduled_pipeline:
-                circleci_token: <<parameters.circleci_token>>
-                config_path: <<parameters.config_path>>
-                schedule_days: <<parameters.schedule_days>>
-                schedule_description: <<parameters.schedule_description>>
-                schedule_hour_frequency: <<parameters.schedule_hour_frequency>>
-                schedule_hours: <<parameters.schedule_hours>>
-                schedule_name: <<parameters.schedule_name>>
-                target_branch: <<parameters.target_branch>>
+            - telemetry/collect_and_submit:
+                steps:
+                    - create_scheduled_pipeline:
+                        circleci_token: <<parameters.circleci_token>>
+                        config_path: <<parameters.config_path>>
+                        schedule_days: <<parameters.schedule_days>>
+                        schedule_description: <<parameters.schedule_description>>
+                        schedule_hour_frequency: <<parameters.schedule_hour_frequency>>
+                        schedule_hours: <<parameters.schedule_hours>>
+                        schedule_name: <<parameters.schedule_name>>
+                        target_branch: <<parameters.target_branch>>
+                telemetry_job_name: job/create_scheduled_pipeline
+                telemetry_job_parameters: |
+                    [
+                      {"name": "schedule_name", "value": "<< parameters.schedule_name >>"},
+                      {"name": "schedule_description", "value": "<< parameters.schedule_description >>"},
+                      {"name": "schedule_hour_frequency", "value": "<< parameters.schedule_hour_frequency >>"},
+                      {"name": "schedule_hours", "value": "<< parameters.schedule_hours >>"},
+                      {"name": "schedule_days", "value": "<< parameters.schedule_days >>"},
+                      {"name": "target_branch", "value": "<< parameters.target_branch >>"},
+                      {"name": "circleci_token", "value": "<< parameters.circleci_token >>"},
+                      {"name": "config_path", "value": "<< parameters.config_path >>"}
+                    ]
+                telemetry_orb_name: ovotech/setup-scheduled-pipeline
+                telemetry_orb_version: 1.2.0
 examples:
     example:
         description: |
