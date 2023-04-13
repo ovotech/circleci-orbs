@@ -1,1 +1,1 @@
-ovotech/github-actions@1.0.0
+ovotech/github-actions@1.1.0
