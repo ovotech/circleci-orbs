@@ -74,6 +74,7 @@ commands:
       - add_ssh_keys:
           fingerprints:
             - "dd:a6:46:b6:f6:c2:dc:61:bd:b9:ea:96:3b:8c:8a:81"
+            - "cb:86:d5:0e:84:4a:6a:b5:9b:0e:7c:fd:bf:39:25:72" # rac-daily-reads-kafka-ingestion
       - run:
           name: Add host keys
           command: |
