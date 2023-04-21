@@ -5,11 +5,6 @@ include github.py
 
 EOF
 
-cat >/tmp/cmp.py <<"EOF"
-include cmp.py
-
-EOF
-
 cat >/tmp/comment_util.py <<"EOF"
 include comment_util.py
 
@@ -71,6 +66,11 @@ fi
 
 set -e
 
+function sanitise_plan() {
+  local plan="$1"
+  echo "$plan" | awk '{gsub(/^[[:space:]]*~ latest_restorable_time[[:space:]]*=.*$/,"")};1'
+}
+
 
 if [[ "<< parameters.auto_approve >>" == "true" || $TF_EXIT -eq 0 ]]; then
     echo "Automatically approving plan"
@@ -82,10 +82,23 @@ else
         exit 1
     fi
 
-    if python3 /tmp/cmp.py plan.txt approved-plan.txt; then
+    plan=$(cat "plan.txt")
+    approved_plan=$(cat "approved-plan.txt")
+
+    sanitised_plan=$(sanitise_plan "$plan")
+    sanitised_approved_plan=$(sanitise_plan "$approved_plan")
+
+    sanitised_plan_file=$(mktemp)
+    sanitised_approved_plan_file=$(mktemp)
+    echo "$sanitised_plan" > "$sanitised_plan_file"
+    echo "$sanitised_approved_plan" > "$sanitised_approved_plan_file"
+
+    # run diff on temporary files
+    if diff_output=$(diff "$sanitised_plan_file" "$sanitised_approved_plan_file"); then
         apply
     else
         update_status "Plan not applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}) (Plan has changed)"
+        update_status "$diff_output"
         exit 1
     fi
 fi
