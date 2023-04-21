@@ -68,7 +68,7 @@ set -e
 
 function sanitise_plan() {
   local plan="$1"
-  echo "$plan" | awk '{gsub(/^[[:space:]]*~ latest_restorable_time[[:space:]]*=.*$/,"")};1'
+  echo "$plan" | sed -E '/Releasing state lock. This may take a few moments\.\.\./d' | awk '{gsub(/^[[:space:]]*~ latest_restorable_time[[:space:]]*=.*$/,"")};1'
 }
 
 
@@ -98,7 +98,7 @@ else
         apply
     else
         update_status "Plan not applied in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL}) (Plan has changed)"
-        update_status "$diff_output"
+        echo "$diff_output"
         exit 1
     fi
 fi
