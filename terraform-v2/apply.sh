@@ -82,6 +82,8 @@ else
         exit 1
     fi
 
+    set +x
+        
     plan=$(cat "plan.txt")
     approved_plan=$(cat "approved-plan.txt")
 
