@@ -1,3 +1,6 @@
+# 3.0.1
+* Bump Snyk orb version to get retries for the Snyk CLI download step
+
 # 3.0.0
 * Using circleci ip's for avro job to enable connectivity to our aiven clusters
 * OIDC used in avro job
