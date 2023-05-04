@@ -35,6 +35,7 @@ Parameters for this step:
 | `docker_registry` | Docker registry |
 | `docker_file` | Docker file name + location |
 | `clone_folder` | Clone build-script folder |
+| `working_dir` | Optional working directory |
 
 ### <u>save-image</u>
 

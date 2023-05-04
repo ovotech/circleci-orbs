@@ -39,6 +39,9 @@ commands:
         description: "Clone build-script folder"
         type: string
         default: $HOME/utilities
+      working_dir:
+        description: "Working folder to build the image"
+        type: string
     steps:
       - checkout
       - clone:
@@ -55,6 +58,7 @@ commands:
                 DOCKERFILE=<< parameters.docker_file >>\
                 IMAGE_NAME=<< parameters.image_name >>\
                 DOCKER_REGISTRY=<< parameters.docker_registry >>
+                WORKING_DIR=<< parameters.working_dir >>
 
   save-image:
     description: 'Saves container images to the circleci workspace'
