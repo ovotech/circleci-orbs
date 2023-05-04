@@ -57,7 +57,7 @@ commands:
                 NUGET_PASSWORD=$NUGET_PASSWORD\
                 DOCKERFILE=<< parameters.docker_file >>\
                 IMAGE_NAME=<< parameters.image_name >>\
-                DOCKER_REGISTRY=<< parameters.docker_registry >>
+                DOCKER_REGISTRY=<< parameters.docker_registry >>\
                 WORKING_DIR=<< parameters.working_dir >>
 
   save-image:
