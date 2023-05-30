@@ -5,6 +5,8 @@ current_template = (
     '<summary>View Terraform Plan</summary>\n\n'
     '```terraform\n'
     'Output is limited to 1000 lines and may be truncated. See CircleCI for full details.\n'
+    '```\n'
+    '```diff\n'
     '{plan}\n'
     '```\n'
     '</details>\n'

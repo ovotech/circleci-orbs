@@ -19,6 +19,8 @@ terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -
     | $COMPACT_PLAN \
         >plan.txt
 
+cat plan.txt | sed -E 's/^([[:space:]]+)([-+])/\2\1/g'  > diff_friendly_plan.txt
+
 readonly TF_EXIT=${PIPESTATUS[0]}
 set -e
 
@@ -31,7 +33,7 @@ if [[ -n "$GITHUB_TOKEN" && "<< parameters.add_github_comment >>" == "true" ]]; 
     export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
     export label="<< parameters.label >>"
 
-    if ! python3 /tmp/github.py plan <plan.txt; then
+    if ! python3 /tmp/github.py plan <diff_friendly_plan.txt; then
         echo "Error adding comment to PR"
     fi
 fi
