@@ -59,9 +59,11 @@ if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
         | $TFMASK \
         | tee /dev/fd/3 \
         | $COMPACT_PLAN \
-    ) > plan.txt
+     > ../plan.txt \
+     ; exit ${PIPESTATUS[0]}
+    )
 
-    TF_EXIT=${PIPESTATUS[0]}
+    TF_EXIT=$?
 
     if [[ $TF_EXIT -eq 1 ]]; then
         update_status "Error creating plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"

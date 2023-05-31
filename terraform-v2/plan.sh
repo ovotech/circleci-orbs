@@ -19,9 +19,11 @@ terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -
     | $TFMASK \
     | tee /dev/fd/3 \
     | $COMPACT_PLAN \
-) > plan.txt
-
-readonly TF_EXIT=${PIPESTATUS[0]}
+    > ../plan.txt \
+    ; exit ${PIPESTATUS[0]}
+)
+  
+readonly TF_EXIT=$?
 set -e
 
 if [[ $TF_EXIT -eq 1 ]]; then
