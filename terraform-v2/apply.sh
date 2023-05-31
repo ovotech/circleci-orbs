@@ -55,7 +55,7 @@ set +e
 
 if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
     terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS
-    terraform show -no-color plan.out \
+    cd ${module_path} && terraform show -no-color plan.out \
         | $TFMASK \
         | tee /dev/fd/3 \
         | $COMPACT_PLAN \
