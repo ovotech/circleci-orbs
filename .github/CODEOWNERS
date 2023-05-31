@@ -1,6 +1,6 @@
-*                                @ovotech/production-eng @ovotech/dex
-/terraform/                      @ovotech/production-eng @ovotech/dex
-/clair-scanner/                  @ovotech/production-eng @ovotech/dex
+*                                @ovotech/production-eng
+/terraform/                      @ovotech/production-eng
+/clair-scanner/                  @ovotech/production-eng
 /aws-rotate-keys/                @mwz
 /rac-gcp-deploy/                 @ovotech/reads-consumption
 /rac-kmi-deploy/                 @ovotech/reads-consumption
