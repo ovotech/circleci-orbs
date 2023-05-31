@@ -55,6 +55,7 @@ set +e
 
 if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
     terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS
+    TF_EXIT=$?
     cd ${module_path}
     terraform show -no-color plan.out \
         | $TFMASK \
@@ -63,7 +64,6 @@ if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
      > ../plan.txt
      
 
-    TF_EXIT=${PIPESTATUS[0]}
     cd -
     
     if [[ $TF_EXIT -eq 1 ]]; then

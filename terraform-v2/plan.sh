@@ -15,13 +15,14 @@ exec 3>&1
 set +e
 terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS
 
+readonly TF_EXIT=$?
+
 cd ${module_path}
 terraform show -no-color plan.out \
     | $TFMASK \
     | tee /dev/fd/3 \
     | $COMPACT_PLAN \
  > plan.txt
-readonly TF_EXIT=${PIPESTATUS[0]}
 cd -
 
 set -e
