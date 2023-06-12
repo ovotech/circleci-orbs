@@ -73,18 +73,19 @@ commands:
                 --credential-source-file=<< parameters.config_dir >>/<< parameters.oidc_token_file_name >>
       - run:
           name: get-gcp-secrets
-          when:
-            condition:
-              equal: [ true, << parameters.set_gcp_secrets >> ]
           command: |
-            gcloud auth login --brief --cred-file "<< parameters.config_dir >>/<< parameters.gcp_cred_file >>"
-            IFS="," read -ra SECRETNAMES \<<< << parameters.gcp_secrets_names >>
-            for secret in "${SECRETNAMES[@]}"
-            do
-              echo "export ${secret}=$(gcloud secrets versions access latest \
-                --secret=${secret} --project=$GCP_PROJECT_NAME)" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
-            done
             echo "export GCP_PROJECT_NAME=$GCP_PROJECT_NAME" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+            if [ << parameters.set_gcp_secrets >> == true]; then
+              gcloud auth login --brief --cred-file "<< parameters.config_dir >>/<< parameters.gcp_cred_file >>"
+              IFS="," read -ra SECRETNAMES \<<< << parameters.gcp_secrets_names >>
+              for secret in "${SECRETNAMES[@]}"
+              do
+                echo "export ${secret}=$(gcloud secrets versions access latest \
+                  --secret=${secret} --project=$GCP_PROJECT_NAME)" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+              done
+            else
+              echo "Skipping this step because get-gcp-secrets parameter is set to false"
+            fi
       - persist_to_workspace:
           root: << parameters.config_dir >>
           paths:
