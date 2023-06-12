@@ -13,19 +13,24 @@ commands:
     parameters:
       project_id:
         description: The numeric value of the GCP project id
-        type: string
+        type: env_var_name
+        default: GCP_PROJECT_ID
       workload_identity_pool_id:
         description: The workload Identity pool id in the GCP project
-        type: string
+        type: env_var_name
+        default: GCP_WIP_ID
       workload_identity_pool_provider_id:
         description: The workload Identity pool circleci provider id in the GCP project
-        type: string
+        type: env_var_name
+        default: GCP_WIP_PROVIDER_ID
       service_account_email:
         description: The service account email configured in the above workload Identity pool provider.
-        type: string
+        type: env_var_name
+        default: GCP_SERVICE_ACCOUNT_EMAIL
       circle_oidc_token:
         description: The circle ci OIDC token which will be sent to GCP workload identity provider for verification. 
-        type: string
+        type: env_var_name
+        default: CIRCLE_OIDC_TOKEN
       config_dir:
         description: The directory in which the oidc token will be created. This will be persisted in circleci workspace
         type: string
