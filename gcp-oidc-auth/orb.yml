@@ -15,6 +15,10 @@ commands:
         description: The numeric value of the GCP project id
         type: env_var_name
         default: GCP_PROJECT_ID
+      project_name:
+        description: The name of the GCP project
+        type: env_var_name
+        default: GCP_PROJECT_NAME
       workload_identity_pool_id:
         description: The workload Identity pool id in the GCP project
         type: env_var_name
@@ -43,6 +47,15 @@ commands:
         description: The file in which the circle_oidc_token will be stored to send to GCP
         type: string
         default: "oidc_token.json"
+      set_gcp_secrets:
+        type: boolean
+        default: false
+      gcp_secrets_names:
+        type: string
+        default: ""
+      gcp_secrets_out_file:
+        type: string
+        default: "secrets.env"
     steps:
       - gcp-cli/install:
           version: 433.0.1
@@ -58,9 +71,25 @@ commands:
                 --output-file="<< parameters.config_dir >>/<< parameters.gcp_cred_file >>" \
                 --service-account="${<< parameters.service_account_email >>}" \
                 --credential-source-file=<< parameters.config_dir >>/<< parameters.oidc_token_file_name >>
+      - run:
+          name: get-gcp-secrets
+          when:
+            condition:
+              equal: [ true, << parameters.set_gcp_secrets >> ]
+          command: |
+            gcloud auth login --brief --cred-file "<< parameters.config_dir >>/<< parameters.gcp_cred_file >>"
+            IFS="," read -ra SECRETNAMES \<<< << parameters.gcp_secrets_names >>
+            for secret in "${SECRETNAMES[@]}"
+            do
+              echo "export ${secret}=$(gcloud secrets versions access latest \
+                --secret=${secret} --project=$GCP_PROJECT_NAME)" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+            done
+            echo "export GCP_PROJECT_NAME=$GCP_PROJECT_NAME" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
       - persist_to_workspace:
           root: << parameters.config_dir >>
           paths:
             - << parameters.gcp_cred_file >>
             - << parameters.oidc_token_file_name >>
+            - << parameters.gcp_secrets_out_file >>
               
+  
