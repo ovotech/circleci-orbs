@@ -3,7 +3,7 @@ description: An orb to authenticate with GCP using CircleCI OIDC
 orbs:
   gcp-cli: circleci/gcp-cli@3.1.0
 commands:
-  gcp-oidc-generate-cred-config-file:
+  generate-cred-config:
     description: "Authenticate with GCP using a CircleCI OIDC token."
     parameters:
       project_id:
@@ -22,6 +22,10 @@ commands:
         description: The service account email configured in the above workload Identity pool provider.
         type: env_var_name
         default: GCP_SERVICE_ACCOUNT_EMAIL
+      circle_oidc_token:
+        description: The circle ci OIDC token which will be sent to GCP workload identity provider for verification. 
+        type: env_var_name
+        default: CIRCLE_OIDC_TOKEN
       config_dir:
         description: The directory in which the oidc token will be created. This will be persisted in circleci workspace
         type: string
@@ -30,10 +34,6 @@ commands:
         description: The name of the file in which the generated GCP OIDC credential will be stored 
         type: string
         default: "gcp_cred_config.json"
-      circle_oidc_token:
-        description: The circle ci OIDC token which will be sent to GCP workload identity provider for verification. 
-        type: env_var_name
-        default: CIRCLE_OIDC_TOKEN
       oidc_token_file_name:
         description: The file in which the circle_oidc_token will be stored to send to GCP
         type: string
