@@ -2,6 +2,11 @@ version: 2.1
 description: An orb to authenticate with GCP using CircleCI OIDC
 orbs:
   gcp-cli: circleci/gcp-cli@3.1.0
+executors:
+  default: 
+    docker:
+      - image: google/cloud-sdk:433.0.1
+
 commands:
   generate-cred-config:
     description: "Authenticate with GCP using a CircleCI OIDC token."
