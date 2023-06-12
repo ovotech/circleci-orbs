@@ -1,0 +1,1 @@
+ovotech/gcp-oidc-auth@1.0.0
