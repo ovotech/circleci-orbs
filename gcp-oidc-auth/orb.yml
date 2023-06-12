@@ -40,7 +40,7 @@ commands:
         default: "oidc_token.json"
     steps:
       - gcp-cli/install:
-          version: 404.0.0
+          version: 433.0.1
       - run:
           name: gcp-oidc-generate-cred-config-file
           command: |
@@ -57,3 +57,22 @@ commands:
           paths:
             - << parameters.gcp_cred_file >>
             - << parameters.oidc_token_file_name >>
+              
+  import-gcp-secrets:
+    description: Retrieves a secret from GCP Secret Manager.
+    parameters:
+      secret-names:
+        type: string
+        default: << pipeline.parameters.gcp-secrets-import >>
+    steps:
+      - run:
+          name: import-gcp-secrets
+          command: |
+            gcloud auth login --brief --cred-file "<< pipeline.parameters.config-dir >>/<< pipeline.parameters.gcp_cred_file >>"
+            IFS="," read -ra SECRETNAMES \<<< << parameters.secret-names >>
+            for secret in "${SECRETNAMES[@]}"
+            do
+              echo "export ${secret}=$(gcloud secrets versions access latest \
+                --secret=${secret} --project=$GCP_PROJECT_NAME)" >> << pipeline.parameters.config-dir >>/<< pipeline.parameters.secret-file >>
+            done
+            echo "export GCP_PROJECT_NAME=$GCP_PROJECT_NAME" >> << pipeline.parameters.config-dir >>/<< pipeline.parameters.secret-file >>
