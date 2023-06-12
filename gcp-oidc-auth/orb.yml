@@ -50,6 +50,7 @@ commands:
           name: gcp-oidc-generate-cred-config-file
           command: |
             # Store OIDC token in temp file
+            mkdir -p << parameters.config_dir >>
             echo "$<< parameters.circle_oidc_token >>" > << parameters.config_dir >>/<< parameters.oidc_token_file_name >>
             # Create a credential configuration for the generated OIDC ID Token
             gcloud iam workload-identity-pools create-cred-config \
