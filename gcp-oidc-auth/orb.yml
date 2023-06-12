@@ -39,6 +39,8 @@ commands:
         type: string
         default: "oidc_token.json"
     steps:
+      - gcp-cli/setup:
+          version: 404.0.0
       - run:
           name: gcp-oidc-generate-cred-config-file
           command: |
