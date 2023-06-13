@@ -77,7 +77,6 @@ commands:
           name: get-gcp-secrets
           command: |
             echo "export GCP_PROJECT_NAME=$<< parameters.project_name >>" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
-            echo "export GCP_PROJECT_NAME=$<< parameters.project_name >>" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
             echo "export GOOGLE_APPLICATION_CREDENTIALS='<< parameters.config_dir >>/<< parameters.gcp_cred_file >>' >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>"
             if [ << parameters.set_gcp_secrets >> == true ]; then
               gcloud auth login --brief --cred-file "<< parameters.config_dir >>/<< parameters.gcp_cred_file >>"
@@ -117,5 +116,4 @@ commands:
       - run:
           name: set-environment
           command: |
-            echo "export GOOGLE_APPLICATION_CREDENTIALS='<< parameters.config_dir >>/<< parameters.gcp_cred_file >>'" | tee -a "$BASH_ENV"
             echo "source << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>" | tee -a "$BASH_ENV"
