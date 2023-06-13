@@ -48,9 +48,11 @@ commands:
         type: string
         default: "oidc_token.json"
       set_gcp_secrets:
+        description: If true, then this step will fetch all the gcp secrets mentioned in `gcp_secrets_names` parameter into a file `gcp_secrets_out_file`
         type: boolean
         default: false
       gcp_secrets_names:
+        description: A string of comma separated list of gcp secret KEYS to fetch. (MUST have IAM permission to read these secrets)
         type: string
         default: ""
       gcp_secrets_out_file:
@@ -74,7 +76,9 @@ commands:
       - run:
           name: get-gcp-secrets
           command: |
-            echo "export GCP_PROJECT_NAME=$GCP_PROJECT_NAME" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+            echo "export GCP_PROJECT_NAME=$<< parameters.project_name >>" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+            echo "export GCP_PROJECT_NAME=$<< parameters.project_name >>" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+            echo "export GOOGLE_APPLICATION_CREDENTIALS='<< parameters.config_dir >>/<< parameters.gcp_cred_file >>' >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>"
             if [ << parameters.set_gcp_secrets >> == true ]; then
               gcloud auth login --brief --cred-file "<< parameters.config_dir >>/<< parameters.gcp_cred_file >>"
               IFS="," read -ra SECRETNAMES \<<< << parameters.gcp_secrets_names >>
@@ -93,4 +97,25 @@ commands:
             - << parameters.oidc_token_file_name >>
             - << parameters.gcp_secrets_out_file >>
               
-  
+  set-environment:
+    description: "Configure ENV variables with GCP credentials and the secrets"
+    parameters:
+      config_dir:
+        description: The directory in which the oidc token will be created. This will be persisted in circleci workspace
+        type: string
+        default: "/home/circleci"
+      gcp_cred_file:
+        description: The name of the file in which the generated GCP OIDC credential will be stored
+        type: string
+        default: "gcp_cred_config.json"
+      gcp_secrets_out_file:
+        type: string
+        default: "secrets.env"
+    steps:
+      - attach_workspace:
+          at: << parameters.config_dir >>
+      - run:
+          name: set-environment
+          command: |
+            echo "export GOOGLE_APPLICATION_CREDENTIALS='<< parameters.config_dir >>/<< parameters.gcp_cred_file >>'" | tee -a "$BASH_ENV"
+            echo "source << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>" | tee -a "$BASH_ENV"
