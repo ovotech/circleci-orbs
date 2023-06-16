@@ -9,3 +9,9 @@ All notable changes to the orb will be documented in this file.
 ## Changed
 - Adding optional `working_dir`
 - Changing namespace to `ovotech`
+
+## ovotech/build-utilities@0.1.3
+## Changed
+- Adding parameter for command directory
+## Fix
+- Fix command argument
