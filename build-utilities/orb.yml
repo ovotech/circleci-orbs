@@ -39,6 +39,12 @@ commands:
         description: "Clone build-script folder"
         type: string
         default: $HOME/utilities
+      working_dir:
+        description: "Working folder to build the image"
+        type: string
+      command_dir:
+        description: "Path to directory where the command is executed"
+        type: string
     steps:
       - checkout
       - clone:
@@ -46,7 +52,7 @@ commands:
           local_folder: << parameters.clone_folder >>
       - run:
           name: Build image
-          working_directory: src
+          working_directory: << parameters.command_dir >>
           command: |
             $HOME/utilities/docker/build-image.sh \
                 TARGET_ARCH=<< parameters.architecture >>\
@@ -54,7 +60,8 @@ commands:
                 NUGET_PASSWORD=$NUGET_PASSWORD\
                 DOCKERFILE=<< parameters.docker_file >>\
                 IMAGE_NAME=<< parameters.image_name >>\
-                DOCKER_REGISTRY=<< parameters.docker_registry >>
+                DOCKER_REGISTRY=<< parameters.docker_registry >>\
+                WORKING_DIR=<< parameters.working_dir >>
 
   save-image:
     description: 'Saves container images to the circleci workspace'
