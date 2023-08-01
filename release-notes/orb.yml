@@ -12,7 +12,7 @@ commands:
       - run:
           name: Clone repo
           command: |
-            mkdir << parameters.local_folder >>
+            mkdir -p << parameters.local_folder >>
             git clone -n --depth=1 --filter=tree:0 https://github.com/ovotech/ohs-release-notes.git
             cd ohs-release-notes
             git sparse-checkout set --no-cone scripts
