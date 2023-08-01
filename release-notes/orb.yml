@@ -20,6 +20,7 @@ commands:
             chmod +x ./scripts/extract_release.sh
             chmod +x ./scripts/publish_release.sh
             cp -a ./scripts << parameters.local_folder >>
+            cd << parameters.local_folder >> && ls -l
 
   extract-release:
     description: 'Extracts release version and notes via semantic release dry-run'
