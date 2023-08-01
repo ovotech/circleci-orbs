@@ -1,0 +1,79 @@
+version: 2.1
+description: "Release notes"
+
+commands:
+  clone:
+    description: 'Clones required scripts into the current process'
+    parameters:
+      local_folder:
+        description: "Local folder path where the scripts will be cloned to"
+        type: string
+    steps:
+      - run:
+          name: Clone repo
+          command: |
+            mkdir << parameters.local_folder >>
+            git clone -n --depth=1 --filter=tree:0 https://github.com/ovotech/ohs-release-notes.git
+            cd ohs-release-notes
+            git sparse-checkout set --no-cone scripts
+            git checkout
+            chmod +x ./scripts/extract_release.sh
+            chmod +x ./scripts/publish_release.sh
+            cp -a ./scripts << parameters.local_folder >>
+
+  extract-release:
+    description: 'Extracts release version and notes via semantic release dry-run'
+    parameters:
+      command_dir:
+        description: "Path to directory where the command is executed"
+        type: string
+      clone_folder:
+        description: "Scripts location folder"
+        type: string
+        default: $HOME/utilities
+    steps:
+      - checkout
+      - clone:
+          local_folder: << parameters.clone_folder >>
+      - run:
+          name: Run semantic release dry run
+          working_directory: << parameters.command_dir >>
+          command: |
+            << parameters.clone_folder >>/extract_release.sh
+            echo "export RELEASE_VERSION=$release_version" >> $BASH_ENV
+            echo "export RELEASE_NOTES=$release_notes" >> $BASH_ENV
+            cp $BASH_ENV bash.env
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bash.env
+  publish-release:
+    description: 'Publishes extracted release data and additional properties to release-notes workflow'
+    parameters:
+      application_name:
+        description: "ArgoCD application name. Has to exactly match for ingestion to work."
+        type: string
+      image_names:
+        description: "Comma separated image names list built for ArgoCD application"
+        type: string
+      clone_folder:
+        description: "Scripts location folder"
+        type: string
+        default: $HOME/utilities
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Extract release data variables
+          command: |
+            cat bash.env >> $BASH_ENV
+            echo "Release version is: $RELEASE_VERSION"
+      - run:
+          name: Publish release
+          command: |
+            << parameters.clone_folder >>/publish_release.sh \
+            << parameters.application_name >> \
+            $RELEASE_VERSION \
+            $RELEASE_NOTES \
+            << parameters.image_names >>
+    
