@@ -13,10 +13,10 @@ commands:
           name: Clone repo
           command: |
             mkdir -p << parameters.local_folder >>
-            git clone -n --depth=1 --filter=tree:0 https://github.com/ovotech/ohs-release-notes.git
+            git clone -n --depth=1 -b fix/script-updates --filter=tree:0 https://github.com/ovotech/ohs-release-notes.git 
             cd ohs-release-notes
             git sparse-checkout set --no-cone scripts
-            git checkout -b fix/script-updates
+            git checkout
             chmod +x ./scripts/extract_release.sh
             chmod +x ./scripts/publish_release.sh
             cp -a ./scripts << parameters.local_folder >>
