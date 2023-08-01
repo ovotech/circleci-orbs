@@ -19,7 +19,7 @@ commands:
             git checkout
             chmod +x ./scripts/extract_release.sh
             chmod +x ./scripts/publish_release.sh
-            cp -a ./scripts << parameters.local_folder >>
+            cp -a ./scripts/* << parameters.local_folder >>
             cd << parameters.local_folder >> && ls -l
 
   extract-release:
