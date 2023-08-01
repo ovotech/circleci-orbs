@@ -24,9 +24,6 @@ commands:
   extract-release:
     description: 'Extracts release version and notes via semantic release dry-run'
     parameters:
-      command_dir:
-        description: "Path to directory where the command is executed"
-        type: string
       clone_folder:
         description: "Scripts location folder"
         type: string
@@ -37,7 +34,6 @@ commands:
           local_folder: << parameters.clone_folder >>
       - run:
           name: Run semantic release dry run
-          working_directory: << parameters.command_dir >>
           command: |
             << parameters.clone_folder >>/extract_release.sh
             echo "export RELEASE_VERSION=$release_version" >> $BASH_ENV
