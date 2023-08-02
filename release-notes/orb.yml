@@ -40,7 +40,7 @@ commands:
             echo "export RELEASE_VERSION=$release_version" >> release_version.env
             echo "export RELEASE_NOTES=$release_notes" >> release_notes.env
       - persist_to_workspace:
-          root: 
+          root: .
           paths:
             - release_version.env
             - release_notes.env
