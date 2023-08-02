@@ -59,6 +59,9 @@ commands:
         type: string
         default: $HOME/utilities
     steps:
+      - checkout
+      - clone:
+          local_folder: << parameters.clone_folder >>
       - attach_workspace:
           at: .
       - run:
