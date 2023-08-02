@@ -37,10 +37,10 @@ commands:
           name: Run semantic release dry run
           command: |
             << parameters.clone_folder >>/extract_release.sh
-            echo "export RELEASE_VERSION=$release_version" >> $HOME/release_version.env
-            echo "export RELEASE_NOTES=$release_notes" >> $HOME/release_notes.env
+            echo "export RELEASE_VERSION=$release_version" >> release_version.env
+            echo "export RELEASE_NOTES=$release_notes" >> release_notes.env
       - persist_to_workspace:
-          root: $HOME
+          root: 
           paths:
             - release_version.env
             - release_notes.env
@@ -60,7 +60,7 @@ commands:
         default: $HOME/utilities
     steps:
       - attach_workspace:
-          at: $HOME
+          at: .
       - run:
           name: Extract release data variables
           command: |
