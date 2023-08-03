@@ -73,7 +73,7 @@ commands:
           command: |
             << parameters.clone_folder >>/publish_release.sh \
             << parameters.application_name >> \
-            $RELEASE_VERSION \
-            $RELEASE_NOTES \
+            "$RELEASE_VERSION" \
+            "$RELEASE_NOTES" \
             << parameters.image_names >>
     
