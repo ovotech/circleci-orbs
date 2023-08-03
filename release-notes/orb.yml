@@ -63,12 +63,6 @@ commands:
       - attach_workspace:
           at: .
       - run:
-          name: Extract release data variables
-          command: |
-            source release_version.env
-            source release_notes.env
-            echo "Release version is: $RELEASE_VERSION"
-      - run:
           name: Publish release
           command: |
             source release_version.env
