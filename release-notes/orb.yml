@@ -37,8 +37,6 @@ commands:
           name: Run semantic release dry run
           command: |
             << parameters.clone_folder >>/extract_release.sh
-            echo -e "export RELEASE_VERSION=$RELEASE_VERSION" >> release_version.env
-            echo -e "export RELEASE_NOTES=$RELEASE_NOTES" >> release_notes.env
       - persist_to_workspace:
           root: .
           paths:
