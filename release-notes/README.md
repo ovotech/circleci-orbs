@@ -1,6 +1,6 @@
 # Build scripts
 
-This `orb` provides ability to publish release data (version and release notes) to release notes system on every successfull semantic release occurence. It works in conjunction with ArgoCD Notifications. Current orb is responsible for enrolling repo in release note system and provides versioning and release notes information, whereas ArgoCD provides deployment data. [Release Notes](https://github.com/ovotech/ohs-release-notes) application acts as a bridge and brings these pieces together. Web UI is available [here](release-notes.homeservices-nonprod.ovotech.org.uk)
+This `orb` provides ability to publish release data (version and release notes) to release notes system on every successful semantic release occurrence. It works in conjunction with ArgoCD Notifications. Current orb is responsible for enrolling repo in release note system and provides versioning and release notes information, whereas ArgoCD provides deployment data. [Release Notes](https://github.com/ovotech/ohs-release-notes) application acts as a bridge and brings these pieces together. Web UI is available [here](release-notes.homeservices-nonprod.ovotech.org.uk)
 ## Requirements
 - Repository should use semantic release versioning
 
