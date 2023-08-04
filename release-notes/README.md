@@ -1,67 +1,47 @@
 # Build scripts
 
-This `orb` provides ability to publish release data (version and release notes) to ohs-release-notes.
+This `orb` provides ability to publish release data (version and release notes) to release notes system on every successfull semantic release occurence. It works in conjunction with ArgoCD Notifications. Current orb is responsible for enrolling repo in release note system and provides versioning and release notes information, whereas ArgoCD provides deployment data. [Release Notes](https://github.com/ovotech/ohs-release-notes) application acts as a bridge and brings these pieces together. Web UI is available [here](release-notes.homeservices-nonprod.ovotech.org.uk)
+## Requirements
+- Repository should use semantic release versioning
+
 
 ## Commands
 
 These are the defined commands in this `orb`
-### <u>clone</u>
+### <u>extract-release</u>
 
-Execution scripts are stored in an internal `ovotech` [repo](https://github.com/ovotech/ohs-release-notes) called `ohs-release-notes`.
-This command can be used to clone that repo inside of your `circleci` pipeline to have them available to you.
+The `extract-release` command invokes the `extract-release.sh` script to ingest
+semantic release data (version and release notes).
+It runs semantic release in --dry-run mode that doesn't have any side effects
+but allows to calculate if release will happen and collect required data. 
 
 Parameters for this step:
 
 | name | description | required |
-| --- | --- |------|
-| `git_repo` | Git repository to clone | false |
-| `local_folder` | Local folder path where the git repo will be cloned to | true |
-
-### <u>extract</u>
-
-The `extract` command invokes the `extract-release.sh` script to ingest
-semantic release data (version and release notes).
-It runs semantic release in --dry-run mode that doesn't have any side effects
-but allows to calculate if release will happen and ingest required data. 
-
-Parameters for this step:
-
-| name | description | accepted values |
 | --- | --- | --- |
-| `clone_folder` | Clone build-script folder |
-| `working_dir` | Optional working directory |
+| `clone_folder` | Optional. Path to directory where scripts will be stored to | false
 
-### <u>save-image</u>
+### <u>publish-release</u>
 
-This step can be used to save your docker images to a `circleci` [workspace](https://circleci.com/docs/workspaces/)
-
-Parameters for this step:
-
-| name | description |
-| --- | --- |
-| `image_name` | Docker image name to save |
-| `path_name` | Path name where the image will be saved |
-| `root_name` | Root folder name where the image will be saved |
-
-This will use the `docker save` command that will create a `.tar` file
-
-### <u>restore_images</u>
-
-Restores all images saved in a `circleci` workspace. 
+The `publish-release` command invokes the `publish-release.sh` script to publish collected data
+to release notes github workflow.
+Four bits of data are required when publishing release to release notes system:
+* Application Name - has to match ArgoCD application name
+* Release Version - is automatically collected by extract-release command
+* Release Notes - also automatically collected by extract-release command
+* Image names - comma separated list of images, that are built for ArgoCD application. Is used to match notifications coming from ArgoCD notification system.
 
 Parameters for this step:
 
-| name | description |
-| --- | --- |
-| `path_name` | Path name where the image will be loaded from |
-| `root_name` | Root folder name where the image will be loaded from |
+| name | description | required |
+| --- | --- | --- |
+| `application_name` | ArgoCD application name. Has to completely match including the case | true
+| `image_names` | Comma separated list of images built for ArgoCD application | true
+| `clone_folder` | Optional. Path to directory where scripts will be stored to | false
 
-## Example configuration that use that `orb`
+## Example configuration that uses this `orb`
 
-The [Customer signup](https://github.com/ovotech/homeservices-customer-signup/blob/main/.circleci/config.yml) API `config.yml` file is one example of that orb being used. 
-
-It shows how a multi arch image is created for `arm64` and `amd64` based processors and to use the steps described here.
+The [Release Notes](https://github.com/ovotech/ohs-release-notes/blob/main/.circleci/config.yml) repository itself.
 
 ## Executors
-
 This orb does not define any executors. It only provides re-usable commands
