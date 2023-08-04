@@ -1,5 +1,5 @@
 version: 2.1
-description: "Release notes"
+description: "This orb enrolls service(repo) into release notes system."
 
 commands:
   clone:
@@ -34,7 +34,7 @@ commands:
       - clone:
           local_folder: << parameters.clone_folder >>
       - run:
-          name: Run semantic release dry run
+          name: Run semantic release dry run and extract release data
           command: |
             << parameters.clone_folder >>/extract_release.sh
       - persist_to_workspace:
@@ -44,13 +44,13 @@ commands:
             - release_notes.env
 
   publish-release:
-    description: 'Publishes extracted release data and additional properties to release-notes workflow'
+    description: 'Publish extracted release data and additional properties to release-notes workflow'
     parameters:
       application_name:
         description: "ArgoCD application name. Has to exactly match for ingestion to work."
         type: string
       image_names:
-        description: "Comma separated image names list built for ArgoCD application"
+        description: "Comma separated image names list used in ArgoCD application"
         type: string
       clone_folder:
         description: "Scripts location folder"
@@ -63,7 +63,7 @@ commands:
       - attach_workspace:
           at: .
       - run:
-          name: Publish release
+          name: Publish to release-notes workflow
           command: |
             source release_version.env
             source release_notes.env
