@@ -49,3 +49,4 @@ workflows:
             build-utilities/.* run-build-utilities true
             jira/.* run-jira true
             github-actions/.* run-github-actions true
+            release-notes/.* run-release-notes true

@@ -28,3 +28,4 @@
 /build-utilities                 @ovotech/ohs-domainleads
 /jira/                           @ovotech/consumer-products-production-engineering
 /github-actions                  @ovotech/consumer-products-production-engineering
+/release-notes                   @ovotech/ohs-platform-ops

@@ -114,6 +114,9 @@ parameters:
   run-github-actions:
     type: boolean
     default: false
+  run-release-notes:
+    type: boolean
+    default: false
 
 jobs:
   test_python:
@@ -603,5 +606,14 @@ workflows:
           path: github-actions
       - publish_orb:
           path: github-actions
+          requires:
+            - validate_orb
+  release-notes:
+    when: << pipeline.parameters.run-release-notes >>
+    jobs:
+      - validate_orb:
+          path: release-notes
+      - publish_orb:
+          path: release-notes
           requires:
             - validate_orb
