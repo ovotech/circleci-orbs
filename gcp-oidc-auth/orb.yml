@@ -54,7 +54,7 @@ commands:
       gcp_secrets_names:
         description: A string of comma separated list of gcp secret KEYS to fetch. (MUST have IAM permission to read these secrets)
         type: string
-        default: ""
+        default: "N/A"
       gcp_secrets_out_file:
         type: string
         default: "secrets.env"
