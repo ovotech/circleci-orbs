@@ -29,3 +29,4 @@
 /jira/                           @ovotech/consumer-products-production-engineering
 /github-actions                  @ovotech/consumer-products-production-engineering
 /release-notes                   @ovotech/ohs-platform-ops
+/gcp-oidc-auth                   @ovotech/data-availability

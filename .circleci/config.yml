@@ -49,4 +49,5 @@ workflows:
             build-utilities/.* run-build-utilities true
             jira/.* run-jira true
             github-actions/.* run-github-actions true
+            gcp-oidc-auth/.* run-gcp-oidc-auth true
             release-notes/.* run-release-notes true

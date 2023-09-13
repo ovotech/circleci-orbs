@@ -114,6 +114,9 @@ parameters:
   run-github-actions:
     type: boolean
     default: false
+  run-gcp-oidc-auth:
+    type: boolean
+    default: false
   run-release-notes:
     type: boolean
     default: false
@@ -535,6 +538,15 @@ workflows:
           path: terraform-v2
           requires:
             - test_python
+            - validate_orb
+  gcp-oidc-auth:
+    when: << pipeline.parameters.run-gcp-oidc-auth >>
+    jobs:
+      - validate_orb:
+          path: gcp-oidc-auth
+      - publish_orb:
+          path: gcp-oidc-auth
+          requires:
             - validate_orb
   tools:
     when: << pipeline.parameters.run-tools >>
