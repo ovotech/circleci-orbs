@@ -6,7 +6,7 @@ orbs:
   aws-ecr: circleci/aws-ecr@8.1.3
   terraform: ovotech/terraform-v2@2.4.17
   openjdk-install: cloudesire/openjdk-install@1.2.3
-  snyk: snyk/snyk@1.5.0
+  snyk: snyk/snyk@1.7.0
   shipit: ovotech/shipit@1
   slack: circleci/slack@4.1.3
   argocd: ovotech/argocd@1.1.0
