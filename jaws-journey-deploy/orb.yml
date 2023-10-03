@@ -20,7 +20,7 @@ executors:
       - image: cimg/python:3.9.0
   node:
     docker:
-      - image: cimg/node:19.3.0
+      - image: cimg/node:20.6.1
   terraform:
     docker:
       - image: ovotech/terraform:0.13
