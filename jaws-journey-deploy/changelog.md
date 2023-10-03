@@ -1,3 +1,6 @@
+# 3.1.0
+* Update node to 20.6.1 to allow semantic release to work create-release
+
 # 3.0.1
 * Bump Snyk orb version to get retries for the Snyk CLI download step
 
