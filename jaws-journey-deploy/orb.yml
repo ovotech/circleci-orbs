@@ -123,7 +123,9 @@ commands:
 
   snyk-scan:
     parameters:
-      <<: *serviceName
+      snykProject:
+        type: "string"
+        default: ""
     steps:
       - attach_workspace:
           at: ~/working
@@ -131,7 +133,7 @@ commands:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: high
-          project: << parameters.serviceName >>
+          project: << parameters.snykProject >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -989,7 +991,9 @@ jobs:
     executor: kotlin
     working_directory: ~/working
     parameters:
-      <<: *serviceName
+      snykProject:
+        type: "string"
+        default: ""
       severityThreshold:
         type: "enum"
         enum: ["low", "medium", "high", "critical"]
@@ -1001,7 +1005,7 @@ jobs:
       - snyk/scan:
           additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
           severity-threshold: << parameters.severityThreshold >>
-          project: << parameters.serviceName >>
+          project: << parameters.snykProject >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
