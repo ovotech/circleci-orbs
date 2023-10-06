@@ -104,7 +104,7 @@ Performs a check to make sure your code dependencies do not introduce any new se
 
 **Parameters**
 
-Does not require any parameters passed through.
+* snykProject: Name of project in Snyk UI. This is defaulted to an empty string which should force the Snyk orb to guess the name from the current working directory.
 
 **CircleCI Environment Variables**
 * SNYK_TOKEN: API Token used to communicate with Snyk
