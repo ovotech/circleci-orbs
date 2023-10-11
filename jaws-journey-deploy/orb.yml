@@ -207,6 +207,9 @@ commands:
       skipWhenTagExists:
         type: boolean
         default: false
+      snykScanArguments:
+        type: string
+        default: ""
       <<: *resourceClass
     steps:
       - attach_workspace:
@@ -230,6 +233,7 @@ commands:
           project: << parameters.snykProject >>
           severity-threshold: high
           target-file: << parameters.path >>/Dockerfile
+          additional-arguments: << parameters.snykScanArguments>>
 
   build_and_test:
     parameters:
