@@ -114,6 +114,12 @@ parameters:
   run-github-actions:
     type: boolean
     default: false
+  run-gcp-oidc-auth:
+    type: boolean
+    default: false
+  run-release-notes:
+    type: boolean
+    default: false
 
 jobs:
   test_python:
@@ -533,6 +539,15 @@ workflows:
           requires:
             - test_python
             - validate_orb
+  gcp-oidc-auth:
+    when: << pipeline.parameters.run-gcp-oidc-auth >>
+    jobs:
+      - validate_orb:
+          path: gcp-oidc-auth
+      - publish_orb:
+          path: gcp-oidc-auth
+          requires:
+            - validate_orb
   tools:
     when: << pipeline.parameters.run-tools >>
     jobs:
@@ -603,5 +618,14 @@ workflows:
           path: github-actions
       - publish_orb:
           path: github-actions
+          requires:
+            - validate_orb
+  release-notes:
+    when: << pipeline.parameters.run-release-notes >>
+    jobs:
+      - validate_orb:
+          path: release-notes
+      - publish_orb:
+          path: release-notes
           requires:
             - validate_orb

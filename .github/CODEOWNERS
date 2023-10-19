@@ -1,4 +1,4 @@
-*                                @ovotech/production-eng
+*                                @ovotech/production-eng @ovotech/consumer-products-production-engineering
 /terraform/                      @ovotech/production-eng
 /clair-scanner/                  @ovotech/production-eng
 /aws-rotate-keys/                @mwz
@@ -28,3 +28,5 @@
 /build-utilities                 @ovotech/ohs-domainleads
 /jira/                           @ovotech/consumer-products-production-engineering
 /github-actions                  @ovotech/consumer-products-production-engineering
+/release-notes                   @ovotech/ohs-platform-ops
+/gcp-oidc-auth                   @ovotech/data-availability
