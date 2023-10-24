@@ -1,6 +1,6 @@
-*                                @ovotech/production-eng @ovotech/dex
-/terraform/                      @ovotech/production-eng @ovotech/dex
-/clair-scanner/                  @ovotech/production-eng @ovotech/dex
+*                                @ovotech/production-eng @ovotech/consumer-products-production-engineering
+/terraform/                      @ovotech/production-eng
+/clair-scanner/                  @ovotech/production-eng
 /aws-rotate-keys/                @mwz
 /rac-gcp-deploy/                 @ovotech/reads-consumption
 /rac-kmi-deploy/                 @ovotech/reads-consumption
@@ -22,4 +22,11 @@
 /ipa-deploy/                     @ovotech/ipa
 /sast/                           @ovotech/consumer-products-production-engineering
 /setup-scheduled-pipeline/       @ovotech/consumer-products-production-engineering
+/telemetry/                      @ovotech/consumer-products-production-engineering
+/terraform-registry/             @ovotech/consumer-products-production-engineering
 /kap-kmi-deploy/                 @ovotech/agent-platform-enablement
+/build-utilities                 @ovotech/ohs-domainleads
+/jira/                           @ovotech/consumer-products-production-engineering
+/github-actions                  @ovotech/consumer-products-production-engineering
+/release-notes                   @ovotech/ohs-platform-ops
+/gcp-oidc-auth                   @ovotech/data-availability

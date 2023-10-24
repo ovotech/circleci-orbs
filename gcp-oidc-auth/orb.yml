@@ -1,0 +1,119 @@
+version: 2.1
+description: An orb to authenticate with GCP using CircleCI OIDC
+orbs:
+  gcp-cli: circleci/gcp-cli@3.1.0
+executors:
+  default: 
+    docker:
+      - image: google/cloud-sdk:433.0.1
+
+commands:
+  generate-cred-config:
+    description: "Authenticate with GCP using a CircleCI OIDC token."
+    parameters:
+      project_id:
+        description: The numeric value of the GCP project id
+        type: env_var_name
+        default: GCP_PROJECT_ID
+      project_name:
+        description: The name of the GCP project
+        type: env_var_name
+        default: GCP_PROJECT_NAME
+      workload_identity_pool_id:
+        description: The workload Identity pool id in the GCP project
+        type: env_var_name
+        default: GCP_WIP_ID
+      workload_identity_pool_provider_id:
+        description: The workload Identity pool circleci provider id in the GCP project
+        type: env_var_name
+        default: GCP_WIP_PROVIDER_ID
+      service_account_email:
+        description: The service account email configured in the above workload Identity pool provider.
+        type: env_var_name
+        default: GCP_SERVICE_ACCOUNT_EMAIL
+      circle_oidc_token:
+        description: The circle ci OIDC token which will be sent to GCP workload identity provider for verification. 
+        type: env_var_name
+        default: CIRCLE_OIDC_TOKEN
+      config_dir:
+        description: The directory in which the oidc token will be created. This will be persisted in circleci workspace
+        type: string
+        default: "/home/circleci"
+      gcp_cred_file:
+        description: The name of the file in which the generated GCP OIDC credential will be stored 
+        type: string
+        default: "gcp_cred_config.json"
+      oidc_token_file_name:
+        description: The file in which the circle_oidc_token will be stored to send to GCP
+        type: string
+        default: "oidc_token.json"
+      set_gcp_secrets:
+        description: If true, then this step will fetch all the gcp secrets mentioned in `gcp_secrets_names` parameter into a file `gcp_secrets_out_file`
+        type: boolean
+        default: false
+      gcp_secrets_names:
+        description: A string of comma separated list of gcp secret KEYS to fetch. (MUST have IAM permission to read these secrets)
+        type: string
+        default: "N/A"
+      gcp_secrets_out_file:
+        type: string
+        default: "secrets.env"
+    steps:
+      - gcp-cli/install:
+          version: 433.0.1
+      - run:
+          name: gcp-oidc-generate-cred-config-file
+          command: |
+            # Store OIDC token in temp file
+            mkdir -p << parameters.config_dir >>
+            echo "$<< parameters.circle_oidc_token >>" > << parameters.config_dir >>/<< parameters.oidc_token_file_name >>
+            # Create a credential configuration for the generated OIDC ID Token
+            gcloud iam workload-identity-pools create-cred-config \
+                "projects/${<< parameters.project_id >>}/locations/global/workloadIdentityPools/${<< parameters.workload_identity_pool_id >>}/providers/${<< parameters.workload_identity_pool_provider_id >>}"\
+                --output-file="<< parameters.config_dir >>/<< parameters.gcp_cred_file >>" \
+                --service-account="${<< parameters.service_account_email >>}" \
+                --credential-source-file=<< parameters.config_dir >>/<< parameters.oidc_token_file_name >>
+      - run:
+          name: get-gcp-secrets
+          command: |
+            echo "export GCP_PROJECT_NAME=$<< parameters.project_name >>" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+            if [ << parameters.set_gcp_secrets >> == true ]; then
+              gcloud auth login --brief --cred-file "<< parameters.config_dir >>/<< parameters.gcp_cred_file >>"
+              IFS="," read -ra SECRETNAMES \<<< << parameters.gcp_secrets_names >>
+              for secret in "${SECRETNAMES[@]}"
+              do
+                echo "export ${secret}=$(gcloud secrets versions access latest \
+                  --secret=${secret} --project=$GCP_PROJECT_NAME)" >> << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>
+              done
+            else
+              echo "Skipping this step because get-gcp-secrets parameter is set to false"
+            fi
+      - persist_to_workspace:
+          root: << parameters.config_dir >>
+          paths:
+            - << parameters.gcp_cred_file >>
+            - << parameters.oidc_token_file_name >>
+            - << parameters.gcp_secrets_out_file >>
+              
+  set-environment:
+    description: "Configure ENV variables with GCP credentials and the secrets"
+    parameters:
+      config_dir:
+        description: The directory in which the oidc token will be created. This will be persisted in circleci workspace
+        type: string
+        default: "/home/circleci"
+      gcp_cred_file:
+        description: The name of the file in which the generated GCP OIDC credential will be stored
+        type: string
+        default: "gcp_cred_config.json"
+      gcp_secrets_out_file:
+        type: string
+        default: "secrets.env"
+    steps:
+      - attach_workspace:
+          at: << parameters.config_dir >>
+      - run:
+          name: set-environment
+          command: |
+            echo "export GOOGLE_APPLICATION_CREDENTIALS='<< parameters.config_dir >>/<< parameters.gcp_cred_file >>'" | tee -a "$BASH_ENV"
+            echo "source << parameters.config_dir >>/<< parameters.gcp_secrets_out_file >>" | tee -a "$BASH_ENV"

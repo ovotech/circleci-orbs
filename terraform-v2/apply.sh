@@ -54,14 +54,25 @@ set +e
 
 
 if [[ "<< parameters.reuse_plan >>" == "false" ]]; then
-    terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS \
-        | $TFMASK \
-        | tee /dev/fd/3 \
-        | $COMPACT_PLAN \
-            >plan.txt
+    if [[ "<< parameters.trim_plan >>" == "true" ]]; then
+      terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS
+      TF_EXIT=$?
+      (cd ${module_path};
+      terraform show -no-color plan.out \
+          | $TFMASK \
+          | $COMPACT_PLAN \
+       ) > plan.txt
+    else
+      terraform -chdir=${module_path} plan -input=false -no-color -detailed-exitcode -lock-timeout=300s -out=plan.out $PLAN_ARGS \
+              | $TFMASK \
+              | tee /dev/fd/3 \
+              | $COMPACT_PLAN \
+                  >plan.txt
+      
+          TF_EXIT=${PIPESTATUS[0]}
+    fi 
 
-    TF_EXIT=${PIPESTATUS[0]}
-
+    
     if [[ $TF_EXIT -eq 1 ]]; then
         update_status "Error creating plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
         exit 1

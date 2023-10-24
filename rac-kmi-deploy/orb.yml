@@ -6,7 +6,7 @@ aliases:
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
-  core: ovotech/rac-gcp-deploy@1
+  core: ovotech/rac-gcp-deploy@1.1.0
 
 executors:
   docker:
@@ -77,6 +77,10 @@ jobs:
             # sbt unconditionally builds image tagged as nonprod
             docker save -o <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage $<<parameters.container-name>>
       - core/snyk_monitor
+      - core/snyk_scan_image:
+          docker-image-name: $<<parameters.container-name>>
+          snyk-project-name: CIRCLE_PROJECT_REPONAME
+          monitor-on-build: true
       - core/persist_workspace:
           to: <<parameters.workspace-dir>>
 
@@ -128,6 +132,11 @@ jobs:
         description: "The environment of KMI to deploy to"
         type: string
         default: uat
+      kmi-region:
+        description: "The region of KMI to deploy to"
+        type: enum
+        default: "all"
+        enum: ["eu1", "ap1", "all"]
       version-field-name:
         description: "The field name of the value which contains the target version"
         type: string
@@ -154,7 +163,12 @@ jobs:
           name: Patch deployment
           command: |
             cd ~/gitops/<<parameters.kmi-application-name>>
-            yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-shared.yaml
+            if [ "<<parameters.kmi-region>>" = "all" ]; then 
+              yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-ap1.yaml
+              yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-eu1.yaml
+            else
+              yq e ".<<parameters.version-field-name>>=\"$(cat <<parameters.workspace-dir>>/version.txt)\"" -i values-<<parameters.kmi-env>>-<<parameters.kmi-region>>.yaml
+            fi
       - run:
           name: Commit and push
           command: |

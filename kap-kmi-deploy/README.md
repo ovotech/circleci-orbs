@@ -55,6 +55,7 @@ workflows:
           name: kmi-deploy-uat
           environment: uat
           push-image: true
+          kmi-region: eu1
       - kmi-deploy/deploy:
           name: kmi-deploy-prod
           environment: prod

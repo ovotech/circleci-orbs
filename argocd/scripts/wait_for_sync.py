@@ -7,6 +7,37 @@ import os
 #
 # python3 wait_for_sync.py --wait-for=30 --application=default --target=3f9c8c3c02d8573901bd4c4e0c9ddfe7d7dcddf5 --argocd-url https://argocd.metering-shared-non-prod.ovotech.org.uk/
 #
+def sync_request(endpoint, token, application):
+
+    try:
+        headers = { 'Authorization' : 'Bearer %s' % token }
+        res = requests.post(endpoint.rstrip("/") + f'/api/v1/applications/{application}/sync', headers=headers, timeout = 10, verify=True)
+        if res.status_code != 200:
+            print(f"ERROR: Non-200 response ({res.status_code}): {res.json()}.")
+            exit(1)
+        
+        data = res.json()
+        cluster_sync_status = data['status']['sync']['status']
+
+        if os.environ.get('ARGOCD_ORB_DEBUG'):
+            print_debug(data)
+
+        if cluster_sync_status == "Synced":
+            print(f'Sync request successful, application was in sync')
+            return True
+        else:
+            print(f'Sync request successful, application was not in sync')
+            return True
+
+    except ValueError as e:
+        print(f'ERROR: Decoding JSON has failed: {e}')
+        exit(1)
+        
+    except Exception as e:
+        print(f'ERROR: Request failed: {e}')
+        exit(1)
+
+
 def is_cluster_insync(endpoint, token, application, target_revision):
 
     try:
@@ -24,7 +55,9 @@ def is_cluster_insync(endpoint, token, application, target_revision):
 
         if os.environ.get('ARGOCD_ORB_DEBUG'):
             print_debug(data)
-        
+
+        print(f'cluster revision: {cluster_revision}')
+
         if cluster_revision == target_revision and cluster_phase == "Succeeded" and app_health != "Progressing":
             if cluster_sync_status == "Synced":
                 return True;
@@ -85,8 +118,12 @@ if __name__ == '__main__':
     parser.add_argument("--application", help="Application to check")
     parser.add_argument("--target", help="Target Git hash cluster should be synced to")
     parser.add_argument("--argocd-url", help="API endpoint of ArgoCD")
-
+    parser.add_argument("--sync-request", action=argparse.BooleanOptionalAction, help="Optional sync request")
+    
     args = parser.parse_args()
+
+    if args.sync_request == True:
+        sync_request(args.argocd_url, os.environ.get('ARGOCD_TOKEN'), args.application);
 
     t_end = time.time() + int(args.wait_for)
     while time.time() <= t_end:

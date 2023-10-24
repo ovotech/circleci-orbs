@@ -1,1 +1,1 @@
-ovotech/rac-kmi-deploy@1.0.2
+ovotech/rac-kmi-deploy@1.3.2

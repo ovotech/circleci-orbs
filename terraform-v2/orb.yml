@@ -81,6 +81,11 @@ aliases:
         type: "string"
         description: "Path to the json file to save the output variables to"
         default: ""
+    trim_plan: &trim_plan
+      trim_plan:
+        type: "boolean"
+        description: "Generate plan from the plan.out file excluding the warnings and other console outputs e.g. Lock status"
+        default: false
 
   init-parameter-passthrough: &init-parameter-passthrough
     path: << parameters.path >>
@@ -126,6 +131,7 @@ commands:
       <<: *label
       <<: *add_github_comment
       <<: *target
+      <<: *trim_plan
     steps:
       - run:
           name: "terraform plan << parameters.path >> << parameters.label >>"
@@ -152,6 +158,7 @@ commands:
       <<: *target
       <<: *output_path
       <<: *reuse_plan
+      <<: *trim_plan
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
@@ -308,9 +315,10 @@ commands:
     description: "Check that Terraform configuration files are in canonical format"
     parameters: &fmt-check-parameters
       <<: *path
+      <<: *label
     steps:
       - run:
-          name: "terraform fmt"
+          name: "terraform fmt << parameters.path >> << parameters.label >>"
           shell: /bin/bash -eo pipefail
           command: |
             include setup.sh

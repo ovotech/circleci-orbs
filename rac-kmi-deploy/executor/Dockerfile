@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM alpine:3
 
 ARG SBT_VERSION
 ENV SBT_VERSION ${SBT_VERSION:-1.6.2}
@@ -56,6 +56,9 @@ RUN set -ex \
   && rm -rf /tmp/docker /tmp/docker.tgz \
   && which docker \
   && (docker version || true)
+
+# Install docker compose
+RUN apk --update add --no-cache docker-compose
 
 RUN id -u circleci 2> /dev/null || useradd --system --create-home --uid 1001 --gid 0 circleci
 
