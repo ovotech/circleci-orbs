@@ -117,13 +117,25 @@ commands:
 
 
   snyk-scan:
+    parameters:
+      useAdditionalArguments:
+        type: boolean
+        default: true
     steps:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
-      - snyk/scan:
-          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
-          severity-threshold: high
+      - when:
+          condition: << parameters.useAdditionalArguments >>
+          steps:
+            - snyk/scan:
+                additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+                severity-threshold: high
+      - unless:
+          condition: << parameters.useAdditionalArguments >>
+          steps:
+            - snyk/scan:
+                severity-threshold: high
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -930,13 +942,24 @@ jobs:
         type: "enum"
         enum: ["low", "medium", "high", "critical"]
         default: "high"
+      useAdditionalArguments:
+        type: boolean
+        default: true
     steps:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
-      - snyk/scan:
-          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
-          severity-threshold: << parameters.severityThreshold >>
+      - when:
+          condition: << parameters.useAdditionalArguments >>
+          steps:
+            - snyk/scan:
+                additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+                severity-threshold: << parameters.severityThreshold >>
+      - unless:
+          condition: << parameters.useAdditionalArguments >>
+          steps:
+            - snyk/scan:
+                severity-threshold: << parameters.severityThreshold >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
