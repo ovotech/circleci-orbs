@@ -122,13 +122,26 @@ commands:
 
 
   snyk-scan:
+    parameters:
+      useConfigurationAttributes:
+        type: boolean
+        default: true
     steps:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
-      - snyk/scan:
-          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
-          severity-threshold: high
+      - when:
+          condition: << parameters.useConfigurationAttributes >>
+          steps:
+            - snyk/scan:
+                additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+                severity-threshold: high
+      - unless:
+          condition: << parameters.useConfigurationAttributes >>
+          steps:
+            - snyk/scan:
+                additional-arguments: --all-sub-projects
+                severity-threshold: high
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
@@ -994,13 +1007,25 @@ jobs:
         type: "enum"
         enum: ["low", "medium", "high", "critical"]
         default: "high"
+      useConfigurationAttributes:
+        type: boolean
+        default: true
     steps:
       - attach_workspace:
           at: ~/working
       - make-gradle-executable
-      - snyk/scan:
-          additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
-          severity-threshold: << parameters.severityThreshold >>
+      - when:
+          condition: << parameters.useConfigurationAttributes >>
+          steps:
+            - snyk/scan:
+                additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
+                severity-threshold: << parameters.severityThreshold >>
+      - unless:
+          condition: << parameters.useConfigurationAttributes >>
+          steps:
+            - snyk/scan:
+                additional-arguments: --all-sub-projects
+                severity-threshold: << parameters.severityThreshold >>
       - when:
           condition:
             equal: [ "true", $SLACK_INTEGRATION_ENABLED ]
