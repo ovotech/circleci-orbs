@@ -123,7 +123,7 @@ commands:
 
   snyk-scan:
     parameters:
-      useAdditionalArguments:
+      useConfigurationAttributes:
         type: boolean
         default: true
     steps:
@@ -131,15 +131,16 @@ commands:
           at: ~/working
       - make-gradle-executable
       - when:
-          condition: << parameters.useAdditionalArguments >>
+          condition: << parameters.useConfigurationAttributes >>
           steps:
             - snyk/scan:
                 additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
                 severity-threshold: high
       - unless:
-          condition: << parameters.useAdditionalArguments >>
+          condition: << parameters.useConfigurationAttributes >>
           steps:
             - snyk/scan:
+                additional-arguments: --all-sub-projects
                 severity-threshold: high
       - when:
           condition:
@@ -1006,7 +1007,7 @@ jobs:
         type: "enum"
         enum: ["low", "medium", "high", "critical"]
         default: "high"
-      useAdditionalArguments:
+      useConfigurationAttributes:
         type: boolean
         default: true
     steps:
@@ -1014,15 +1015,16 @@ jobs:
           at: ~/working
       - make-gradle-executable
       - when:
-          condition: << parameters.useAdditionalArguments >>
+          condition: << parameters.useConfigurationAttributes >>
           steps:
             - snyk/scan:
                 additional-arguments: --all-sub-projects --configuration-attributes=buildtype:release,usage:java-runtime
                 severity-threshold: << parameters.severityThreshold >>
       - unless:
-          condition: << parameters.useAdditionalArguments >>
+          condition: << parameters.useConfigurationAttributes >>
           steps:
             - snyk/scan:
+                additional-arguments: --all-sub-projects
                 severity-threshold: << parameters.severityThreshold >>
       - when:
           condition:
