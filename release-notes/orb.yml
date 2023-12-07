@@ -64,8 +64,6 @@ commands:
       - run:
           name: Publish to release-notes workflow
           command: |
-            source release_version.env
-            source release_notes.env
             echo "Release version is: $RELEASE_VERSION"
             << parameters.clone_folder >>/publish_release.sh \
             << parameters.application_name >> \
