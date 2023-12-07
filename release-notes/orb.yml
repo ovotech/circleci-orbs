@@ -71,8 +71,5 @@ commands:
             << parameters.application_name >> \
             "$RELEASE_VERSION" \
             "$RELEASE_NOTES" \
-            << parameters.image_names >> \
-            << pipeline.trigger_parameters.github_app.commit_author_name >> \
-            << pipeline.trigger_parameters.github_app.commit_sha >> \
-            << pipeline.trigger_parameters.github_app.repo_name >>
+            << parameters.image_names >>
     
