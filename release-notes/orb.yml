@@ -13,7 +13,7 @@ commands:
           name: Clone scripts repo, grant executive permissions and copy to working directory
           command: |
             mkdir -p << parameters.local_folder >>
-            git clone -n --depth=1 --filter=tree:0 https://github.com/ovotech/ohs-release-notes.git 
+            git clone -b feat/CGI-29529 -n --depth=1 --filter=tree:0 https://github.com/ovotech/ohs-release-notes.git 
             cd ohs-release-notes
             git sparse-checkout set --no-cone scripts
             git checkout
