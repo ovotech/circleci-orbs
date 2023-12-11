@@ -46,6 +46,12 @@ if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.target >>" 
     done
 fi
 
+if [[ "<< parameters.auto_approve >>" == "true" && -n "<< parameters.replace >>" ]]; then
+    for target in $(echo "<< parameters.replace >>" | tr ',' '\n'); do
+        PLAN_ARGS="$PLAN_ARGS -replace $target"
+    done
+fi
+
 update_status "Applying plan in CircleCI Job [${CIRCLE_JOB}](${CIRCLE_BUILD_URL})"
 
 exec 3>&1
