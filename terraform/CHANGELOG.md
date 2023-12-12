@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.11.19
+- Added Terraform provider Aiven Kafka Users v1.1.1 and v1.1.2 to all executors
+
 ## ovotech/terraform@1.11.18
 ## Added
 - Added Terraform provider Aiven Kafka Users v1.1.0 to all executors
