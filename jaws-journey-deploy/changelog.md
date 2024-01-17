@@ -1,3 +1,6 @@
+# 3.3.0
+* Update node to 20.11.0 to allow semantic release to work create-release
+
 # 3.2.0
 * Add snykProject parameter to snyk-scan command and job
 
