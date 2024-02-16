@@ -14,7 +14,7 @@ The `target` must be the commmit hash you expect ArgoCD to sync with.
 
 ```yaml
 orbs:
-  argocd: ovotech/argocd@0.1.0
+  argocd: ovotech/argocd@1.2.0
 
 jobs:
   deploy-to-uat:
