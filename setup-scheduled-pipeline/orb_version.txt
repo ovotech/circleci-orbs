@@ -1,1 +1,1 @@
-ovotech/setup-scheduled-pipeline@1.2.0
+ovotech/setup-scheduled-pipeline@1.3.0
