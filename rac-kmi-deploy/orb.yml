@@ -102,7 +102,7 @@ jobs:
         description: "The KMI namespace this container is deployed into"
         type: string
     docker:
-      - image: cimg/openjdk:11.0.13 # Supports the AWS CLI
+      - image: cimg/openjdk:11.0.22 # Supports the AWS CLI
     steps:
       - setup_remote_docker
       - core/restore_workspace:
