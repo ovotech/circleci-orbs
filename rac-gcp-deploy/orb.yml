@@ -16,12 +16,12 @@ aliases:
 
 orbs:
   snyk: snyk/snyk@1.2.0
-  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-ecr: circleci/aws-ecr@9.0.2
 
 executors:
   machine:
     machine:
-      image: ubuntu-2004:202201-02
+      image: default
   docker:
     docker:
       - image: ovotech/rac-gcp-deploy:latest
