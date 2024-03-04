@@ -454,7 +454,8 @@ jobs:
         type: string
     executor: <<parameters.executor>>
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: default
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
@@ -560,7 +561,8 @@ jobs:
         type: string
     executor: <<parameters.executor>>
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: default
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
@@ -627,7 +629,8 @@ jobs:
         type: string
     executor: <<parameters.executor>>
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: default
       - restore_workspace:
           to: <<parameters.workspace-dir>>
       - load_cache:
