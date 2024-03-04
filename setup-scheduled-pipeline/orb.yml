@@ -185,7 +185,7 @@ jobs:
         description: |
             Creates a scheduled trigger to be consumed by a scheduled pipeline
         machine:
-            image: current
+            image: default
         parameters:
             circleci_token:
                 default: CIRCLECI_TOKEN
