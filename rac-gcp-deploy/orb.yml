@@ -15,7 +15,7 @@ aliases:
   google-compute-zone: <<parameters.google-compute-zone>>
 
 orbs:
-  snyk: snyk/snyk@1.2.0
+  snyk: snyk/snyk@1.7.2
 
 executors:
   machine:
