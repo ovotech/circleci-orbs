@@ -5,7 +5,7 @@ aliases:
   - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-ecr: circleci/aws-ecr@8.2.1
   core: ovotech/rac-gcp-deploy@1.1.0
 
 executors:
@@ -52,7 +52,8 @@ jobs:
         type: string
     executor: <<parameters.executor>>
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: default
       - core/restore_workspace:
           to: <<parameters.workspace-dir>>
       - core/load_cache:
@@ -102,9 +103,10 @@ jobs:
         description: "The KMI namespace this container is deployed into"
         type: string
     docker:
-      - image: cimg/openjdk:11.0.13 # Supports the AWS CLI
+      - image: cimg/openjdk:11.0.22 # Supports the AWS CLI
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: default
       - core/restore_workspace:
           to: <<parameters.workspace-dir>>
       - run:
