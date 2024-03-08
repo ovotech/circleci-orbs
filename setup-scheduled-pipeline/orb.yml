@@ -47,8 +47,6 @@ commands:
                     #!/bin/bash
                     set -eo pipefail
 
-                    CIRCLECI_TOKEN="CCIPAT_RA99K2GhUANZJ7GKJ24mzG_1ffb0548fa688f6e9ecdc99305b222512cb023e5"
-
                     add_scheduled_pipeline() {
                         local ORG_NAME=$1
                         local JSON_BODY=$2
