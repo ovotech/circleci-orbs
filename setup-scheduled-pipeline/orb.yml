@@ -17,7 +17,7 @@ commands:
                 type: env_var_name
             config_path:
                 default: ""
-                description: Path of the scheduled scan config yml file
+                description: Path of the scheduled scan config yml file (optional - set if using dynamic pipelines)
                 type: string
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
@@ -46,6 +46,8 @@ commands:
                 command: |
                     #!/bin/bash
                     set -eo pipefail
+
+                    CIRCLECI_TOKEN="CCIPAT_RA99K2GhUANZJ7GKJ24mzG_1ffb0548fa688f6e9ecdc99305b222512cb023e5"
 
                     add_scheduled_pipeline() {
                         local ORG_NAME=$1
@@ -109,28 +111,42 @@ commands:
                         fi
 
                         if [ -z "$PARAM_CONFIG_PATH" ]; then
-                            echo "Mandatory parameters have not been set! You must specify a config path for your schedule."
-                            exit 1
+                            JSON_BODY=$(jq -rcn '
+                                {
+                                    "name": env.SCHEDULE_NAME,
+                                    "description": env.SCHEDULE_DESCRIPTION,
+                                    "attribution-actor": "system",
+                                    "parameters": {
+                                        "branch": env.TARGET_BRANCH
+                                    },
+                                    "timetable": {
+                                        "per-hour": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,
+                                        "hours-of-day": env.PARAM_SCHEDULE_HOURS | split(",") | map(tonumber),
+                                        "days-of-week": env.PARAM_SCHEDULE_DAYS | split(",")
+                                    }
+                                }
+                            ')
                         else
                             export CONFIG_PATH="${PARAM_CONFIG_PATH}"
+
+                            JSON_BODY=$(jq -rcn '
+                                {
+                                    "name": env.SCHEDULE_NAME,
+                                    "description": env.SCHEDULE_DESCRIPTION,
+                                    "attribution-actor": "system",
+                                    "parameters": {
+                                        "branch": env.TARGET_BRANCH,
+                                        "config-path": env.CONFIG_PATH
+                                    },
+                                    "timetable": {
+                                        "per-hour": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,
+                                        "hours-of-day": env.PARAM_SCHEDULE_HOURS | split(",") | map(tonumber),
+                                        "days-of-week": env.PARAM_SCHEDULE_DAYS | split(",")
+                                    }
+                                }
+                            ')
                         fi
 
-                        JSON_BODY=$(jq -rcn '
-                            {
-                                "name": env.SCHEDULE_NAME,
-                                "description": env.SCHEDULE_DESCRIPTION,
-                                "attribution-actor": "system",
-                                "parameters": {
-                                    "branch": env.TARGET_BRANCH,
-                                    "config-path": env.CONFIG_PATH
-                                },
-                                "timetable": {
-                                    "per-hour": env.PARAM_SCHEDULE_HOUR_FREQUENCY | tonumber,
-                                    "hours-of-day": env.PARAM_SCHEDULE_HOURS | split(",") | map(tonumber),
-                                    "days-of-week": env.PARAM_SCHEDULE_DAYS | split(",")
-                                }
-                            }
-                        ')
                         export JSON_BODY
 
                         CIRCLECI_AUTH_HTTP_STATUS=$(curl --write-out "%{http_code}" -s "https://circleci.com/api/v2/project/gh/${ORG_NAME}/${CIRCLE_PROJECT_REPONAME}/schedule" --header "circle-token: ${CIRCLECI_TOKEN}" --output /dev/null)
@@ -193,7 +209,7 @@ jobs:
                 type: env_var_name
             config_path:
                 default: ""
-                description: Path of the scheduled scan config yml file
+                description: Path of the scheduled scan config yml file (optional - set if using dynamic pipelines)
                 type: string
             schedule_days:
                 description: Comma separated days in a week in which the schedule triggers
@@ -256,6 +272,37 @@ examples:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
                             circleci_token: SERVICE_USER_CIRCLECI_TOKEN
                             config_path: circleci/scheduled_scan_config.yml
+                            schedule_days: MON
+                            schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
+                            schedule_hour_frequency: "1"
+                            schedule_hours: "9"
+                            schedule_name: <REPO_NAME>-weekly-workflow
+                            target_branch: main
+                weekly-run-workflow:
+                    jobs:
+                        - test
+                        - build
+                        - deploy
+                    when:
+                        and:
+                            - equal:
+                                - scheduled_pipeline
+                                - << pipeline.trigger_source >>
+                            - equal:
+                                - <REPO_NAME>-weekly-workflow
+                                - << pipeline.schedule.name >>
+    example_with_no_path:
+        description: |
+            Sample usage of the setup scheduled pipeline setup orb.
+        usage:
+            version: "2.1"
+            orbs:
+                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
+            workflows:
+                setup-schedule-workflow:
+                    jobs:
+                        - setup-scheduled-pipeline/create_scheduled_pipeline:
+                            circleci_token: SERVICE_USER_CIRCLECI_TOKEN
                             schedule_days: MON
                             schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
