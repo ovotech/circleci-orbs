@@ -18,8 +18,9 @@ If not using the default environment variable `CIRCLECI_TOKEN`, please be sure t
 
 This is the only command that exists within this orb and makes use of a wrapper shell script to communicate with the CircleCI API to create your desired schedule based on what you've passed into the command parameters. This command is also wrapped within a job with the same name `create_scheduled_pipeline`.
 
-This orb works with [dynamic pipelines](https://circleci.com/docs/dynamic-config/) and if the `config_path` parameter is set it will pass add the parameter `config-path` when the job is scheduled.
-The `config.yaml` must have `setup: true` and expect the parameter `config-path`.  As an example the [team-cppe](https://github.com/ovotech/team-cppe/blob/main/.circleci/config.yml) repo is configured to do this.
+This orb works with [dynamic pipelines](https://circleci.com/docs/dynamic-config/) and if the `config_path` parameter is set it will add the parameter `config-path` when the job is scheduled.
+The `config.yaml` must have `setup: true` and expect the parameter `config-path`, the pipeline also needs to have this feature enabled in the project settings (details can be found [here](https://circleci.com/docs/dynamic-config/#getting-started-with-dynamic-config-in-circleci)).
+The [team-cppe](https://github.com/ovotech/team-cppe/blob/main/.circleci/config.yml) repo is configured to do this.
 
 **Parameters**
 - `schedule_name` - Name of the schedule
