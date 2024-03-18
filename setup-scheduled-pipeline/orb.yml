@@ -269,7 +269,7 @@ examples:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
                             circleci_token: SERVICE_USER_CIRCLECI_TOKEN
-                            config_path: circleci/scheduled_scan_config.yml
+                            config_path: .circleci/scheduled_scan_config.yml
                             schedule_days: MON
                             schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
