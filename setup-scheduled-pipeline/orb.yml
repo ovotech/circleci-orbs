@@ -263,7 +263,7 @@ examples:
         usage:
             version: "2.1"
             orbs:
-                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
+                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.4.1
             workflows:
                 setup-schedule-workflow:
                     jobs:
@@ -295,7 +295,7 @@ examples:
         usage:
             version: "2.1"
             orbs:
-                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
+                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.4.1
             workflows:
                 setup-schedule-workflow:
                     jobs:
