@@ -263,13 +263,13 @@ examples:
         usage:
             version: "2.1"
             orbs:
-                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
+                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.4.1
             workflows:
                 setup-schedule-workflow:
                     jobs:
                         - setup-scheduled-pipeline/create_scheduled_pipeline:
                             circleci_token: SERVICE_USER_CIRCLECI_TOKEN
-                            config_path: circleci/scheduled_scan_config.yml
+                            config_path: .circleci/scheduled_scan_config.yml
                             schedule_days: MON
                             schedule_description: A weekly workflow on the main branch that executes once at 9 am every Monday
                             schedule_hour_frequency: "1"
@@ -295,7 +295,7 @@ examples:
         usage:
             version: "2.1"
             orbs:
-                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.0.0
+                setup-scheduled-pipeline: ovotech/setup-scheduled-pipeline@1.4.1
             workflows:
                 setup-schedule-workflow:
                     jobs:
