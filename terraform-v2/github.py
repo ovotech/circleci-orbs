@@ -88,6 +88,13 @@ class TerraformComment:
             label += f' in the __{self.workspace}__ workspace'
 
         if self.init_args:
+            key_to_replace = "-backend-config=encryption_key="
+            if key_to_replace in self.init_args:
+                index = self.init_args.find(key_to_replace) + len(key_to_replace)
+                encrypted_key = self.init_args[index:]
+                masked_key = "*" * len(encrypted_key)
+                self.init_args = self.init_args[:index] + masked_key
+
             label += f'\nUsing init args: `{self.init_args}`'
         if self.plan_args:
             label += f'\nUsing plan args: `{self.plan_args}`'
