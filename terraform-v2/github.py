@@ -129,6 +129,10 @@ class TerraformComment:
     def init_args(self) -> str:
         return os.environ.get('INIT_ARGS')
 
+    @property.setter
+    def init_args(self, value):
+        self.init_args = value
+
     @property
     def plan_args(self) -> str:
         return os.environ.get('PLAN_ARGS')
