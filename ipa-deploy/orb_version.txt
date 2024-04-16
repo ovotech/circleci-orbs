@@ -1,1 +1,1 @@
-ovotech/ipa-deploy@3.0.0
+ovotech/ipa-deploy@4.0.0
