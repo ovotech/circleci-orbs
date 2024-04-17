@@ -88,6 +88,13 @@ class TerraformComment:
             label += f' in the __{self.workspace}__ workspace'
 
         if self.init_args:
+            key_to_replace = "-backend-config=encryption_key="
+            if key_to_replace in self.init_args:
+                index = self.init_args.find(key_to_replace) + len(key_to_replace)
+                encrypted_key = self.init_args[index:]
+                masked_key = "*" * len(encrypted_key)
+                self.init_args = self.init_args[:index] + masked_key
+
             label += f'\nUsing init args: `{self.init_args}`'
         if self.plan_args:
             label += f'\nUsing plan args: `{self.plan_args}`'
@@ -121,6 +128,10 @@ class TerraformComment:
     @property
     def init_args(self) -> str:
         return os.environ.get('INIT_ARGS')
+
+    @init_args.setter
+    def init_args(self, value):
+         os.environ['INIT_ARGS'] = value
 
     @property
     def plan_args(self) -> str:
@@ -173,8 +184,10 @@ if __name__ == '__main__':
     {sys.argv[0]} status <status.txt
     {sys.argv[0]} get >plan.txt''')
 
+    print("aaa")
     comment = TerraformComment(find_pr())
 
+    print("---aaa")
     if sys.argv[1] == 'plan':
         comment.plan = sys.stdin.read().strip()
     elif sys.argv[1] == 'status':

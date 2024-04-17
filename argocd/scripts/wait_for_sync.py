@@ -10,7 +10,7 @@ import os
 def sync_request(endpoint, token, application):
 
     try:
-        headers = { 'Authorization' : 'Bearer %s' % token }
+        headers = { 'Authorization' : 'Bearer %s' % token, 'Content-Type' : 'application/json' }
         res = requests.post(endpoint.rstrip("/") + f'/api/v1/applications/{application}/sync', headers=headers, timeout = 10, verify=True)
         if res.status_code != 200:
             print(f"ERROR: Non-200 response ({res.status_code}): {res.json()}.")
@@ -41,7 +41,7 @@ def sync_request(endpoint, token, application):
 def is_cluster_insync(endpoint, token, application, target_revision):
 
     try:
-        headers = { 'Authorization' : 'Bearer %s' % token }
+        headers = { 'Authorization' : 'Bearer %s' % token, 'Content-Type' : 'application/json' }
         res = requests.get(endpoint.rstrip("/") + f'/api/v1/applications/{application}', headers=headers, timeout = 10, verify=True)
         if res.status_code != 200:
             print(f"ERROR: Non-200 response ({res.status_code}): {res.json()}.")
