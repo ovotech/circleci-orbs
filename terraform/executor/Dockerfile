@@ -9,7 +9,7 @@ ARG AWSCLI_VERSION=1.19.16
 ARG HELM3_VERSION=3.5.3
 
 # internal providers
-ARG TF_OVO_VERSIONS="1.0.0"
+ARG TF_OVO_VERSIONS="1.0.0 1.1.0 1.9.9"
 ARG TF_AIVEN_KAFKA_USERS_VERSIONS="0.0.1 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 1.0.7 1.0.8 1.0.9 1.0.10 1.1.0 1.1.1 1.1.2"
 
 # Terraform environment variables
@@ -48,7 +48,7 @@ RUN mkdir -p $TF_PLUGIN_CACHE_DIR
 # kafka users ovo provider
 RUN mkdir -p /root/.terraform.d/plugins \
     && for TF_OVO_VERSION in $TF_OVO_VERSIONS; do \
-    curl -f -L https://ovo-kafka-user.s3-eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_VERSION}/terraform-provider-ovo_${TF_OVO_VERSION}_linux_amd64.zip -o ovo.zip \
+    curl -f -L https://kafka-users-prod-tf-provider.s3.eu-west-1.amazonaws.com/terraform-provider-ovo/${TF_OVO_VERSION}/terraform-provider-ovo_${TF_OVO_VERSION}_linux_amd64.zip -o ovo.zip \
     && mkdir -p /root/.terraform.d/plugins/terraform.ovotech.org.uk/pe/ovo/${TF_OVO_VERSION}/linux_amd64 \
     && unzip ovo.zip -d /root/.terraform.d/plugins \
     && unzip ovo.zip -d /root/.terraform.d/plugins/terraform.ovotech.org.uk/pe/ovo/${TF_OVO_VERSION}/linux_amd64 \

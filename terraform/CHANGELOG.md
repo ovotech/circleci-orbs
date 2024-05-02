@@ -3,6 +3,12 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform@1.11.21
+- Added legacy ovo kafka users v1.1.0 and v1.9.9 (end-of-life) to all executors
+
+## ovotech/terraform@1.11.20
+- Updated GCloud version from 329.0.0 to 463.0.0
+
 ## ovotech/terraform@1.11.19
 - Added Terraform provider Aiven Kafka Users v1.1.1 and v1.1.2 to all executors
 
