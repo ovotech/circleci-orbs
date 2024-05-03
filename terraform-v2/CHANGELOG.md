@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.5.5
+- Added legacy ovo kafka users v1.1.0 and v1.9.9 (end-of-life) to all executors
+
 ## ovotech/terraform-v2@2.5.1
 - Hide Terraform encryption key in Github comments
 
