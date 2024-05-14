@@ -302,6 +302,10 @@ commands:
                         else
                             echo "No issue was found for the query '$PARAM_JQL_QUERY'."
                         fi
+
+                        echo "****** EXISTING_ISSUES  ******"
+                        echo "'$EXISTING_ISSUES'"
+                        echo "****** EXISTING_ISSUES ******"
                     }
 
                     # Will not run if sourced for bats-core tests.
