@@ -290,6 +290,10 @@ commands:
                         }
                     ')
 
+                        echo "****** JSON BODY ******"
+                        echo "'$JSON_BODY'"
+                        echo "****** JSON BODY ******"
+
                         EXISTING_ISSUES=$(curl --request POST --url 'https://ovotech.atlassian.net/rest/api/3/search' --user "$PARAM_USER_EMAIL_ID:$PARAM_API_TOKEN" --header 'Accept: application/json' --header 'Content-Type: application/json' --data "$JSON_BODY")
                         EXISTING_ISSUES_COUNT=$(echo "${EXISTING_ISSUES}" | jq '.issues | length')
                         if [ "${EXISTING_ISSUES_COUNT}" != 0 ]; then
