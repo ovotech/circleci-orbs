@@ -1,1 +1,0 @@
-ovotech/oot-deploy@2.2.1
