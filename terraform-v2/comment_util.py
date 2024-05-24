@@ -23,7 +23,7 @@ def re_comment_match(comment_id, comment_body):
         return f'{re.escape(comment_id)}\n{regex}(.*)'
 
     for tmpl in [current_template, *previous_templates]:
-        m = re.match(_build_regex(tmpl), comment_body, re.DOTALL)
+        m = re.match(_build_regex(tmpl), "\n".join(comment_body.splitlines()), re.DOTALL)
         if m is not None:
             return m
 
