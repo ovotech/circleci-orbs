@@ -20,7 +20,7 @@ def re_comment_match(comment_id, comment_body):
     def _build_regex(template):
         regex = re.escape(template.replace('{plan}', '___plan___')) \
             .replace('___plan___', '(.*)')
-        return f'{re.escape(comment_id)}\n{regex}(.*)'
+        return f'{re.escape(comment_id)}\n{regex}(.*)'.replace("\\", "")
 
     for tmpl in [current_template, *previous_templates]:
         print(repr(_build_regex(tmpl)))
