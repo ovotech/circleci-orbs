@@ -184,10 +184,8 @@ if __name__ == '__main__':
     {sys.argv[0]} status <status.txt
     {sys.argv[0]} get >plan.txt''')
 
-    print("aaa")
     comment = TerraformComment(find_pr())
 
-    print("---aaa")
     if sys.argv[1] == 'plan':
         comment.plan = sys.stdin.read().strip()
     elif sys.argv[1] == 'status':
