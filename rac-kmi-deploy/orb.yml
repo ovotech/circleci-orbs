@@ -6,7 +6,7 @@ aliases:
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
-  core: ovotech/rac-gcp-deploy@1.1.0
+  core: ovotech/rac-gcp-deploy@2.1.0
 
 executors:
   docker:
