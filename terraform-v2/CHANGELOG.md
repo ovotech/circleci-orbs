@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.5.9
+- Disable bash xtrace when handling registry tokens to avoid displaying them in logs
+
 ## ovotech/terraform-v2@2.5.8
 - Fixed bug causing the check that PR plan hasn't changed when applying to constantly fail
 
