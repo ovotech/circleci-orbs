@@ -28,7 +28,7 @@ else
           | tee /dev/fd/3 \
           | $COMPACT_PLAN \
               >plan.txt
-  
+
   readonly TF_EXIT=${PIPESTATUS[0]}
 fi
 
@@ -43,7 +43,15 @@ if [[ -n "$GITHUB_TOKEN" && "<< parameters.add_github_comment >>" == "true" ]]; 
     export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
     export label="<< parameters.label >>"
 
-    if ! python3 /tmp/github.py plan <plan.txt; then
-        echo "Error adding comment to PR"
+    if terraform show -no-color plan.out | grep 'No changes' >/dev/null 2>&1; then
+      if [[ "<< parameters.add_no_changes_comment >>" == "true" ]]; then
+        if ! python3 /tmp/github.py plan <plan.txt; then
+            echo "Error adding comment to PR"
+        fi
+      fi
+    else
+      if ! python3 /tmp/github.py plan <plan.txt; then
+          echo "Error adding comment to PR"
+      fi
     fi
 fi
