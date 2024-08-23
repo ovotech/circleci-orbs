@@ -68,11 +68,11 @@ aliases:
         type: "boolean"
         description: "Add the plan to a GitHub PR"
         default: true
-      add_no_changes_comment: &add_no_changes_comment
-        add_no_changes_comment:
-          type: "boolean"
-          description: "Add the plan to a GitHub PR even if there are no changes"
-          default: true
+    add_no_changes_comment: &add_no_changes_comment
+      add_no_changes_comment:
+        type: "boolean"
+        description: "Add the plan to a GitHub PR even if there are no changes"
+        default: true
     reuse_plan: &reuse_plan
       reuse_plan:
         type: "boolean"
