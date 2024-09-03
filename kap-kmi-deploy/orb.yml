@@ -2,7 +2,7 @@ version: 2.1
 description: "Push to KMI via KAP-managed gitops."
 
 orbs:
-  aws-ecr: circleci/aws-ecr@9.3.1
+  aws-ecr: circleci/aws-ecr@8.2.1
 
 commands:
   deploy-image:

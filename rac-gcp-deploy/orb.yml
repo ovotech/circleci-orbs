@@ -16,7 +16,7 @@ aliases:
 
 orbs:
   snyk: snyk/snyk@1.2.0
-  aws-ecr: circleci/aws-ecr@9.3.1
+  aws-ecr: circleci/aws-ecr@8.2.1
 
 executors:
   machine:
