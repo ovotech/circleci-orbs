@@ -2,7 +2,7 @@ version: 2.1
 description: "Update ASP deployments with gitops."
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-ecr: circleci/aws-ecr@9.3.1
 
 commands:
   update-gitops:

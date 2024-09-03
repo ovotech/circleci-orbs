@@ -17,7 +17,7 @@ executors:
 
 orbs:
   aws: circleci/aws-cli@1.4.0
-  gcp: circleci/gcp-cli@2.1.0
+  gcp: circleci/gcp-cli@3.1.0
 
 aliases:
   parameters:
