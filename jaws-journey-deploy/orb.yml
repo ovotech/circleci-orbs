@@ -222,7 +222,7 @@ commands:
     steps:
       - attach_workspace:
           at: ~/working
-      - aws-ecr/build-and-push-image:
+      - aws-ecr/build_and_push_image:
           setup-remote-docker: true
           checkout: false
           path: << parameters.path >>
@@ -319,7 +319,7 @@ commands:
             - github-repo-login:
                 username: << parameters.username >>
                 token: << parameters.token >>
-            - aws-ecr/build-and-push-image:
+            - aws-ecr/build_and_push_image:
                 setup-remote-docker: true
                 checkout: false
                 assume-web-identity: << parameters.oidc >>
@@ -814,7 +814,7 @@ jobs:
       - github-repo-login:
           username: << parameters.username >>
           token: << parameters.token >>
-      - aws-ecr/build-and-push-image:
+      - aws-ecr/build_and_push_image:
           setup-remote-docker: true
           checkout: false
           assume-web-identity: << parameters.oidc >>

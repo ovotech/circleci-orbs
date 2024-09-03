@@ -31,7 +31,7 @@ commands:
     steps:
       - attach_workspace:
           at: .
-      - aws-ecr/build-and-push-image:
+      - aws-ecr/build_and_push_image:
           checkout: false
           aws-access-key-id: << parameters.aws-access-key-id >>
           aws-secret-access-key: << parameters.aws-secret-access-key >>

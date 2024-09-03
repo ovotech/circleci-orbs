@@ -52,7 +52,7 @@ commands:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr_login:
           role-arn: << parameters.aws-deploy-role-arn >>
-          registry-id: AWS_ACCOUNT_ID
+          account_id: AWS_ACCOUNT_ID
 
       - aws-ecr/build-image:
           repo: << parameters.service >>
