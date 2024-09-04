@@ -49,11 +49,8 @@ commands:
 
       - aws-cli/install
       - aws-cli/setup:
-        role-arn: << parameters.aws-deploy-role-arn >>
+          role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr_login:
-          auth:
-            - aws-cli/setup:
-              role-arn: << parameters.aws-deploy-role-arn >>
           account_id: AWS_ACCOUNT_ID
 
       - aws-ecr/build-image:
