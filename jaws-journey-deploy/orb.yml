@@ -4,6 +4,7 @@ description: "Defines the core steps required for a smart journey deployment pip
 orbs:
   aws-configure-credentials-oidc: ovotech/aws-configure-credentials-oidc@1.0.1
   aws-ecr: circleci/aws-ecr@9.3.1
+  aws-cli: circleci/aws-cli@5.1.0
   terraform: ovotech/terraform-v2@2.5.6
   openjdk-install: cloudesire/openjdk-install@1.2.3
   snyk: snyk/snyk@1.5.0
@@ -223,17 +224,18 @@ commands:
       - attach_workspace:
           at: ~/working
       - aws-ecr/build_and_push_image:
-          setup-remote-docker: true
+          setup_remote_docker: true
           checkout: false
           path: << parameters.path >>
           repo: << parameters.repo >>
           tag: '<< parameters.tag >>'
-          skip-when-tags-exist: << parameters.skipWhenTagExists >>
-          assume-web-identity: << parameters.oidc >>
-          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
-          registry-id: AWS_ACCOUNT_ID
+          skip_when_tags_exist: << parameters.skipWhenTagExists >>
+          account_id: AWS_ACCOUNT_ID
           region: $AWS_DEFAULT_REGION
+          auth:
+            - aws-cli/setup:
+                role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
       - snyk/scan:
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.dockerImageName >>:<< parameters.tag >>
           fail-on-issues: true
@@ -922,7 +924,7 @@ jobs:
             - github-repo-login:
                 username: << parameters.username >>
                 token: << parameters.token >>
-            - aws-ecr/build-and-push-image:
+            - aws-ecr/build_and_push_image:
                 setup-remote-docker: true
                 checkout: false
                 assume-web-identity: << parameters.oidc >>
