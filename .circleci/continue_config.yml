@@ -161,7 +161,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.13
+          version: docker23
       - run:
           name: docker build << parameters.path >>
           # language=bash
