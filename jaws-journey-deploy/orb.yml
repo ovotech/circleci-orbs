@@ -322,12 +322,12 @@ commands:
                 username: << parameters.username >>
                 token: << parameters.token >>
             - aws-ecr/build_and_push_image:
-                setup-remote-docker: true
+                setup_remote_docker: true
                 checkout: false
-                registry-id: AWS_ACCOUNT_ID
+                account_id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
-                create-repo: false
+                create_repo: false
                 region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
@@ -818,18 +818,19 @@ jobs:
           username: << parameters.username >>
           token: << parameters.token >>
       - aws-ecr/build_and_push_image:
-          setup-remote-docker: true
+          setup_remote_docker: true
           checkout: false
-          assume-web-identity: << parameters.oidc >>
-          role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-          role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
-          registry-id: AWS_ACCOUNT_ID
+          account_id: AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
-          create-repo: false
+          create_repo: false
           region: $AWS_DEFAULT_REGION
           repo: << parameters.serviceName >>
           tag: "latest,$CIRCLE_SHA1"
+          auth:
+            - aws-cli/setup:
+                role_arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                role_session_name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
       - snyk/scan:
           docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:$CIRCLE_SHA1
           fail-on-issues: true
@@ -926,18 +927,20 @@ jobs:
                 username: << parameters.username >>
                 token: << parameters.token >>
             - aws-ecr/build_and_push_image:
-                setup-remote-docker: true
+                setup_remote_docker: true
                 checkout: false
-                assume-web-identity: << parameters.oidc >>
-                role-arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
-                role-session-name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
-                registry-id: AWS_ACCOUNT_ID
+                account_id: AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
-                create-repo: false
+                create_repo: false
                 region: $AWS_DEFAULT_REGION
                 repo: << parameters.serviceName >>
                 tag: "latest,$CIRCLE_SHA1"
+                auth:
+                  - aws-cli/setup:
+                      role_arn: <<#parameters.oidc>>$CIRCLE_IAM_ROLE_ARN<</parameters.oidc>>
+                      role_session_name: <<#parameters.oidc>>CircleCI-${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BUILD_NUM}<</parameters.oidc>>
+
             - snyk/scan:
                 additional-arguments: --exclude-app-vulns --policy-path=<< parameters.snykPolicyPath >>
                 docker-image-name: $AWS_ACCOUNT_URL/<< parameters.serviceName >>:latest
