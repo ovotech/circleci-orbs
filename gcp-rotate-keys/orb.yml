@@ -178,11 +178,11 @@ jobs:
 
             echo "export << parameters.gcloud-service-key >>='"$(maybe_decode "$(printenv << parameters.gcloud-service-key >>)")"'" >> $BASH_ENV
       - gcp/install
-      - gcp/initialize:
-          gcloud-service-key: << parameters.gcloud-service-key >>
-          google-compute-region: << parameters.google-compute-region >>
-          google-compute-zone: << parameters.google-compute-zone >>
-          google-project-id: << parameters.google-project-id >>
+      - gcp/setup:
+          gcloud_service_key: << parameters.gcloud-service-key >>
+          google_compute_region: << parameters.google-compute-region >>
+          google_compute_zone: << parameters.google-compute-zone >>
+          google_project_id: << parameters.google-project-id >>
       - aws/setup:
           aws-access-key-id: << parameters.aws-access-key-id >>
           aws-region: << parameters.aws-region >>
