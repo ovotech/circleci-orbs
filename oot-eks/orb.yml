@@ -53,11 +53,11 @@ commands:
       - aws-ecr/ecr_login:
           account_id: AWS_ACCOUNT_ID
 
-      - aws-ecr/build-image:
+      - aws-ecr/build_image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          extra-build-args: << parameters.extra-build-args >>
-          registry-id: AWS_ACCOUNT_ID
+          extra_build_args: << parameters.extra-build-args >>
+          account_id: AWS_ACCOUNT_ID
 
       - snyk/scan:
           monitor-on-build: true
