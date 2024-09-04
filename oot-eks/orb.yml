@@ -51,7 +51,6 @@ commands:
       - aws-cli/setup:
           role-arn: << parameters.aws-deploy-role-arn >>
       - aws-ecr/ecr_login:
-          role-arn: << parameters.aws-deploy-role-arn >>
           account_id: AWS_ACCOUNT_ID
 
       - aws-ecr/build-image:
@@ -67,10 +66,10 @@ commands:
           target-file: Dockerfile
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:<< parameters.image-tag >>
 
-      - aws-ecr/push-image:
+      - aws-ecr/push_image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          registry-id: AWS_ACCOUNT_ID
+          account_id: AWS_ACCOUNT_ID
 
 executors:
   aws:
