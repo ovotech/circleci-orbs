@@ -56,8 +56,8 @@ commands:
       - aws-ecr/build_image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          extra-build-args: << parameters.extra-build-args >>
-          registry-id: AWS_ACCOUNT_ID
+          extra_build_args: << parameters.extra-build-args >>
+          account_id: AWS_ACCOUNT_ID
 
       - snyk/scan:
           monitor-on-build: true
@@ -69,7 +69,7 @@ commands:
       - aws-ecr/push_image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          registry-id: AWS_ACCOUNT_ID
+          account_id: AWS_ACCOUNT_ID
 
 executors:
   aws:
