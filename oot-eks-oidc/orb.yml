@@ -53,7 +53,7 @@ commands:
       - aws-ecr/ecr_login:
           account_id: AWS_ACCOUNT_ID
 
-      - aws-ecr/build-image:
+      - aws-ecr/build_image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
           extra-build-args: << parameters.extra-build-args >>
@@ -66,7 +66,7 @@ commands:
           target-file: Dockerfile
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:<< parameters.image-tag >>
 
-      - aws-ecr/push-image:
+      - aws-ecr/push_image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
           registry-id: AWS_ACCOUNT_ID
