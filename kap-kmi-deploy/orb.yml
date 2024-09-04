@@ -3,6 +3,7 @@ description: "Push to KMI via KAP-managed gitops."
 
 orbs:
   aws-ecr: circleci/aws-ecr@9.3.1
+  aws-cli: circleci/aws-cli@5.1.0
 
 commands:
   deploy-image:
@@ -33,10 +34,12 @@ commands:
           at: .
       - aws-ecr/build_and_push_image:
           checkout: false
-          aws-access-key-id: << parameters.aws-access-key-id >>
-          aws-secret-access-key: << parameters.aws-secret-access-key >>
           repo: << parameters.kmi-k8s-namespace >>/<< parameters.image-name >>
           tag: << parameters.tag >>
+          auth:
+            - aws-cli/setup:
+                aws_access_key_id: << parameters.aws-access-key-id >>
+                aws_secret_access_key: << parameters.aws-secret-access-key >>
 
   update-gitops:
     parameters:
