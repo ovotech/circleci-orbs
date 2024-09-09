@@ -5,7 +5,7 @@ aliases:
   - &cache-key '{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Branch }}-{{ checksum "project/Dependencies.scala"}}'
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-ecr: circleci/aws-ecr@9.3.1
   core: ovotech/rac-gcp-deploy@2.1.0
 
 executors:
@@ -112,7 +112,7 @@ jobs:
           command: |
             docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
             docker tag "$<<parameters.container-name>>:$(cat version.txt)" $<<parameters.kmi-registry-url>>/<<parameters.kmi-namespace>>/$<<parameters.container-name>>:$(cat version.txt)
-      - aws-ecr/ecr-login
+      - aws-ecr/ecr_login
       - run:
           name: "Push docker image to KMI registry"
           command: |
