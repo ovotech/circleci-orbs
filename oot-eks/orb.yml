@@ -3,7 +3,7 @@ description: "Opinionated commands for releasing OOT projects on AWS EKS via ECR
 
 orbs:
   aws-cli: circleci/aws-cli@3.1.4
-  aws-ecr: circleci/aws-ecr@9.3.1
+  aws-ecr: circleci/aws-ecr@8.2.1
   snyk: snyk/snyk@1.1.2
 
 commands:
@@ -50,14 +50,15 @@ commands:
       - aws-cli/install
       - aws-cli/setup:
           role-arn: << parameters.aws-deploy-role-arn >>
-      - aws-ecr/ecr_login:
-          account_id: AWS_ACCOUNT_ID
+      - aws-ecr/ecr-login:
+          role-arn: << parameters.aws-deploy-role-arn >>
+          registry-id: AWS_ACCOUNT_ID
 
-      - aws-ecr/build_image:
+      - aws-ecr/build-image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          extra_build_args: << parameters.extra-build-args >>
-          account_id: AWS_ACCOUNT_ID
+          extra-build-args: << parameters.extra-build-args >>
+          registry-id: AWS_ACCOUNT_ID
 
       - snyk/scan:
           monitor-on-build: true
@@ -66,10 +67,10 @@ commands:
           target-file: Dockerfile
           docker-image-name: $AWS_ECR_ACCOUNT_URL/<< parameters.service >>:<< parameters.image-tag >>
 
-      - aws-ecr/push_image:
+      - aws-ecr/push-image:
           repo: << parameters.service >>
           tag: << parameters.image-tag >>,<< parameters.extra-image-tags >>
-          account_id: AWS_ACCOUNT_ID
+          registry-id: AWS_ACCOUNT_ID
 
 executors:
   aws:
