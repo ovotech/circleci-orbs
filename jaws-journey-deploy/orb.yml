@@ -230,7 +230,7 @@ commands:
           repo: << parameters.repo >>
           tag: '<< parameters.tag >>'
           skip_when_tags_exist: << parameters.skipWhenTagExists >>
-          account_id: AWS_ACCOUNT_ID
+          account_id: $AWS_ACCOUNT_ID
           region: $AWS_DEFAULT_REGION
           auth:
             - aws-cli/setup:
@@ -324,7 +324,7 @@ commands:
             - aws-ecr/build_and_push_image:
                 setup_remote_docker: true
                 checkout: false
-                account_id: AWS_ACCOUNT_ID
+                account_id: $AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create_repo: false
@@ -820,7 +820,7 @@ jobs:
       - aws-ecr/build_and_push_image:
           setup_remote_docker: true
           checkout: false
-          account_id: AWS_ACCOUNT_ID
+          account_id: $AWS_ACCOUNT_ID
           dockerfile: Dockerfile
           path: ./<< parameters.serviceName >>
           create_repo: false
@@ -929,7 +929,7 @@ jobs:
             - aws-ecr/build_and_push_image:
                 setup_remote_docker: true
                 checkout: false
-                account_id: AWS_ACCOUNT_ID
+                account_id: $AWS_ACCOUNT_ID
                 dockerfile: Dockerfile
                 path: ./<< parameters.serviceName >>
                 create_repo: false
