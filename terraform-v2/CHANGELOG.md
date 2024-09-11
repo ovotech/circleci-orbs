@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.5.10
+- Add paramter `add_no_changes_comment` to exclude PR comments where there are no changes
+
 ## ovotech/terraform-v2@2.5.9
 - Disable bash xtrace when handling registry tokens to avoid displaying them in logs
 
