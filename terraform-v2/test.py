@@ -22,9 +22,11 @@ if [ $(echo $tf_version | cut -d '.' -f 1) -lt 1 ] && [ $(echo $tf_version | cut
     exit 1
 fi
 
+set +x
 if [ -n "$TF_REGISTRY_TOKEN" ]; then
     echo "credentials \"$TF_REGISTRY_HOST\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
 fi
+set -x
 
 # Set TF environment variables
 # These are already set in the dockerfile, but set again just in case the orb is used with a different executor

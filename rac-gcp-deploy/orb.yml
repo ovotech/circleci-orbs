@@ -16,7 +16,7 @@ aliases:
 
 orbs:
   snyk: snyk/snyk@1.2.0
-  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-ecr: circleci/aws-ecr@9.3.1
 
 executors:
   machine:
@@ -623,7 +623,7 @@ jobs:
             export NONPROD_IMAGE_ROOT=<<parameters.gcr-registry-url>>/randc-nonprod/$<<parameters.container-name>>
             docker load -i <<parameters.workspace-dir>>/$<<parameters.container-name>>.dockerimage
             docker tag "${NONPROD_IMAGE_ROOT}:$(cat version.txt)" $<<parameters.kmi-registry-url>>/$<<parameters.kmi-namespace>>/$<<parameters.container-name>>:$(cat version.txt)
-      - aws-ecr/ecr-login
+      - aws-ecr/ecr_login
       - run:
           name: "Push docker image to KMI registry"
           command: |
