@@ -1,5 +1,5 @@
-# 3.3.0
-* Update node to 20.11.0 to allow semantic release to work create-release
+# 3.3.5
+* Default lib-build-and-test and integration-test jobs to using ubuntu-2004:current instead of an older 20.04 image that's no longer available
 
 # 3.3.0
 * Update node to 20.11.0 to allow semantic release to work create-release
