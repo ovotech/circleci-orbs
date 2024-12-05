@@ -1,4 +1,4 @@
-*                                @ovotech/production-eng @ovotech/consumer-products-production-engineering
+*                                @ovotech/developer-platforms
 /terraform/                      @ovotech/production-eng
 /clair-scanner/                  @ovotech/production-eng
 /aws-rotate-keys/                @mwz
