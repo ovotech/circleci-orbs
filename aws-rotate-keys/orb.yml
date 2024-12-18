@@ -35,6 +35,29 @@ commands:
       - run:
           name: Rotate AWS keys
           command: |
+            # Check parameters have been provided
+            has_missing_parameters=false
+            missing_param_message="Error: Please provide a non-empty string for parameters:"
+            if [ -z << parameters.aws-username >> ]; then
+              has_missing_parameters=true
+              missing_param_message="$missing_param_message\n- aws-username"
+            fi
+            if [ -z << parameters.circleci-token >> ]; then
+              has_missing_parameters=true
+              missing_param_message="$missing_param_message\n- circleci-token"
+            fi
+            if [ -z << parameters.aws-access-key-id-var >> ]; then
+              has_missing_parameters=true
+              missing_param_message="$missing_param_message\n- aws-access-key-id-var"
+            fi
+            if [ -z << parameters.aws-secret-access-key-var >> ]; then
+              has_missing_parameters=true
+              missing_param_message="$missing_param_message\n- aws-secret-access-key-var"
+            fi
+            if $has_missing_parameters; then
+              echo -e $missing_param_message
+              exit 1
+            fi
             # Assumes that AWS credentials have already been configured
             old_access_key_id=`aws iam list-access-keys --user-name << parameters.aws-username >> --query 'AccessKeyMetadata[0].AccessKeyId' --output text` &&
             create_access_key_output=`aws iam create-access-key --user-name << parameters.aws-username >>` &&
