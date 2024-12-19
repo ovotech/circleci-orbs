@@ -58,6 +58,8 @@ commands:
                 TARGET_ARCH=<< parameters.architecture >>\
                 NUGET_USERNAME=$NUGET_USERNAME\
                 NUGET_PASSWORD=$NUGET_PASSWORD\
+                NUGET_GITHUB_USERNAME=$NUGET_GITHUB_USERNAME\
+                NUGET_GITHUB_TOKEN=$NUGET_GITHUB_TOKEN\
                 DOCKERFILE=<< parameters.docker_file >>\
                 IMAGE_NAME=<< parameters.image_name >>\
                 DOCKER_REGISTRY=<< parameters.docker_registry >>\
