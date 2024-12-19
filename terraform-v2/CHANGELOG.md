@@ -3,6 +3,9 @@ All notable changes to the orb will be documented in this file.
 Orbs are immutable, some orb versions with no significant changes are
 not listed
 
+## ovotech/terraform-v2@2.5.10
+- Added Terraform Aiven Kafka users provider version v2.2.0 to all executors
+
 ## ovotech/terraform-v2@2.5.9
 - Disable bash xtrace when handling registry tokens to avoid displaying them in logs
 

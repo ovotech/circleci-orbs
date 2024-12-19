@@ -1,5 +1,6 @@
 *                                @ovotech/developer-platforms
 /terraform/                      @ovotech/production-eng
+/terraform-v2/                   @ovotech/production-eng
 /clair-scanner/                  @ovotech/production-eng
 /aws-rotate-keys/                @mwz
 /rac-gcp-deploy/                 @ovotech/reads-consumption
