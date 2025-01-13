@@ -1,3 +1,6 @@
+# 3.3.6
+* Add migration environment, mig, to allowed environment names
+
 # 3.3.5
 * Default lib-build-and-test and integration-test jobs to using ubuntu-2004:current instead of an older 20.04 image that's no longer available
 
