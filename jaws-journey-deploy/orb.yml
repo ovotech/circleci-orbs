@@ -31,7 +31,7 @@ aliases:
     environment: &environment
       environment:
         type: "enum"
-        enum: ["sandbox", "test", "uat", "nonprod", "preprod", "prod", "undefined", "dev"]
+        enum: ["sandbox", "test", "uat", "nonprod", "preprod", "prod", "undefined", "dev", "mig"]
         default: "sandbox"
     serviceName: &serviceName
       serviceName:
