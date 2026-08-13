@@ -1,5 +1,5 @@
 version: 2.1
-description: "Terraform orb v2. See https://github.com/ovotech/circleci-orbs/tree/master/terraform-v2"
+description: "Terraform orb v2. See https://github.com/chptech/circleci-orbs/tree/master/terraform-v2"
 
 executors:
   default:
@@ -105,10 +105,11 @@ commands:
   in-workspace:
     description: "Run commands in an initialized terraform working directory"
     parameters:
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
       steps:
         type: "steps"
         description: "Steps to run in the initialized terraform working directory"
@@ -126,17 +127,18 @@ commands:
   plan:
     description: "Create a Terraform plan"
     parameters: &plan-parameters
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *var
-      <<: *var_file
-      <<: *parallelism
-      <<: *label
-      <<: *add_github_comment
-      <<: *target
-      <<: *trim_plan
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *var
+        - *var_file
+        - *parallelism
+        - *label
+        - *add_github_comment
+        - *target
+        - *trim_plan
     steps:
       - run:
           name: "terraform plan << parameters.path >> << parameters.label >>"
@@ -151,20 +153,21 @@ commands:
   apply:
     description: "Apply a Terraform plan"
     parameters: &apply-parameters
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *var
-      <<: *var_file
-      <<: *parallelism
-      <<: *label
-      <<: *auto_approve
-      <<: *target
-      <<: *replace
-      <<: *output_path
-      <<: *reuse_plan
-      <<: *trim_plan
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *var
+        - *var_file
+        - *parallelism
+        - *label
+        - *auto_approve
+        - *target
+        - *replace
+        - *output_path
+        - *reuse_plan
+        - *trim_plan
     steps:
       - run:
           name: "terraform apply << parameters.path >> << parameters.label >>"
@@ -180,15 +183,16 @@ commands:
   check:
     description: "Check that terraform state hasn't drifted"
     parameters: &check-parameters
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *var
-      <<: *var_file
-      <<: *parallelism
-      <<: *label
-      <<: *target
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *var
+        - *var_file
+        - *parallelism
+        - *label
+        - *target
     steps:
       - run:
           name: "terraform check << parameters.path >> << parameters.label >>"
@@ -203,15 +207,16 @@ commands:
   destroy:
     description: "Destroy terraform resources"
     parameters: &destroy-parameters
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *var
-      <<: *var_file
-      <<: *parallelism
-      <<: *label
-      <<: *target
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *var
+        - *var_file
+        - *parallelism
+        - *label
+        - *target
     steps:
       - run:
           name: "terraform destroy << parameters.path >> << parameters.label >>"
@@ -226,14 +231,15 @@ commands:
   new-workspace:
     description: "Create a terraform workspace"
     parameters: &new-workspace-parameters
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *var
-      <<: *var_file
-      <<: *parallelism
-      <<: *label
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *var
+        - *var_file
+        - *parallelism
+        - *label
     steps:
       - run:
           name: "terraform workspace new"
@@ -246,15 +252,16 @@ commands:
   destroy-workspace:
     description: "Destroy a terraform workspace"
     parameters: &destroy-workspace-parameters
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *var
-      <<: *var_file
-      <<: *parallelism
-      <<: *label
-      <<: *target
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *var
+        - *var_file
+        - *parallelism
+        - *label
+        - *target
     steps:
       - run:
           name: "terraform workspace delete"
@@ -270,11 +277,12 @@ commands:
   output:
     description: "Save the output variables from a terraform state into a json file"
     parameters:
-      <<: *path
-      <<: *workspace
-      <<: *backend_config
-      <<: *backend_config_file
-      <<: *output_path
+      <<:
+        - *path
+        - *workspace
+        - *backend_config
+        - *backend_config_file
+        - *output_path
     steps:
       - run:
           name: "terraform output << parameters.path >>"
@@ -320,8 +328,9 @@ commands:
   fmt-check:
     description: "Check that Terraform configuration files are in canonical format"
     parameters: &fmt-check-parameters
-      <<: *path
-      <<: *label
+      <<:
+        - *path
+        - *label
     steps:
       - run:
           name: "terraform fmt << parameters.path >> << parameters.label >>"
@@ -333,9 +342,10 @@ commands:
   publish-module:
     description: "Publish a terraform module to a module registry"
     parameters:
-      <<: *path
-      <<: *module_name
-      <<: *version_file_path
+      <<:
+        - *path
+        - *module_name
+        - *version_file_path
     steps:
       - run:
           name: "publish terraform module"

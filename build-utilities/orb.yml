@@ -48,7 +48,7 @@ commands:
     steps:
       - checkout
       - clone:
-          git_repo: https://github.com/ovotech/ohs-build-scripts.git
+          git_repo: https://github.com/chptech/ohs-build-scripts.git
           local_folder: << parameters.clone_folder >>
       - run:
           name: Build image
