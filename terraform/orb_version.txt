@@ -1,1 +1,1 @@
-chptech/terraform@1.11.24
+ovotech/terraform@1.11.24

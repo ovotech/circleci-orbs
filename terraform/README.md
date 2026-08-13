@@ -1,7 +1,7 @@
-# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/chptech/terraform)](https://circleci.com/orbs/registry/orb/chptech/terraform)
+# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform)](https://circleci.com/orbs/registry/orb/ovotech/terraform)
 
 This orb can be used to plan and apply terraform modules.
-It is published as `chptech/terraform@1.6`
+It is published as `ovotech/terraform@1.6`
 
 **Note: this orb only supports terraform `<=0.14`.**
 
@@ -24,7 +24,7 @@ The executor named `default` is the same as `terraform-0_11`
 
 This executor uses terraform 0.11.14 by default. However `tfswitch` is
 installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/chptech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
 to change this.
 
 It also contains:
@@ -44,14 +44,14 @@ If the AIVEN_PROVIDER environment variable is set, also has:
 
 This executor uses terraform 0.12.29 by default. However `tfswitch` is
 installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/chptech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
 to change this.
 
 It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/chptech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - ovo's kafka user provider
 - ovo's aiven-kafka-users provider
@@ -63,14 +63,14 @@ It also contains:
 A much much slimmer image. Carries one version of each provider/tool.
 This executor uses terraform 0.12.29 by default. However `tfswitch` is
 installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/chptech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
 to change this.
 
 It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/chptech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - ovo's kafka user provider
 - ovo's aiven-kafka-users provider
@@ -81,14 +81,14 @@ It also contains:
 
 This executor uses terraform 0.13.0 by default. However `tfswitch` is
 installed to allow you to adjust at runtime.
-See [Specifying a terraform version](https://github.com/chptech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
+See [Specifying a terraform version](https://github.com/ovotech/circleci-orbs/tree/master/terraform#specifying-a-terraform-version)
 to change this.
 
 It also contains:
 - Aiven's terraform-provider-aiven
 - google-cloud-sdk
 - Helm 2 available as `helm2` and `helm`
-- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/chptech/circleci-orbs/tree/master/terraform#Using-Helm-3)
+- Helm 3+ available as `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform#Using-Helm-3)
 - aws-cli
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
 - ovo's aiven-kafka-users provider
@@ -324,7 +324,7 @@ to the open PR. If that PR is then merged, the plan is applied.
 version: 2.1
 
 orbs:
-  terraform: chptech/terraform@1.6
+  terraform: ovotech/terraform@1.6
 
 workflows:
   test:
@@ -355,7 +355,7 @@ terraform helm provider.
 version: 2.1
 
 orbs:
-  terraform: chptech/terraform@1.6
+  terraform: ovotech/terraform@1.6
 
 jobs:
   terraform_plan:
@@ -486,7 +486,7 @@ always available. (And OVO's is not).
 version: 2.1
 
 orbs:
-  terraform: chptech/terraform@1.6
+  terraform: ovotech/terraform@1.6
 
 jobs:
   terraform_plan:
@@ -517,7 +517,7 @@ detected to any of the terraform resources the build is failed.
 version: 2.1
 
 orbs:
-  terraform: chptech/terraform@1.6
+  terraform: ovotech/terraform@1.6
 
 workflows:
   nightly:
@@ -545,7 +545,7 @@ It's recommended to enable **"Only build pull requests"**  in your CircleCI
 config when using this setting. If not enabled this could lead to a creation
 of a PR after the CircleCI job has run, which means the Plan comment cannot be
 added. Settings can be found under "Advanced Settings" e.g.
-https://circleci.com/gh/chptech/$YOUR_REPO/edit#advanced-settings
+https://circleci.com/gh/ovotech/$YOUR_REPO/edit#advanced-settings
 
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by

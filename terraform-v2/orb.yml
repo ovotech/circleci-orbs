@@ -5,7 +5,7 @@ executors:
   default:
     description: "Terraform executor"
     docker:
-      - image: chptech/terraform:latest
+      - image: ovotech/terraform:latest
 
 aliases:
   parameters:
