@@ -304,7 +304,7 @@ commands:
   version:
     description: "Prints terraform and provider versions"
     parameters: &version-parameters
-      <<: [*path]
+      <<: *path
     steps:
       - run:
           name: "terraform version"
@@ -316,7 +316,7 @@ commands:
   validate:
     description: "Validate the terraform files in a directory"
     parameters: &validate-parameters
-      <<: [*path]
+      <<: *path
     steps:
       - run:
           name: "terraform validate"
@@ -358,17 +358,17 @@ jobs:
     executor: default
     description: "Create a Terraform plan"
     parameters:
-      <<: [*plan-parameters]
+      <<: *plan-parameters
     steps:
       - checkout
       - plan:
-          <<: [*init-parameter-passthrough]
+          <<: *init-parameter-passthrough
 
   apply:
     executor: default
     description: "Apply a terraform plan"
     parameters:
-      <<: [*apply-parameters]
+      <<: *apply-parameters
     steps:
       - checkout
       - apply:
@@ -381,7 +381,7 @@ jobs:
     executor: default
     description: "Check that terraform state hasn't drifted"
     parameters:
-      <<: [*check-parameters]
+      <<: *check-parameters
     steps:
       - checkout
       - check:
@@ -391,7 +391,7 @@ jobs:
     executor: default
     description: "Destroy terraform resources"
     parameters:
-      <<: [*destroy-parameters]
+      <<: *destroy-parameters
     steps:
       - checkout
       - destroy:
@@ -401,18 +401,18 @@ jobs:
     executor: default
     description: "Create a terraform workspace"
     parameters:
-      <<: [*new-workspace-parameters]
+      <<: *new-workspace-parameters
     steps:
       - checkout
       - new-workspace:
-          <<: [*init-parameter-passthrough]
+          <<: *init-parameter-passthrough
 
   destroy-workspace:
     executor: default
     description: "Destroy and delete a terraform workspace"
     parameters:
-      <<: [*destroy-workspace-parameters]
+      <<: *destroy-workspace-parameters
     steps:
       - checkout
       - destroy-workspace:
-          <<: [*init-parameter-passthrough]
+          <<: *init-parameter-passthrough
