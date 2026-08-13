@@ -1,27 +1,27 @@
 version: 2.1
-description: "Terraform orb. See https://github.com/ovotech/circleci-orbs/tree/master/terraform"
+description: "Terraform orb. See https://github.com/chptech/circleci-orbs/tree/master/terraform"
 
 executors:
   default:
     description: "Terraform 0.11 executor"
     docker:
-      - image: ovotech/terraform:0.11
+      - image: chptech/terraform:0.11
   terraform-0_11:
     description: "Terraform 0.11 executor"
     docker:
-      - image: ovotech/terraform:0.11
+      - image: chptech/terraform:0.11
   terraform-0_12:
     description: "Terraform 0.12 executor (contains all versions of TF 0.12)"
     docker:
-      - image: ovotech/terraform:0.12
+      - image: chptech/terraform:0.12
   terraform-0_12-slim:
     description: "Terraform 0.12 executor (only contains TF v0.12.29)"
     docker:
-      - image: ovotech/terraform:0.12-slim
+      - image: chptech/terraform:0.12-slim
   terraform-0_13:
     description: "Terraform 0.13 executor"
     docker:
-      - image: ovotech/terraform:0.13
+      - image: chptech/terraform:0.13
 
 aliases:
   parameters:

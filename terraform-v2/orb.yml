@@ -1,11 +1,11 @@
 version: 2.1
-description: "Terraform orb v2. See https://github.com/ovotech/circleci-orbs/tree/master/terraform-v2"
+description: "Terraform orb v2. See https://github.com/chptech/circleci-orbs/tree/master/terraform-v2"
 
 executors:
   default:
     description: "Terraform executor"
     docker:
-      - image: ovotech/terraform:latest
+      - image: chptech/terraform:latest
 
 aliases:
   parameters:

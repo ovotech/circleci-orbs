@@ -46,7 +46,7 @@ You'll need to update the orb stanza in your .circleci/config.yml file:
 
 ```yaml
 orbs:
-  terraform: ovotech/terraform-v2@2
+  terraform: chptech/terraform-v2@2
 ```
 
 This will use the latest 2.x.x version of the v2 orb, you can pin to a more

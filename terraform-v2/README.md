@@ -1,7 +1,7 @@
-# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/ovotech/terraform-v2)](https://circleci.com/orbs/registry/orb/ovotech/terraform-v2)
+# Terraform Orb [![CircleCI Orb Version](https://img.shields.io/badge/endpoint.svg?url=https://badges.circleci.io/orb/chptech/terraform-v2)](https://circleci.com/orbs/registry/orb/chptech/terraform-v2)
 
 This orb can be used to plan and apply terraform modules.
-It is published as `ovotech/terraform-v2@2`.
+It is published as `chptech/terraform-v2@2`.
 
 **Note: this orb only supports terraform `>=0.14`.**
 
@@ -22,7 +22,7 @@ It contains:
 - tfswitch
 - google-cloud-sdk
 - aws-cli
-- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/ovotech/circleci-orbs/tree/master/terraform-v2#Using-Helm-3)
+- Helm 3+ available as `helm` and `helm3` See [Using Helm 3](https://github.com/chptech/circleci-orbs/tree/master/terraform-v2#Using-Helm-3)
 - stable "ovo" provider with ovo_kafka_user resource (`source = "terraform.ovotech.org.uk/pe/ovo"`)
 - stable "aiven-kafka-users" provider with aiven-kafka-users_user resource that enables auto-rotation of credentials  (`source = "terraform.ovotech.org.uk/pe/aiven-kafka-users"`)
 
@@ -53,12 +53,12 @@ This is to ensure that the orb only applies changes that have been reviewed by a
 You can disable this behaviour by setting `auto_approve: true` in the `apply` step,
 which will always apply any terraform changes.
 
-See [the orb doc](https://circleci.com/developer/orbs/orb/ovotech/terraform#commands)
+See [the orb doc](https://circleci.com/developer/orbs/orb/chptech/terraform#commands)
 for a list of available commands.
 
 ## Jobs
 
-See [the orb docs](https://circleci.com/developer/orbs/orb/ovotech/terraform#jobs)
+See [the orb docs](https://circleci.com/developer/orbs/orb/chptech/terraform#jobs)
 for a list of available jobs.
 
 These jobs run their respective command in the default executor.
@@ -76,7 +76,7 @@ to the open PR. If that PR is then merged, the plan is applied.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@2
+  terraform: chptech/terraform-v2@2
 
 workflows:
   test:
@@ -107,7 +107,7 @@ terraform helm provider.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@2
+  terraform: chptech/terraform-v2@2
 
 jobs:
   terraform_plan:
@@ -227,7 +227,7 @@ The `helm` command will use `helm3` by default.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@2
+  terraform: chptech/terraform-v2@2
 
 jobs:
   terraform_plan:
@@ -258,7 +258,7 @@ detected to any of the terraform resources the build is failed.
 version: 2.1
 
 orbs:
-  terraform: ovotech/terraform-v2@2
+  terraform: chptech/terraform-v2@2
 
 workflows:
   nightly:
@@ -285,7 +285,7 @@ the repo. The token requires the `repo, write:discussion` scopes.
 It's recommended to enable **"Only build pull requests"**  in your CircleCI 
 config when using this setting. If not enabled this could lead to a creation
 of a PR after the CircleCI job has run, which means the Plan comment cannot be
-added. Settings can be found under "Advanced Settings" e.g. `https://circleci.com/gh/ovotech/$YOUR_REPO/edit#advanced-settings`
+added. Settings can be found under "Advanced Settings" e.g. `https://circleci.com/gh/chptech/$YOUR_REPO/edit#advanced-settings`
 
 To make best use of this orb, require that the plan is always reviewed
 before merging the PR to approve. You can enforce this in github by
