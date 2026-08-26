@@ -1,5 +1,4 @@
-set -x
-
+#!/usr/bin/env bash
 if [[ "<< parameters.parallelism >>" -ne 0 ]]; then
     PLAN_ARGS="$PLAN_ARGS -parallelism=<< parameters.parallelism >>"
 fi

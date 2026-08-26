@@ -1,4 +1,4 @@
-set -x
+#!/usr/bin/env bash
 
 # Initialize terraform
 if [[ -n "<< parameters.backend_config_file >>" ]]; then

@@ -1,4 +1,4 @@
-set -x
+#!/usr/bin/env bash
 
 if [ -n "<< parameters.output_path >>" ]; then
     mkdir -p "$(dirname "<< parameters.output_path >>")"

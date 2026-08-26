@@ -1,4 +1,4 @@
-set -x
+#!/usr/bin/env bash
 
 cat >/tmp/github.py <<"EOF"
 include github.py

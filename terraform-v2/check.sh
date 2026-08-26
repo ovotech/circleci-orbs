@@ -1,4 +1,4 @@
-set -x
+#!/usr/bin/env bash
 
 exec 3>&1
 
