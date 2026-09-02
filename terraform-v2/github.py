@@ -17,6 +17,8 @@ commit = os.environ.get('CIRCLE_SHA1')
 github = requests.Session()
 github.auth = (github_username, github_token)
 
+MAX_COMMENT_LENGTH = 65536
+
 
 def find_pr() -> str:
     """
@@ -156,15 +158,12 @@ class TerraformComment:
         self._update_comment()
 
     def _update_comment(self):
-        comment = comment_util.comment_for_pr(self._comment_identifier,
-                                              self.plan)
+        comment = self._render_comment(self.plan)
 
-        if self.status:
-            comment += '\n' + self.status
-        else:
-            comment += (f'\nPlan generated in CircleCI Job '
-                        f'[{self.job_name} {self.build_num}]'
-                        f'({self.build_url})')
+        if len(comment) > MAX_COMMENT_LENGTH:
+            comment = self._render_comment(
+                'Plan is too large to post as a comment. '
+                'See the plan.txt artifact in the CircleCI job.')
 
         if self._comment_url is None:
             # Create a new comment
@@ -175,6 +174,18 @@ class TerraformComment:
 
         response.raise_for_status()
         self._comment_url = response.json()['url']
+
+    def _render_comment(self, plan: str) -> str:
+        comment = comment_util.comment_for_pr(self._comment_identifier, plan)
+
+        if self.status:
+            comment += '\n' + self.status
+        else:
+            comment += (f'\nPlan generated in CircleCI Job '
+                        f'[{self.job_name} {self.build_num}]'
+                        f'({self.build_url})')
+
+        return comment
 
 
 if __name__ == '__main__':
